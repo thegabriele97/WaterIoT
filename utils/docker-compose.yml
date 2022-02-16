@@ -1,0 +1,10 @@
+services:
+  example:
+    build: 
+      context: ./
+      dockerfile: ./services/example/Dockerfile
+    healthcheck:
+      test: ["CMD-SHELL", "cat out.log | grep -c Init!"]
+      interval: 5s
+      timeout: 2s
+      retries: 5

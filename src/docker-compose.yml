@@ -1,0 +1,23 @@
+services:
+  example:
+    build: 
+      context: ./
+      dockerfile: ./services/example/Dockerfile
+    healthcheck:
+      test: ["CMD-SHELL", "cat out.log | grep -c Init!"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+
+  catalog:
+    build: 
+      context: ./
+      dockerfile: ./services/catalog/Dockerfile
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li localhost:8080/catalog | grep -c '200 OK'"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
