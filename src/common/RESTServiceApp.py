@@ -22,6 +22,9 @@ class RESTServiceApp(ServiceApp):
             self.logger.info(f"CherryPy tree mounting {type(root)} @ '{path}'")
             cherrypy.tree.mount(root, path, conf)
 
+    def subsribe_evt_stop(self, callback):
+        cherrypy.engine.subscribe("stop", callback)
+
     def loop(self, port: int, host: str):
         cherrypy.config.update({
             'server.socket_port': port,
