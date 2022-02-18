@@ -1,11 +1,13 @@
 import copy
 from enum import Enum
 
-class EndpointType(Enum):
+from common.WIOTEnum import WIOTEnum
+
+class EndpointType(WIOTEnum):
     MQTT = 1
     REST = 2
 
-class EndpointTypeSub(Enum):
+class EndpointTypeSub(WIOTEnum):
     GENERAL  = 1
     RESOURCE = 2
 
@@ -16,7 +18,11 @@ class EndpointParam:
         self.required = required
 
     def toDict(self):
-        return self.__dict__
+        return copy.deepcopy(self.__dict__)
+
+    @staticmethod
+    def fromDict(d: dict):
+        return EndpointParam(**d)
 
 class Endpoint:
 
@@ -37,3 +43,12 @@ class Endpoint:
             d.pop("endpointType")
 
         return d
+
+    @staticmethod
+    def fromDict(d: dict, etype: EndpointType):
+
+        uri = d["uri"]
+        subtype = EndpointTypeSub.value_of(d["subType"])
+        params = [EndpointParam.fromDict(e) for e in d["params"]]
+
+        return Endpoint(uri, etype, subtype, params)

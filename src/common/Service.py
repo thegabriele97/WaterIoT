@@ -3,18 +3,19 @@ import time
 
 from enum import Enum
 from common.Endpoint import *
+from common.WIOTEnum import WIOTEnum
 
-class ServiceType(Enum):
+class ServiceType(WIOTEnum):
     SERVICE = 1
     DEVICE  = 2
 
-class ServiceSubType(Enum):
+class ServiceSubType(WIOTEnum):
     RASPBERRY = 1
 
 
 class Service:
     def __init__(self, name: str, stype: ServiceType, host: str = None, port: int = None, subtype: ServiceSubType = None) -> None:
-        self.name = name
+        self.name = name.lower()
         self.stype = stype
         self.subtype = subtype
         self.host = host
@@ -41,6 +42,9 @@ class Service:
 
         self.endpoints[endpoint.endpointType.name][endpoint.uri] = endpoint
 
+    def updateTimestamp(self):
+        self.timestamp = time.time()
+
     def toDict(self):
         
         d = copy.deepcopy(self.__dict__)
@@ -56,3 +60,22 @@ class Service:
         d.pop("port")
 
         return d
+        
+    @staticmethod
+    def fromDict(d: dict, request_ip):
+        
+        name = d["name"]
+        stype = ServiceType.value_of(d["stype"])
+        subtype = ServiceType.value_of(d["subtype"])
+        epoints_rest = [Endpoint.fromDict(e, EndpointType.REST) for e in d["endpoints"][EndpointType.REST.name].get("list", [])]
+        epoints_mqtt = [Endpoint.fromDict(e, EndpointType.MQTT) for e in d["endpoints"][EndpointType.MQTT.name].get("list", [])]
+        # host = dict(d["endpoints"][EndpointType.REST.name]).get("host", None)
+        host = request_ip
+        port = dict(d["endpoints"][EndpointType.REST.name]).get("port", None)
+
+        s = Service(name, stype, host, port, subtype)
+        for e in [*epoints_rest, *epoints_mqtt]:
+            s.addEndpoint(e)
+
+        return s
+

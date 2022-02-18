@@ -2,6 +2,7 @@ from collections import namedtuple
 import logging
 import socket
 import cherrypy
+import json
 
 import psutil
 import paho.mqtt.client as mqtt
@@ -46,6 +47,7 @@ class CatalogAPI(RESTBase):
                 self._mqtt_broker_idx = idx
                 break
 
+    @cherrypy.tools.json_out()
     def GET(self, *path, **args):
 
         if len(path) <= 0:
@@ -69,19 +71,63 @@ class CatalogAPI(RESTBase):
 
         elif path[0] == "services":
 
-            if len(path) > 1 and path[1] == "expired":
+            # /catalog/services/expired
+            if len(path) == 2 and path[1] == "expired":
                 return self.asjson({"services": [s.toDict() for s in self._serviceManager.dead_services.values()]})
+            elif len(path) > 1:
+                # /catalog/services/service_name
+                if len(path) == 2 and (path[1] in self._serviceManager.services.keys() or path[1] in self._serviceManager.dead_services.keys()):
+                    online = path[1] in self._serviceManager.services.keys()
+                    tos = self._serviceManager.services if online else self._serviceManager.dead_services
+
+                    return {
+                        "online": online,
+                        "service": tos[path[1]].toDict()
+                    } 
+
             else:
+                # /catalog/services
                 return self.asjson({"services": [s.toDict() for s in self._serviceManager.services.values()]})
 
-        else:
-            cherrypy.response.status = 404
-            return self.asjson_error("invalid request")
+        cherrypy.response.status = 404
+        return self.asjson_error("invalid request")
+
+    @cherrypy.tools.json_out()
+    def POST(self, *path, **args):
+        body = json.loads(cherrypy.request.body.read())
+
+        if len(path) == 1:
+            if path[0] == "services":
+
+                s = Service.fromDict(body, cherrypy.request.remote.ip)
+                if s.name in self._serviceManager.services.keys():
+                    cherrypy.response.status = 403
+                    return self.asjson_error("Forbidden: the service already exists")
+
+                self._serviceManager.add_service(s)
+                return self.asjson_info(f"Service {s.name} created")
+
+        cherrypy.response.status = 404
+        return self.asjson_error("invalid request")
+
+    @cherrypy.tools.json_out()
+    def PUT(self, *path, **args):
+        body = json.loads(cherrypy.request.body.read())
+
+        if len(path) == 1:
+            if path[0] == "services":
+
+                s = Service.fromDict(body, cherrypy.request.remote.ip)
+                self._serviceManager.add_service(s)
+                return self.asjson_info(f"Service {s.name} updated")
+
+        cherrypy.response.status = 404
+        return self.asjson_error("invalid request")
 
 
 class App(RESTServiceApp):
     def __init__(self) -> None:
-        super().__init__(log_stdout_level=logging.DEBUG)
+        super().__init__(log_stdout_level=logging.INFO)
 
         try:
 

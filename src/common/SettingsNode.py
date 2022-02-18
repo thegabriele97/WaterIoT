@@ -1,4 +1,4 @@
-import json
+import copy
 import logging
 
 class SettingsNode:
@@ -37,4 +37,5 @@ class SettingsNode:
         return default
 
     def toDict(self):
-        return self.__dict__
+        return {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+    

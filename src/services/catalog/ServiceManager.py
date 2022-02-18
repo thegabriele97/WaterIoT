@@ -50,6 +50,7 @@ class ServiceManager:
         self._lock.acquire()
         self._dead_services.pop(service.name, None)
         self._services[service.name] = service
+        service.updateTimestamp()
         self._lock.release()
 
     @property

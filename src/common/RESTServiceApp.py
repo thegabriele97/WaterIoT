@@ -28,7 +28,7 @@ class RESTServiceApp(ServiceApp):
     def loop(self, port: int, host: str):
         cherrypy.config.update({
             'server.socket_port': port,
-            'server.socket_host': '0.0.0.0'
+            'server.socket_host': host
         })
         
         class CustomHandler(cherrypy._cplogging.logging.Handler):
