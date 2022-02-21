@@ -1,4 +1,5 @@
 from collections import namedtuple
+from datetime import datetime
 import logging
 import socket
 import cherrypy
@@ -80,6 +81,10 @@ class CatalogAPI(RESTBase):
                     online = path[1] in self._serviceManager.services.keys()
                     tos = self._serviceManager.services if online else self._serviceManager.dead_services
 
+                    cherrypy.response.headers["Last-Modified"] = datetime.fromtimestamp(tos[path[1]].timestamp)
+
+                    sum = datetime.fromtimestamp(tos[path[1]].timestamp + self._settings.watchdog.expire_sec)
+                    cherrypy.response.headers["Expires"] = sum if online else 0
                     return {
                         "online": online,
                         "service": tos[path[1]].toDict()

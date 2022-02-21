@@ -1,6 +1,6 @@
 from collections import namedtuple
 import logging
-from tempfile import NamedTemporaryFile
+from datetime import datetime
 import requests
 
 from common.SettingsNode import SettingsNode
@@ -12,6 +12,7 @@ class CatalogRequest:
         self._logger = logger
         self._settings = settings
         self._catalogURL = f"http://{self._settings.catalog.host}:{self._settings.catalog.port}"
+        self._reqcache = {}
 
 
     def reqREST(self, service: str, path: str):
@@ -27,17 +28,37 @@ class CatalogRequest:
         coderesp = None
 
         RetType = namedtuple("RetType", "status json_response code_response")
+        CacheType = namedtuple("CacheType", "header response")
 
         try:
             self._logger.debug(f"Requesting service info @ {self._catalogURL}/catalog/services/{service}")
-            r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
-            jsonresp = r.json()
-            coderesp = r.status_code
 
-            if r.status_code != 200:
-                r.raise_for_status()
+            if service in self._reqcache.keys():
+                r = requests.head(url=f"{self._catalogURL}/catalog/services/{service}")
+                coderesp = r.status_code
 
-            data: dict = r.json()
+                if r.status_code != 200:
+                    r.raise_for_status()
+
+                lastmodified = r.headers["Last-Modified"]
+                expires = r.headers["Expires"]
+                cache = (service, CacheType(self._reqcache[service][0], self._reqcache[service][1]))
+
+                if expires != '0' and lastmodified == cache[1].header["Last-Modified"]:
+                    self._logger.debug(f"Using cache for service {service}")
+                    jsonresp = cache[1].response
+
+            if jsonresp is None:
+                r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+                jsonresp = r.json()
+                coderesp = r.status_code
+
+                if r.status_code != 200:
+                    r.raise_for_status()
+
+                self._reqcache[service] = CacheType(r.headers, r.json())
+
+            data: dict = jsonresp
             if not data["online"]:
                 raise Exception(f"Service {service} is not online")
 

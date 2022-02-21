@@ -19,7 +19,7 @@ class CalculatorAPI(RESTBase):
         if len(path) == 1 and path[0] == "sum":
             return self.asjson({"r": int(args["a"]) + int(args["b"]) + int(args.get("c", 0))})
 
-        r = self._catreq.reqREST("calculator", "/sum?c=2&b=3")
+        r = self._catreq.reqREST("calculator", "/sum?a=2&b=3")
 
         return self.asjson({"d": r})
 
