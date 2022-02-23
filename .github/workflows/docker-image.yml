@@ -1,8 +1,5 @@
 name: Docker Compose Actions Workflow
-on: 
-  push:
-    branches:
-      - github-workflow
+on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
