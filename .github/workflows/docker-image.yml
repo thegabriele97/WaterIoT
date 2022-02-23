@@ -29,6 +29,7 @@ jobs:
               cnt=2
               while IFS= read -r line; do
                   if [[ $line =~ $regx ]]; then
+                      echo ".. $line .."
                       cnt=$((cnt+1))
                   fi
               done <<< $(docker-compose ps)
