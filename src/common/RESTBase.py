@@ -8,13 +8,13 @@ class RESTBase:
         self._upperRESTSrvcApp = upperRESTSrvcApp;
 
     def asjson(self, data: dict):
-        return json.dumps(data, indent=4)
+        return data
 
     def asjson_error(self, data):
-        return json.dumps({"error": data}, indent=4)
+        return {"error": data}
     
     def asjson_info(self, data):
-        return json.dumps({"info": data}, indent=4)
+        return {"info": data}
 
     @property
     def logger(self) -> logging.Logger:

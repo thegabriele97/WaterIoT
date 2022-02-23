@@ -16,8 +16,25 @@ services:
       dockerfile: ./services/catalog/Dockerfile
     ports:
       - "8080:8080"
+    hostname: "catalog"
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li localhost:8080/catalog | grep -c '200 OK'"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+
+
+  calculator:
+    build: 
+      context: ./
+      dockerfile: ./services/calculator/Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/calculator | grep online | grep -c true"]
       interval: 15s
       timeout: 2s
       retries: 5

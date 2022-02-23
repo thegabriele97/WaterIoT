@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import inspect
 
@@ -7,12 +8,12 @@ from common.SettingsNode import SettingsNode
 class SettingsManager:
 
     @staticmethod
-    def json2obj(json_filename: str) -> SettingsNode:
+    def json2obj(json_filename: str, logger: logging) -> SettingsNode:
         fp = open(json_filename, "r")
         dict = json.load(fp)
         fp.close()
 
-        return SettingsNode(dict)
+        return SettingsNode(dict, logger)
 
     @staticmethod
     def relfile2abs(file):
