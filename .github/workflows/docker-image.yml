@@ -1,0 +1,52 @@
+name: Docker Compose Actions Workflow
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate requirements.txt
+        working-directory: src
+        run: make genreq
+      - name: Build the services
+        working-directory: src
+        run: docker-compose up -d
+      #- name: Sleep for 20 seconds
+      #  run: sleep 20s
+      #  shell: bash
+      - name: Check services healthiness
+        working-directory: src
+        run: |
+          regx='\s*([Rr]unning|[uU]p) \(healthy\)'
+          secs=60                           # Set interval (duration) in seconds.
+          endTime=$(( $(date +%s) + secs )) # Calculate end time.
+
+          while [ $(date +%s) -lt $endTime ]; do  # Loop until interval has elapsed.
+
+              cnt=2
+              while IFS= read -r line; do
+                  if [[ $line =~ $regx ]]; then
+                      cnt=$((cnt+1))
+                  fi
+              done <<< $(docker-compose ps)
+
+              echo -en "\rWaiting for services... $cnt/$(docker-compose ps | wc -l)"
+              if [[ $cnt -eq $(docker-compose ps | wc -l) ]]; then
+                  echo ""
+                  exit 0
+              fi
+
+              sleep 1
+
+          done
+
+          exit 1
+        shell: bash
+      - name: docker-compose ps
+        working-directory: src
+        run: |
+          docker-compose ps
+      - name: docker-compose logs
+        working-directory: src
+        run: |
+          docker-compose logs
