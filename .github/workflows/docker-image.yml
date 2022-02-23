@@ -29,6 +29,12 @@ jobs:
       - name: Build the services
         working-directory: src
         run: docker-compose up -d
+      - name: docker-compose ps
+        run: |
+          docker-compose ps
+      - name: docker-compose logs
+        run: |
+          docker-compose logs
       - name: Check catalog
         uses: jtalk/url-health-check-action@v2
         with:
