@@ -8,33 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: PIPREQS common
-        uses: ryan-rozario/pipreqs-action-cpy@master
-        # Put an example of mandatory inputs here
-        with:
-          PROJECT_PATH: src/common   #default is the root of the repository
-          REQUIREMENT_PATH: src/common/requirements.txt  #default is requirement.txt in the root of your repository 
-      - name: PIPREQS example
-        uses: ryan-rozario/pipreqs-action-cpy@master
-        # Put an example of mandatory inputs here
-        with:
-          PROJECT_PATH: src/services/example   #default is the root of the repository
-          REQUIREMENT_PATH: src/services/example/requirements.txt  #default is requirement.txt in the root of your repository
-      - name: PIPREQS catalog
-        uses: ryan-rozario/pipreqs-action-cpy@master
-        # Put an example of mandatory inputs here
-        with:
-          PROJECT_PATH: src/services/catalog   #default is the root of the repository
-          REQUIREMENT_PATH: src/services/catalog/requirements.txt  #default is requirement.txt in the root of your repository
-      - name: PIPREQS calculator
-        uses: ryan-rozario/pipreqs-action-cpy@master
-        # Put an example of mandatory inputs here
-        with:
-          PROJECT_PATH: src/services/calculator   #default is the root of the repository
-          REQUIREMENT_PATH: src/services/calculator/requirements.txt  #default is requirement.txt in the root of your repository 
+      - name: Generate requirements.txt
+        working-directory: src
+        run: make genreq
       - name: Build the services
         working-directory: src
         run: docker-compose up -d
+      - name: Sleep for 20 seconds
+        run: sleep 20s
+        shell: bash
       - name: docker-compose ps
         working-directory: src
         run: |
@@ -43,9 +25,6 @@ jobs:
         working-directory: src
         run: |
           docker-compose logs
-      - name: Sleep for 5 seconds
-        run: sleep 5s
-        shell: bash
       - name: Check catalog
         uses: jtalk/url-health-check-action@v2
         with:
