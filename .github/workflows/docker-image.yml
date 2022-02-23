@@ -20,7 +20,7 @@ jobs:
       - name: Check services healthiness
         working-directory: src
         run: |
-          regx='\s*running \(healthy\)'
+          regx='\s*([Rr]unning|[uU]p) \(healthy\)'
           secs=60                           # Set interval (duration) in seconds.
           endTime=$(( $(date +%s) + secs )) # Calculate end time.
 
@@ -28,7 +28,6 @@ jobs:
 
               cnt=2
               while IFS= read -r line; do
-                  echo ".. $line .."
                   if [[ $line =~ $regx ]]; then
                       cnt=$((cnt+1))
                   fi
