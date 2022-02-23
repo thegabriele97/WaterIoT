@@ -8,6 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: PIPREQS common
+        id: selftest
+        uses: ryan-rozario/pipreqs-action-cpy@master
+        # Put an example of mandatory inputs here
+        with:
+          PROJECT_PATH: src/common   #default is the root of the repository
+          REQUIREMENT_PATH: src/common/requirements.txt  #default is requirement.txt in the root of your repository 
       - name: Build the services
         working-directory: src
         run: docker-compose up -d
