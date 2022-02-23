@@ -23,8 +23,8 @@ class ServiceManager:
 
         self._logger.info("Catalog Watchdog started")
 
+        sleep(0.5)
         while not self._th1_evtstop.is_set():
-            sleep(self._settings.watchdog.timeout_ms / 1e3)
             self._lock.acquire()
             tm = time()
 
@@ -36,6 +36,7 @@ class ServiceManager:
                     self._logger.info(f"Service {s.name} expired")
 
             self._lock.release()
+            self._th1_evtstop.wait(self._settings.watchdog.timeout_ms / 1e3)
 
     def run_watchdog(self):
         self._th1_evtstop.clear()

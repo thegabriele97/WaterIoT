@@ -14,6 +14,7 @@ from common.SettingsManager import SettingsManager
 from common.SettingsNode import SettingsNode
 from common.Service import *
 from common.Endpoint import *
+from common.HttpDate import Httpdate
 from ServiceManager import ServiceManager
 
 class CatalogAPI(RESTBase):
@@ -81,14 +82,14 @@ class CatalogAPI(RESTBase):
                     online = path[1] in self._serviceManager.services.keys()
                     tos = self._serviceManager.services if online else self._serviceManager.dead_services
 
-                    cherrypy.response.headers["Last-Modified"] = datetime.fromtimestamp(tos[path[1]].timestamp)
-
-                    sum = datetime.fromtimestamp(tos[path[1]].timestamp + self._settings.watchdog.expire_sec)
+                    sum = Httpdate.from_timestamp(tos[path[1]].timestamp + self._settings.watchdog.expire_sec)
                     cherrypy.response.headers["Expires"] = sum if online else 0
-                    return {
+                    cherrypy.response.headers["Last-Modified"] = Httpdate.from_timestamp(tos[path[1]].timestamp)
+
+                    return self.asjson({
                         "online": online,
                         "service": tos[path[1]].toDict()
-                    } 
+                    })
 
             else:
                 # /catalog/services
