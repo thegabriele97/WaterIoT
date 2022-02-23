@@ -14,17 +14,9 @@ jobs:
       - name: Build the services
         working-directory: src
         run: docker-compose up -d
-      - name: Sleep for 20 seconds
-        run: sleep 20s
-        shell: bash
-      - name: docker-compose ps
-        working-directory: src
-        run: |
-          docker-compose ps
-      - name: docker-compose logs
-        working-directory: src
-        run: |
-          docker-compose logs
+      #- name: Sleep for 20 seconds
+      #  run: sleep 20s
+      #  shell: bash
       - name: Check services healthiness
         working-directory: src
         run: |
@@ -34,7 +26,7 @@ jobs:
 
           while [ $(date +%s) -lt $endTime ]; do  # Loop until interval has elapsed.
 
-              cnt=1
+              cnt=2
               while IFS= read -r line; do
                   if [[ $line =~ $regx ]]; then
                       cnt=$((cnt+1))
@@ -53,3 +45,11 @@ jobs:
 
           exit 1
         shell: bash
+      - name: docker-compose ps
+        working-directory: src
+        run: |
+          docker-compose ps
+      - name: docker-compose logs
+        working-directory: src
+        run: |
+          docker-compose logs
