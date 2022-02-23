@@ -25,16 +25,31 @@ jobs:
         working-directory: src
         run: |
           docker-compose logs
-      - name: Check catalog
-        uses: jtalk/url-health-check-action@v2
-        with:
-          # Check the following URLs one by one sequentially
-          url: http://localhost:8080/catalog|http://localhost:8080/catalog/services
-          # Follow redirects, or just report success on 3xx status codes
-          follow-redirect: false # Optional, defaults to "false"
-          # Fail this action after this many failed attempts
-          max-attempts: 3 # Optional, defaults to 1
-          # Delay between retries
-          retry-delay: 5s # Optional, only applicable to max-attempts > 1
-          # Retry all errors, including 404. This option might trigger curl upgrade.
-          retry-all: true # Optional, defaults to "false"
+      - name: Check services healthiness
+        working-directory: src
+        run: |
+          regx='\s*running \(healthy\)'
+          secs=60                           # Set interval (duration) in seconds.
+          endTime=$(( $(date +%s) + secs )) # Calculate end time.
+
+          while [ $(date +%s) -lt $endTime ]; do  # Loop until interval has elapsed.
+
+              cnt=1
+              while IFS= read -r line; do
+                  if [[ $line =~ $regx ]]; then
+                      cnt=$((cnt+1))
+                  fi
+              done <<< $(docker-compose ps)
+
+              echo -en "\rWaiting for services... $cnt/$(docker-compose ps | wc -l)"
+              if [[ $cnt -eq $(docker-compose ps | wc -l) ]]; then
+                  echo ""
+                  exit 0
+              fi
+
+              sleep 1
+
+          done
+
+          exit 1
+        shell: bash
