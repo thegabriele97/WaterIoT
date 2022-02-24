@@ -39,7 +39,8 @@ jobs:
               sleep 1
 
           done
-
+          docker-compose ps
+          docker-compose logs
           exit 1
         shell: bash
       - name: docker-compose ps
