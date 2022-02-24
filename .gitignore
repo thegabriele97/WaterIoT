@@ -3,4 +3,3 @@
 **/__pycache__/**
 requirements.txt
 *.http
-loadenv.sh
