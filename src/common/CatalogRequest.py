@@ -3,6 +3,8 @@ import logging
 import requests
 import paho.mqtt.client as mqtt
 
+from requests.adapters import Retry, HTTPAdapter
+
 from common.SettingsNode import SettingsNode
 from common.Service import EndpointType
 
@@ -19,7 +21,11 @@ class CatalogRequest:
         self._mqttclient = mqtt.Client()
         self._mqttclient.enable_logger(self._logger)
 
-        r = requests.get(f"{self._catalogURL}/catalog/mqttbroker")
+        s = requests.Session()
+        retries = Retry(total=5, backoff_factor=0.5, status_forcelist=[ 500, 502, 503, 504 ])
+        s.mount('http://', HTTPAdapter(max_retries=retries))
+
+        r = s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
         if not r.json()["connected"]:
             raise Exception("Catalog's MQTT Broker is not connected!")
 
