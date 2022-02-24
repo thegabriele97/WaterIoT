@@ -34,6 +34,7 @@ class App(WIOTRestApp):
             self.create(self._settings, "Calculator", ServiceType.SERVICE)
             self.addRESTEndpoint("/")
             self.addRESTEndpoint("/sum", (EndpointParam("a"), EndpointParam("b"), EndpointParam("c", False)))
+            self.addMQTTEndpoint("/temperature/room", "publishing dummy data")
 
 
             self.mount(CalculatorAPI(self, self._settings), self.conf)

@@ -26,11 +26,12 @@ class EndpointParam:
 
 class Endpoint:
 
-    def __init__(self, uri: str, endpointType: EndpointType, subType: EndpointTypeSub = EndpointTypeSub.GENERAL, params: list[EndpointParam] = []) -> None:
+    def __init__(self, uri: str, endpointType: EndpointType, subType: EndpointTypeSub = EndpointTypeSub.GENERAL, params: list[EndpointParam] = [], mqttDescription: str = None) -> None:
         self.uri = uri
         self.endpointType = endpointType
         self.subType = subType
         self.params = params
+        self.mqtt_description = mqttDescription
 
     def toDict(self, remType: bool):
 
@@ -42,13 +43,21 @@ class Endpoint:
         if remType:
             d.pop("endpointType")
 
+        if self.endpointType == EndpointType.MQTT:
+            d["description"] = d["mqtt_description"]
+            d.pop("params")
+            d.pop("subType")
+
+        d.pop("mqtt_description")
+
         return d
 
     @staticmethod
     def fromDict(d: dict, etype: EndpointType):
 
         uri = d["uri"]
-        subtype = EndpointTypeSub.value_of(d["subType"])
-        params = [EndpointParam.fromDict(e) for e in d["params"]]
+        subtype = EndpointTypeSub.value_of(d["subType"]) if "subType" in d.keys() else EndpointTypeSub.GENERAL
+        params = [EndpointParam.fromDict(e) for e in d["params"]] if etype == EndpointType.REST else []
+        description = d["description"] if etype == EndpointType.MQTT else None
 
-        return Endpoint(uri, etype, subtype, params)
+        return Endpoint(uri, etype, subtype, params, description)

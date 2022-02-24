@@ -32,7 +32,7 @@ class Service:
     def addEndpoint(self, endpoint: Endpoint):
 
         if self.stype == ServiceType.SERVICE and endpoint.subType is not EndpointTypeSub.GENERAL:
-            raise ValueError(f"A {ServiceType.SERVICE} endpoint can't be of a subtype different from {EndpointTypeSub.GENERAL}")
+            raise ValueError(f"A {ServiceType.SERVICE} endpoint can't be of a subtype different from {EndpointTypeSub.GENERAL} {self.stype} - {endpoint.subType}")
 
         if endpoint.uri is None or len(endpoint.uri) <= 0 or (endpoint.endpointType == EndpointType.REST and endpoint.uri[0] != '/'):
             raise ValueError("uri is not valid")
@@ -50,6 +50,7 @@ class Service:
         d = copy.deepcopy(self.__dict__)
         d["stype"] = d["stype"].name
         d["subtype"] = d["subtype"].name if isinstance(d["subtype"], ServiceSubType) else None
+        d["endpoints"][EndpointType.MQTT.name] = [e.toDict(True) for e in d["endpoints"][EndpointType.MQTT.name].values()]
         d["endpoints"][EndpointType.REST.name] = {
             "host": self.host,
             "port": self.port,
@@ -68,7 +69,7 @@ class Service:
         stype = ServiceType.value_of(d["stype"])
         subtype = ServiceType.value_of(d["subtype"])
         epoints_rest = [Endpoint.fromDict(e, EndpointType.REST) for e in d["endpoints"][EndpointType.REST.name].get("list", [])]
-        epoints_mqtt = [Endpoint.fromDict(e, EndpointType.MQTT) for e in d["endpoints"][EndpointType.MQTT.name].get("list", [])]
+        epoints_mqtt = [Endpoint.fromDict(e, EndpointType.MQTT) for e in d["endpoints"][EndpointType.MQTT.name]]
         # host = dict(d["endpoints"][EndpointType.REST.name]).get("host", None)
         host = request_ip
         port = dict(d["endpoints"][EndpointType.REST.name]).get("port", None)
