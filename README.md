@@ -22,6 +22,7 @@ make genreq
 
 To modify your new service go into ```src/services/name_of_your_service``` and open the file ```app.py```.
 
+Then you need to add you service to the docker-compose file. Open the file ```docker-compose.yml``` inside the ```src``` folder and add your service, following the syntax of the others. Remember to change the port and assign a new one. 
 
 ### Build
 
