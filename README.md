@@ -32,3 +32,15 @@ To build the project run the command:
 make
 ```
 
+After that the services will be up and running. You can check the status by giving the command:
+
+```
+docker-compose ps
+```
+
+To check the logs use the command:
+
+```
+docker-compose logs
+```
+
