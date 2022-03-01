@@ -10,11 +10,15 @@ from common.CatalogRequest import CatalogRequest
 
 class ThingSpeakAPI(RESTBase):
 
-    def __init__(self, upperRESTSrvcApp, settings: SettingsNode, thingspeakapikeywrite, thingspeakapikeyread) -> None:
+    def __init__(self, upperRESTSrvcApp, settings: SettingsNode, thingspeakapikeytemperaturewrite, thingspeakapikeytemperatureread, thingspeakapikeyhumiditywrite, thingspeakapikeyhumidityread, channelidtemperature, channelidhumidity) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._thingspeakapikeywrite = thingspeakapikeywrite
-        self._thingspeakapikeyread = thingspeakapikeyread
+        self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
+        self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
+        self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
+        self._thingspeakapikeyhumidityread = thingspeakapikeyhumidityread
+        self._channelidtemperature = channelidtemperature
+        self._channelidhumidity = channelidhumidity
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
@@ -22,13 +26,30 @@ class ThingSpeakAPI(RESTBase):
         if len(path) == 0:
             return self.asjson_info("ThingSpeak Adaptor Endpoint")
         elif path[0] == "temperaturewrite":
-            r = requests.get(f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeywrite}&field1={args['temp']}")
+            r = requests.get(f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}")
             if r.status_code != 200:
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
             return self.asjson_info(None)
         elif path[0] == "humiditywrite":
-            r = requests.get(url)
+            r = requests.get(f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}")
+            if r.status_code != 200:
+                cherrypy.response.status = 400
+                return self.asjson_error({"response": r.json()})
+            return self.asjson_info(None)
+        elif path[0] == "temperatureread":
+            r = requests.get(f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}&results={args['hum']}")
+            if r.status_code != 200:
+                cherrypy.response.status = 400
+                return self.asjson_error({"response": r.json()})
+            return self.asjson(r['feeds'])
+        elif path[0] == "humidityread":
+            r = requests.get(f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}&results={args['hum']}")
+            if r.status_code != 200:
+                cherrypy.response.status = 400
+                return self.asjson_error({"response": r.json()})
+            return self.asjson(r['feeds'])
+
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
@@ -37,16 +58,23 @@ class App(WIOTRestApp):
 
         try:
 
-            thinkspeakapikeywrite = os.environ['THINGSPEAKAPIKEYTEMPERATUREWRITE']
-            thinkspeakapikeyread = os.environ['THINGSPEAKAPIKEYTEMPERATUREREAD']
-            self.logger.debug("thingspeak api key write set to: " + thinkspeakapikeywrite + "and thinkspeak api key read set to: " + thinkspeakapikeyread)
+            thingspeakapikeytemperaturewrite = os.environ['THINGSPEAKAPIKEYTEMPERATUREWRITE']
+            thingspeakapikeytemperatureread = os.environ['THINGSPEAKAPIKEYTEMPERATUREREAD']
+            thingspeakapikeyhumiditywrite = os.environ['THINGSPEAKAPIKEYHUMIDITYWRITE']
+            thingspeakapikeyhumidityread = os.environ['THINGSPEAKAPIKEYHUMIDITYREAD']
+            channelidtemperature = os.environ['CHANNELIDTEMPERATURE']
+            channelidhumidity = os.environ['CHANNELIDHUMIDITY']
+            self.logger.debug("thingspeak api key write set to: " + thingspeakapikeytemperaturewrite + "and thinkspeak api key read set to: " + thingspeakapikeytemperatureread)
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "ThingSpeakAdaptor", ServiceType.SERVICE)
             self.addRESTEndpoint("/")
             self.addRESTEndpoint("/temperaturewrite", [EndpointParam("temp")])
+            self.addRESTEndpoint("/humiditywrite", [EndpointParam("hum")])
+            self.addRESTEndpoint("/temperatureread", [EndpointParam("hum", False)])
+            self.addRESTEndpoint("/humidityread", [EndpointParam("hum", False)])
 
-            self.mount(ThingSpeakAPI(self, self._settings, thinkspeakapikeywrite, thinkspeakapikeyread), self.conf)
+            self.mount(ThingSpeakAPI(self, self._settings, thingspeakapikeytemperaturewrite, thingspeakapikeytemperatureread, thingspeakapikeyhumiditywrite, thingspeakapikeyhumidityread, channelidtemperature, channelidhumidity), self.conf)
             self.loop()
 
         except Exception as e:
