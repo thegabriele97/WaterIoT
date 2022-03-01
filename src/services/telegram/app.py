@@ -28,7 +28,7 @@ class TelegramAdaptorAPI(RESTBase):
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.DEBUG)
+        super().__init__(log_stdout_level=logging.INFO)
 
         try:
 
@@ -37,7 +37,7 @@ class App(WIOTRestApp):
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "TelegramAdaptor", ServiceType.SERVICE)
-            self.addRESTEndpoint("/turnON", (EndpointParam("a", True)))
+            self.addRESTEndpoint("/turnON", [EndpointParam("a", True)])
 
             self.mount(TelegramAdaptorAPI(self, self._settings, telegrammapkey), self.conf)
             self.loop()
