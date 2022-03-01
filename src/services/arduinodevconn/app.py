@@ -46,8 +46,10 @@ class ArduinoDevConnAPI(RESTBase):
 
                 # Do things
                 is_on = st == "on" # to change w raspberry
+                r = {"is_on": is_on}
+                self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r))
 
-                return self.asjson({"is_on": is_on})
+                return self.asjson(r)
 
         cherrypy.response.status = 404
         return self.asjson_error("invalid request")
@@ -62,6 +64,7 @@ class App(WIOTRestApp):
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "ArduinoDevConn", ServiceType.DEVICE, ServiceSubType.ARDUINO)
             self.addRESTEndpoint("/switch", [EndpointParam("state")])
+            self.addMQTTEndpoint("/switch", "updates on switch status")
 
             self.mount(ArduinoDevConnAPI(self, self._settings), self.conf)
             self.loop()
