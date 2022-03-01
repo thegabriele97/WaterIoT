@@ -38,3 +38,20 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
+
+  telegramadaptor:
+    build: 
+      context: ./
+      dockerfile: ./services/telegram/Dockerfile
+    ports:
+      - "8084:8084"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/telegramadaptor | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    environment:
+      - TELEGRAMAPAPIKEY=${TELEGRAMAPAPIKEY}

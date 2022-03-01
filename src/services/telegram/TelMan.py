@@ -46,9 +46,3 @@ class MyBot:
         #if(query_data == "close"):
 
         #self.bot.answerCallbackQuery(query_id, text='Got it')
-
-    
-if __name__== "__main__":
-    bot = MyBot("5208389602:AAEukYvUBfcfo4ajRtT5MaeR_Wuq7SLm9fw") # token del bot
-    while 1:
-       time.sleep(10)
