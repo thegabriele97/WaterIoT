@@ -20,6 +20,7 @@ class CalculatorAPI(RESTBase):
             return self.asjson({"r": int(args["a"]) + int(args["b"]) + int(args.get("c", 0))})
 
         r = self._catreq.reqREST("calculator", "/sum?a=2&b=3")
+        self._catreq.publishMQTT("calculator", "/calcs", json.dumps({"d": r}))
 
         return self.asjson({"d": r})
 
@@ -34,6 +35,7 @@ class App(WIOTRestApp):
             self.create(self._settings, "Calculator", ServiceType.SERVICE)
             self.addRESTEndpoint("/")
             self.addRESTEndpoint("/sum", (EndpointParam("a"), EndpointParam("b"), EndpointParam("c", False)))
+            self.addMQTTEndpoint("/calcs", "publishing dummy data")
 
 
             self.mount(CalculatorAPI(self, self._settings), self.conf)
