@@ -28,6 +28,16 @@ class RESTBase:
         cherrypy.response.status = 400
         return self.asjson_error("bad request")
 
+    @cherrypy.tools.json_out()
+    def PUT(self, *path, **args):
+        cherrypy.response.status = 400
+        return self.asjson_error("bad request")
+
+    @cherrypy.tools.json_out()
+    def DELETE(self, *path, **args):
+        cherrypy.response.status = 400
+        return self.asjson_error("bad request")
+
     @property
     def logger(self) -> logging.Logger:
         return self._getattribute("logger");
