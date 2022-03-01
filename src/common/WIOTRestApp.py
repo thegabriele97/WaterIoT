@@ -46,7 +46,21 @@ class WIOTRestApp(RESTServiceApp):
         #     def GET(self):
         #         callback.get_callback()
 
+        if uri[0] != '/':
+            raise ValueError("Uri must begin with a '/'")
+
         self._service.addEndpoint(Endpoint(uri, EndpointType.REST, endpointTypeSub, params))
+
+    def addMQTTEndpoint(self, uri: str, description: str):
+        """
+        uri must be absolute like /temperature/room
+        the endpoint will be registered as /{service_name}/temperature/room
+        """
+
+        if uri[0] != '/':
+            raise ValueError("Uri must begin with a '/'")
+
+        self._service.addEndpoint(Endpoint(f"/{self._service.name}{uri}", EndpointType.MQTT, mqttDescription=description))
 
     @property
     def service(self):
