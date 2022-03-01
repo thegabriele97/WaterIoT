@@ -4,9 +4,16 @@ import requests
 import paho.mqtt.client as mqtt
 
 from requests.adapters import Retry, HTTPAdapter
+from enum import Enum
 
 from common.SettingsNode import SettingsNode
 from common.Service import EndpointType
+
+class RequestType(Enum):
+    GET    = 1
+    POST   = 2
+    PUT    = 3
+    DELETE = 4
 
 class CatalogRequest:
 
@@ -83,7 +90,7 @@ class CatalogRequest:
 
         return len(epoint) == 1
 
-    def reqREST(self, service: str, path: str):
+    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, data = None):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
@@ -157,8 +164,19 @@ class CatalogRequest:
             if path[0] != '/':
                 raise Exception(f"The specified path doesn't start with a '/'")
 
-            self._logger.debug(f"Requesting service endpoint @ http://{host}:{str(port)}{path}")
+            self._logger.debug(f"Requesting service endpoint: {reqt.name} http://{host}:{str(port)}{path}")
             r = requests.get(url=f"http://{host}:{str(port)}{path}")
+
+            url = f"http://{host}:{str(port)}{path}"
+            if reqt == RequestType.GET:
+                r = requests.get(url=url, data=data)
+            elif reqt == RequestType.POST:
+                r = requests.post(url=url, data=data)
+            elif reqt == RequestType.PUT:
+                r = requests.put(url=url, data=data)
+            elif reqt == RequestType.DELETE:
+                r = requests.delete(url=url, data=data)
+
             jsonresp = r.json()
             coderesp = r.status_code
             

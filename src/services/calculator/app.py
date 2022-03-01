@@ -5,7 +5,7 @@ from common.WIOTRestApp import *
 from common.SettingsManager import *
 from common.SettingsNode import *
 from common.RESTBase import RESTBase
-from common.CatalogRequest import CatalogRequest
+from common.CatalogRequest import *
 
 class CalculatorAPI(RESTBase):
 
@@ -20,6 +20,7 @@ class CalculatorAPI(RESTBase):
             return self.asjson({"r": int(args["a"]) + int(args["b"]) + int(args.get("c", 0))})
 
         r = self._catreq.reqREST("calculator", "/sum?a=2&b=3")
+        self._catreq.reqREST("calculator", "/sum?a=2&b=3", RequestType.POST)
         self._catreq.publishMQTT("calculator", "/calcs", json.dumps({"d": r}))
 
         return self.asjson({"d": r})

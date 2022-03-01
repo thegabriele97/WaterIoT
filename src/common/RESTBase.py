@@ -1,6 +1,8 @@
 import logging
 import json
 
+import cherrypy
+
 class RESTBase:
     exposed = True
 
@@ -15,6 +17,16 @@ class RESTBase:
     
     def asjson_info(self, data):
         return {"info": data}
+
+    @cherrypy.tools.json_out()
+    def GET(self, *path, **args):
+        cherrypy.response.status = 400
+        return self.asjson_error("bad request")
+
+    @cherrypy.tools.json_out()
+    def POST(self, *path, **args):
+        cherrypy.response.status = 400
+        return self.asjson_error("bad request")
 
     @property
     def logger(self) -> logging.Logger:
