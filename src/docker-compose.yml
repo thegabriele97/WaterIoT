@@ -44,7 +44,7 @@ services:
       context: ./
       dockerfile: ./services/telegram/Dockerfile
     ports:
-      - "8084:8084"
+      - "8085:8085"
     depends_on:
       catalog:
           condition: service_started
