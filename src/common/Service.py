@@ -11,6 +11,7 @@ class ServiceType(WIOTEnum):
 
 class ServiceSubType(WIOTEnum):
     RASPBERRY = 1
+    ARDUINO   = 2
 
 
 class Service:
@@ -26,8 +27,8 @@ class Service:
             EndpointType.REST.name: {}
         }
 
-        if not (stype == ServiceType.SERVICE != subtype is None):
-            raise ValueError("type and subtype error")
+        if stype == ServiceType.SERVICE and not subtype is None:
+            raise ValueError("Service type and subtype error")
 
     def addEndpoint(self, endpoint: Endpoint):
 
@@ -67,7 +68,7 @@ class Service:
         
         name = d["name"]
         stype = ServiceType.value_of(d["stype"])
-        subtype = ServiceType.value_of(d["subtype"])
+        subtype = ServiceSubType.value_of(d["subtype"])
         epoints_rest = [Endpoint.fromDict(e, EndpointType.REST) for e in d["endpoints"][EndpointType.REST.name].get("list", [])]
         epoints_mqtt = [Endpoint.fromDict(e, EndpointType.MQTT) for e in d["endpoints"][EndpointType.MQTT.name]]
         # host = dict(d["endpoints"][EndpointType.REST.name]).get("host", None)
