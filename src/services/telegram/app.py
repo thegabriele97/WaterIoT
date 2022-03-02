@@ -18,8 +18,9 @@ class TelegramAdaptorAPI(RESTBase):
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
 
-        if path[0] == "turnOn":
-            pass
+        if path[0] == "sendMessage":
+            print("branch taken")
+            self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
 
         # r = self._catreq.reqREST("openweatheradaptor", "/currentweather?as=2")
 
