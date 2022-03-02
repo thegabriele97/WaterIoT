@@ -20,11 +20,11 @@ class TelegramAdaptorAPI(RESTBase):
 
         if path[0] == "sendMessage":
             print("branch taken")
-            self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
+            a = self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
 
         # r = self._catreq.reqREST("openweatheradaptor", "/currentweather?as=2")
 
-        return self.asjson({"d": None})
+        return a
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
