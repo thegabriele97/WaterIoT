@@ -20,7 +20,13 @@ class TelegramAdaptorAPI(RESTBase):
 
         if path[0] == "sendMessage":
             print("branch taken")
-            a = self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
+            try:
+                a = self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
+            except:
+                print("An error occours")
+                return None
+
+        
 
         # r = self._catreq.reqREST("openweatheradaptor", "/currentweather?as=2")
 
