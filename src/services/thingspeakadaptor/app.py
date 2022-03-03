@@ -42,13 +42,13 @@ class ThingSpeakAPI(RESTBase):
             if r.status_code != 200:
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
-            return self.asjson(r['feeds'])
+            return r.json()['feeds']
         elif path[0] == "humidityread":
             r = requests.get(f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}&results={args['hum']}")
             if r.status_code != 200:
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
-            return self.asjson(r['feeds'])
+            return r.json()['feeds']
 
 
 class App(WIOTRestApp):
