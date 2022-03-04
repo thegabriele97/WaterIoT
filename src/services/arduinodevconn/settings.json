@@ -8,5 +8,9 @@
         "host": "catalog",
         "port": 8080,
         "ping_ms": 2000
+    },
+    "arduino": {
+        "i2c_dev": 1,
+        "i2c_addr": "0x08"
     }
 }

@@ -1,6 +1,7 @@
 import io
 import logging
 import cherrypy
+import smbus
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -14,17 +15,21 @@ class ArduinoDevConnAPI(RESTBase):
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
 
-        self._onrpi = False
         try:
-            with io.open('/sys/firmware/devicetree/base/model', 'r') as m:
-                if 'raspberry pi' in m.read().lower(): 
-                    self._onrpi = True
-        except Exception: 
-            pass
+            self.logger.debug(f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
+            self._onrpi = str(os.environ["ONRASPBERRY"]) == "1"
+        except KeyError:
+            self._onrpi = False
 
         if self._onrpi:
             # setup connection to arduino
+            self._bus = smbus.SMBus(settings.arduino.i2c_dev)
+            self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
+
             pass
+
+        if not self._onrpi:
+            self.logger.warning("Raspberry not found or error as occurred while Arduino init. Running as dummy device!")
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
@@ -44,7 +49,9 @@ class ArduinoDevConnAPI(RESTBase):
                 st = "on" if state == "on" else "off"
                 self.logger.info(f"Arduino: switching {st}")
 
-                # Do things
+                if self._onrpi:
+                    self._bus.write_byte_data(self._ard_i2c_addr, 0, 1 if st == "on" else 0)
+
                 is_on = st == "on" # to change w raspberry
                 r = {"is_on": is_on}
                 self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r))

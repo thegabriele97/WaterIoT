@@ -5,7 +5,8 @@ COPY services/arduinodevconn/requirements.txt /app/services/arduinodevconn/requi
 RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/arduinodevconn/requirements.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services /app/services
 WORKDIR /app/services/arduinodevconn
 
 # RUN pip install pipreqs
