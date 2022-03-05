@@ -9,13 +9,16 @@ class RESTBase:
     def __init__(self, upperRESTSrvcApp: object, indent_lvl: int) -> None:
         self._upperRESTSrvcApp = upperRESTSrvcApp;
 
-    def asjson(self, data: dict):
+    def asjson(self, data: dict, statuscode: int = 200):
+        cherrypy.response.status = statuscode
         return data
 
-    def asjson_error(self, data):
+    def asjson_error(self, data, statuscode: int = 400):
+        cherrypy.response.status = statuscode
         return {"error": data}
     
-    def asjson_info(self, data):
+    def asjson_info(self, data, statuscode: int = 200):
+        cherrypy.response.status = statuscode
         return {"info": data}
 
     @cherrypy.tools.json_out()
