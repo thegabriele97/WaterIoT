@@ -38,13 +38,11 @@ class ArduinoDevConnAPI(RESTBase):
             if path[0] == "switch":
 
                 if not "state" in args:
-                    cherrypy.response.status = 400
-                    return self.asjson_error("Missing state argument")
+                    return self.asjson_error("Missing state argument", 400)
 
                 st = str(args["state"]).lower()
                 if st != "on" and st != "off":
-                    cherrypy.response.status = 400
-                    return self.asjson_error("Valid states are: {on, off}")
+                    return self.asjson_error("Valid states are: {on, off}", 400)
 
                 self.logger.info(f"Arduino: switching {st}")
 
@@ -57,8 +55,7 @@ class ArduinoDevConnAPI(RESTBase):
 
                 return self.asjson(r)
 
-        cherrypy.response.status = 404
-        return self.asjson_error("invalid request")
+        return self.asjson_error("invalid request", 404)
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
