@@ -41,12 +41,11 @@ class ArduinoDevConnAPI(RESTBase):
                     cherrypy.response.status = 400
                     return self.asjson_error("Missing state argument")
 
-                state = str(args["state"]).lower()
-                if state != "on" and state != "off":
+                st = str(args["state"]).lower()
+                if st != "on" and st != "off":
                     cherrypy.response.status = 400
                     return self.asjson_error("Valid states are: {on, off}")
 
-                st = "on" if state == "on" else "off"
                 self.logger.info(f"Arduino: switching {st}")
 
                 if self._onrpi:
