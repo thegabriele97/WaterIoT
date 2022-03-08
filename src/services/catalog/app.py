@@ -1,6 +1,7 @@
 from collections import namedtuple
 from datetime import datetime
 import logging
+from multiprocessing.sharedctypes import Value
 import socket
 import cherrypy
 import json
@@ -73,8 +74,30 @@ class CatalogAPI(RESTBase):
 
         elif path[0] == "services":
 
+            if "type" in args:
+                # /catalog/services?type={service,device}&subtype={arduino,raspberry}
+                try:
+                    stype = ServiceType.value_of(str(args["type"]).upper())
+                except ValueError:
+                    cherrypy.response.status = 400
+                    return self.asjson_error("Invalid service type")
+
+                sers = [s for s in self._serviceManager.services.values() if s.stype == stype]
+                if "subtype" in args:
+                    try:
+                        subtype = ServiceSubType.value_of(str(args["subtype"]).upper())
+                    except ValueError:
+                        cherrypy.response.status = 400
+                        return self.asjson_error("Invalid service subtype")
+
+                    return self.asjson({"services": [s.toDict() for s in sers if s.subtype == subtype]})
+
+                # /catalog/services?type={service,device}
+                else:
+                    return self.asjson({"services": [s.toDict() for s in sers]})
+
             # /catalog/services/expired
-            if len(path) == 2 and path[1] == "expired":
+            elif len(path) == 2 and path[1] == "expired":
                 return self.asjson({"services": [s.toDict() for s in self._serviceManager.dead_services.values()]})
             elif len(path) > 1:
                 # /catalog/services/service_name
