@@ -77,6 +77,7 @@ class CatalogRequest:
 
     def _check_mqtt_endpoint(self, service: str, path: str):
 
+        service = service.lower()
         self._logger.debug(f"Requesting MQTT service info @ {self._catalogURL}/catalog/services/{service}")
         r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
         if r.status_code != 200:
@@ -104,6 +105,7 @@ class CatalogRequest:
 
         RetType = namedtuple("RetType", "status json_response code_response")
         CacheType = namedtuple("CacheType", "header response")
+        service = service.lower()
 
         try:
             self._logger.debug(f"Requesting REST service info @ {self._catalogURL}/catalog/services/{service}")
