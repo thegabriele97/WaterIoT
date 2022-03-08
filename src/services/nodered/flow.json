@@ -1,0 +1,145 @@
+[
+    {
+        "id": "8f522d24a672c68a",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 690,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "d345a28cf5a1a276",
+        "type": "mqtt in",
+        "z": "6644ea9bf3513060",
+        "name": "subscriber",
+        "topic": "WaterIoT/led",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "73dd0102c2465c32",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 240,
+        "y": 360,
+        "wires": [
+            [
+                "1b961cc9fa7fac5b"
+            ]
+        ]
+    },
+    {
+        "id": "73dd0102c2465c32",
+        "type": "mqtt-broker",
+        "name": "mosquitto",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "1b961cc9fa7fac5b",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"Status\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
+        "outputs": 1,
+        "x": 470,
+        "y": 400,
+        "wires": [
+            [
+                "8f522d24a672c68a",
+                "e8290b67a4197e91"
+            ]
+        ]
+    },
+    {
+        "id": "e8290b67a4197e91",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "6d55652b11d1503d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 690,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6d55652b11d1503d",
+        "type": "ui_group",
+        "name": "MyGraph",
+        "tab": "aa8b95e31965cabf",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "aa8b95e31965cabf",
+        "type": "ui_tab",
+        "name": "MyUiTab",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

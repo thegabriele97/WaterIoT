@@ -1,0 +1,5 @@
+{
+    "broker": "test.mosquitto.org",
+    "port": 1883,
+    "baseTopic": "IoT_project"
+}
