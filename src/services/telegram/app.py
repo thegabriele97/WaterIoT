@@ -13,24 +13,24 @@ class TelegramAdaptorAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode, telegramkey) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._bot = MyBot(telegramkey)
+        self._bot = MyBot(telegramkey,self.logger)
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
 
-        if path[0] == "sendMessage":
-            print("branch taken")
+        if len(path)>0 and path[0] == "sendMessage":
             try:
-                a = self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
-            except:
-                print("An error occours")
-                return None
-
-        
-
-        # r = self._catreq.reqREST("openweatheradaptor", "/currentweather?as=2")
-
-        return a
+                if not "text" in args: # check correct HTTP argument
+                    cherrypy.response.status = 400
+                    return self.asjson_error("Missing text argument")
+            except Exception as e:
+                self.logger.error(f"Error occurred in sending message: {str(e)}") # exception rised if is sent a message
+                cherrypy.response.status = 500 #Server side error                   before the user send a first message 
+                return self.asjson_error(f"Server error")                         # on chat ( chat_id is retrived)
+            return True 
+            
+        cherrypy.response.status = 404
+        return self.asjson_error("Invalid request")
 
 class App(WIOTRestApp):
     def __init__(self) -> None:

@@ -4,7 +4,7 @@ from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton ,InlineQueryResultArticle, InputTextMessageContent
 import json
 import requests
-
+#TODO they will communicate with Raspberry API and Arduino API 
 def start_irr():
     pass
 def stop_irr():
@@ -13,8 +13,9 @@ def stop_irr():
 class MyBot:
     
 
-    def __init__(self,token):
+    def __init__(self,token,logger):
     # Local token
+        self.logger = logger
         self.chat_ID = ""
         self.tokenBot=token
     #Catalog token
@@ -26,16 +27,17 @@ class MyBot:
     def on_chat_message(self,msg):
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[               # show buttons on telegram chat
                    [InlineKeyboardButton(text='Start Irrigation', callback_data='start')],
                    [InlineKeyboardButton(text='Stop Irrigation', callback_data='stop')]
                ])
-        self.bot.sendMessage(self.chat_ID, 'Seleziona uno dei seguenti comandi', reply_markup=keyboard)
+        self.bot.sendMessage(self.chat_ID, 'Seleziona uno dei seguenti comandi', reply_markup=keyboard) # send message on telegram chat
         #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
     
     def on_callback_query(self,msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-        print('Callback Query:', query_id, from_id, query_data)
+        #used to debug
+        #self._logger.debug(f'Callback Query: {query_id}, {from_id}, {query_data}') 
         if(query_data == "start"):
             self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
             start_irr()
