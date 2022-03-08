@@ -6,23 +6,24 @@ First is necessary to install docker and docker-compose. Clone the repository wi
 
 To create a new service go into the ```src``` folder. Here you will find a Makefile, in which there are all useful commands needed to add a service and build the project. 
 
-Nodered install
-We can install nodered and its library only with version>12 so after
-```sudo apt install build-essential libssl-dev```
-We take the NVM installation script from git
-```curl -sL https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh -o install_nvm.sh```
-Start the script
-```bash install_nvm.sh```
-Restart the terminal
-```source .bashrc```
-Install the version 12.22.10
-```nvm install v12.22.10```
-If you want to verify it
-```node -v```
-start node-red
-```node-red```
+## Nodered install
+We can install nodered and its library only with version>12 so after ```sudo apt install build-essential libssl-dev```
+
+We take the NVM installation script from git ```curl -sL https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh -o install_nvm.sh```
+
+Start the script ```bash install_nvm.sh```
+
+Restart the terminal ```source .bashrc```
+
+Install the version 12.22.10 ```nvm install v12.22.10```
+
+If you want to verify it ```node -v```
+
+start node-red ```node-red```
+
 Remember to install the lib node-red-contrib-python3-function
 and node-red-dashboard
+
 ### Add a new service
 
 To add a new service use the command:
