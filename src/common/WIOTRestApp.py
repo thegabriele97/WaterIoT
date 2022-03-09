@@ -38,7 +38,7 @@ class WIOTRestApp(RESTServiceApp):
         self._pinger.run()
         super().loop(self._service.port, self._service.host)
 
-    def addRESTEndpoint(self, uri: str, params: tuple[EndpointParam] = (), endpointTypeSub: EndpointTypeSub = EndpointTypeSub.GENERAL):
+    def addRESTEndpoint(self, uri: str, params: tuple[EndpointParam] = (), endpointTypeSub: EndpointTypeSub = EndpointTypeSub.GENERAL, methods: set = {EndpointMethod.GET}):
 
         # class WIOTRestApp_DummyClass:
         #     exposed = True
@@ -49,7 +49,7 @@ class WIOTRestApp(RESTServiceApp):
         if uri[0] != '/':
             raise ValueError("Uri must begin with a '/'")
 
-        self._service.addEndpoint(Endpoint(uri, EndpointType.REST, endpointTypeSub, params))
+        self._service.addEndpoint(Endpoint(uri, EndpointType.REST, endpointTypeSub, params, methods))
 
     def addMQTTEndpoint(self, uri: str, description: str):
         """

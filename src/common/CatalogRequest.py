@@ -4,16 +4,10 @@ import requests
 import paho.mqtt.client as mqtt
 
 from requests.adapters import Retry, HTTPAdapter
-from enum import Enum
 
 from common.SettingsNode import SettingsNode
 from common.Service import EndpointType
-
-class RequestType(Enum):
-    GET    = 1
-    POST   = 2
-    PUT    = 3
-    DELETE = 4
+from common.Endpoint import EndpointMethod
 
 class CatalogRequest:
 
@@ -91,7 +85,7 @@ class CatalogRequest:
 
         return len(epoint) == 1
 
-    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, data = None):
+    def reqREST(self, service: str, path: str, reqt: EndpointMethod =EndpointMethod.GET, data = None):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
@@ -170,13 +164,13 @@ class CatalogRequest:
             r = requests.get(url=f"http://{host}:{str(port)}{path}")
 
             url = f"http://{host}:{str(port)}{path}"
-            if reqt == RequestType.GET:
+            if reqt == EndpointMethod.GET:
                 r = requests.get(url=url, data=data)
-            elif reqt == RequestType.POST:
+            elif reqt == EndpointMethod.POST:
                 r = requests.post(url=url, data=data)
-            elif reqt == RequestType.PUT:
+            elif reqt == EndpointMethod.PUT:
                 r = requests.put(url=url, data=data)
-            elif reqt == RequestType.DELETE:
+            elif reqt == EndpointMethod.DELETE:
                 r = requests.delete(url=url, data=data)
 
             jsonresp = r.json()

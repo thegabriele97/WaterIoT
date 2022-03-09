@@ -41,7 +41,11 @@ class Service:
         if endpoint.endpointType == EndpointType.REST and (self.host is None or self.port is None):
             raise ValueError("Host and Port not specified for REST endpoints")
 
-        self.endpoints[endpoint.endpointType.name][endpoint.uri] = endpoint
+        if endpoint.endpointType == EndpointType.REST and endpoint.uri in self.endpoints[endpoint.endpointType.name].keys():
+            # endpoint already registered. Merging only methods
+            set(self.endpoints[endpoint.endpointType.name][endpoint.uri].methods).intersection_update(endpoint.methods)
+        else:
+            self.endpoints[endpoint.endpointType.name][endpoint.uri] = endpoint
 
     def updateTimestamp(self):
         self.timestamp = time.time()
