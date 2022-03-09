@@ -1,6 +1,7 @@
 import logging
 import cherrypy
 import requests
+import paho.mqtt.client as mqtt
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -23,6 +24,8 @@ class ThingSpeakAPI(RESTBase):
     ) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+        self._catreq.subscribeMQTT("ArduinoDevConn", "/switch")
+        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceive)
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
         self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
         self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
@@ -82,6 +85,8 @@ class ThingSpeakAPI(RESTBase):
                 return self.asjson_error({"response": r.json()})
             return self.asjson_info(None)
 
+    def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
+        self.logger.debug(msg.payload)
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
