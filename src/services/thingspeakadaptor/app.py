@@ -87,6 +87,7 @@ class ThingSpeakAPI(RESTBase):
 
     def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
         self.logger.debug(msg.payload)
+        #TODO: wait for rpi device connector to knwo hwo the data are sent
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
