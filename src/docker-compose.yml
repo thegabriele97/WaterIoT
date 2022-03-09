@@ -72,3 +72,27 @@ services:
       retries: 5
     environment:
       - OPENWETHERMAPAPIKEY=${OPENWETHERMAPAPIKEY}
+
+  thingspeakadaptor:
+    build: 
+      context: ./
+      dockerfile: ./services/thingspeakadaptor/Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      catalog:
+        condition: service_started
+      arduinodevconn:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/thingspeakadaptor | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    environment:
+      - THINGSPEAKAPIKEYTEMPERATUREWRITE=${THINGSPEAKAPIKEYTEMPERATUREWRITE}
+      - THINGSPEAKAPIKEYTEMPERATUREREAD=${THINGSPEAKAPIKEYTEMPERATUREREAD}
+      - THINGSPEAKAPIKEYHUMIDITYWRITE=${THINGSPEAKAPIKEYHUMIDITYWRITE}
+      - THINGSPEAKAPIKEYHUMIDITYREAD=${THINGSPEAKAPIKEYHUMIDITYREAD}
+      - CHANNELIDTEMPERATURE=${CHANNELIDTEMPERATURE}
+      - CHANNELIDHUMIDITY=${CHANNELIDHUMIDITY}
