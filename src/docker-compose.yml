@@ -9,7 +9,6 @@ services:
       timeout: 2s
       retries: 5
 
-
   catalog:
     build: 
       context: ./
@@ -22,7 +21,6 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-
 
   calculator:
     build: 
@@ -39,6 +37,21 @@ services:
       timeout: 2s
       retries: 5
 
+  arduinodevconn:
+    build: 
+      context: ./
+      dockerfile: ./services/arduinodevconn/Dockerfile
+    ports:
+      - "8086:8086"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/arduinodevconn | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"  
+    environment:
+      - ONRASPBERRY=${ONRASPBERRY}
 
   openweatheradaptor:
     build: 
