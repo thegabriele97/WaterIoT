@@ -43,6 +43,9 @@ services:
       dockerfile: ./services/arduinodevconn/Dockerfile
     ports:
       - "8086:8086"
+    depends_on:
+      catalog:
+          condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/arduinodevconn | grep online | grep -c true"]
       interval: 15s
