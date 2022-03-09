@@ -79,16 +79,14 @@ class CatalogAPI(RESTBase):
                 try:
                     stype = ServiceType.value_of(str(args["type"]).upper())
                 except ValueError:
-                    cherrypy.response.status = 400
-                    return self.asjson_error("Invalid service type")
+                    return self.asjson_error("Invalid service type", 400)
 
                 sers = [s for s in self._serviceManager.services.values() if s.stype == stype]
                 if "subtype" in args:
                     try:
                         subtype = ServiceSubType.value_of(str(args["subtype"]).upper())
                     except ValueError:
-                        cherrypy.response.status = 400
-                        return self.asjson_error("Invalid service subtype")
+                        return self.asjson_error("Invalid service subtype", 400)
 
                     return self.asjson({"services": [s.toDict() for s in sers if s.subtype == subtype]})
 
@@ -118,8 +116,7 @@ class CatalogAPI(RESTBase):
                 # /catalog/services
                 return self.asjson({"services": [s.toDict() for s in self._serviceManager.services.values()]})
 
-        cherrypy.response.status = 404
-        return self.asjson_error("invalid request")
+        return self.asjson_error("invalid request", 404)
 
     @cherrypy.tools.json_out()
     def POST(self, *path, **args):
@@ -130,14 +127,12 @@ class CatalogAPI(RESTBase):
 
                 s = Service.fromDict(body, cherrypy.request.remote.ip)
                 if s.name in self._serviceManager.services.keys():
-                    cherrypy.response.status = 403
-                    return self.asjson_error("Forbidden: the service already exists")
+                    return self.asjson_error("Forbidden: the service already exists", 403)
 
                 self._serviceManager.add_service(s)
                 return self.asjson_info(f"Service {s.name} created")
 
-        cherrypy.response.status = 404
-        return self.asjson_error("invalid request")
+        return self.asjson_error("invalid request", 404)
 
     @cherrypy.tools.json_out()
     def PUT(self, *path, **args):
@@ -150,8 +145,7 @@ class CatalogAPI(RESTBase):
                 self._serviceManager.add_service(s)
                 return self.asjson_info(f"Service {s.name} updated")
 
-        cherrypy.response.status = 404
-        return self.asjson_error("invalid request")
+        return self.asjson_error("invalid request", 404)
 
 
 class App(RESTServiceApp):
