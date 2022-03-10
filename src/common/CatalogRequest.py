@@ -178,7 +178,6 @@ class CatalogRequest:
                 raise Exception(f"The specified path doesn't start with a '/'")
 
             self._logger.debug(f"Requesting service endpoint: {reqt.name} http://{host}:{str(port)}{path}")
-            r = requests.get(url=f"http://{host}:{str(port)}{path}")
 
             url = f"http://{host}:{str(port)}{path}"
             if reqt == RequestType.GET:
