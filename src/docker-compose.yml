@@ -9,7 +9,6 @@ services:
       timeout: 2s
       retries: 5
 
-
   catalog:
     build: 
       context: ./
@@ -22,7 +21,6 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-
 
   calculator:
     build: 
@@ -38,6 +36,7 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
+
 
   telegramadaptor:
     build: 
@@ -55,3 +54,64 @@ services:
       retries: 5
     environment:
       - TELEGRAMAPAPIKEY=${TELEGRAMAPAPIKEY}
+
+  arduinodevconn:
+    build: 
+      context: ./
+      dockerfile: ./services/arduinodevconn/Dockerfile
+    ports:
+      - "8086:8086"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/arduinodevconn | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"  
+    environment:
+      - ONRASPBERRY=${ONRASPBERRY}
+
+  openweatheradaptor:
+    build: 
+      context: ./
+      dockerfile: ./services/openweatheradaptor/Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/openweatheradaptor | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    environment:
+      - OPENWETHERMAPAPIKEY=${OPENWETHERMAPAPIKEY}
+
+  thingspeakadaptor:
+    build: 
+      context: ./
+      dockerfile: ./services/thingspeakadaptor/Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      catalog:
+        condition: service_started
+      arduinodevconn:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/thingspeakadaptor | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    environment:
+      - THINGSPEAKAPIKEYTEMPERATUREWRITE=${THINGSPEAKAPIKEYTEMPERATUREWRITE}
+      - THINGSPEAKAPIKEYTEMPERATUREREAD=${THINGSPEAKAPIKEYTEMPERATUREREAD}
+      - THINGSPEAKAPIKEYHUMIDITYWRITE=${THINGSPEAKAPIKEYHUMIDITYWRITE}
+      - THINGSPEAKAPIKEYHUMIDITYREAD=${THINGSPEAKAPIKEYHUMIDITYREAD}
+      - CHANNELIDTEMPERATURE=${CHANNELIDTEMPERATURE}
+      - CHANNELIDHUMIDITY=${CHANNELIDHUMIDITY}
+

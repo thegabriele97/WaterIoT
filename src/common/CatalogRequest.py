@@ -2,6 +2,7 @@ from collections import namedtuple
 import logging
 import requests
 import paho.mqtt.client as mqtt
+import time
 
 from requests.adapters import Retry, HTTPAdapter
 from enum import Enum
@@ -77,10 +78,21 @@ class CatalogRequest:
 
     def _check_mqtt_endpoint(self, service: str, path: str):
 
+        service = service.lower()
         self._logger.debug(f"Requesting MQTT service info @ {self._catalogURL}/catalog/services/{service}")
-        r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
-        if r.status_code != 200:
-            r.raise_for_status()
+
+        r = None
+        for _ in range(0, 10):
+            r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+            if r.status_code == 404:
+                time.sleep(0.5)
+            elif r.status_code != 200:
+                r.raise_for_status()
+            else:
+                break
+
+        if r.status_code == 404 or r == None:
+            raise Exception(f"{self._catalogURL}/catalog/services/{service} return status code 404")
 
         if not r.json()["online"]:
             raise Exception(f"Service {service} is not online")
@@ -104,6 +116,7 @@ class CatalogRequest:
 
         RetType = namedtuple("RetType", "status json_response code_response")
         CacheType = namedtuple("CacheType", "header response")
+        service = service.lower()
 
         try:
             self._logger.debug(f"Requesting REST service info @ {self._catalogURL}/catalog/services/{service}")
