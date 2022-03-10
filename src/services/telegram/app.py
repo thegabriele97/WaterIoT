@@ -13,7 +13,7 @@ class TelegramAdaptorAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode, telegramkey) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._bot = MyBot(telegramkey,self.logger)
+        self._bot = MyBot(telegramkey,self.logger,self._catreq)
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):

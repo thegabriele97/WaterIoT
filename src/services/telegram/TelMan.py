@@ -4,17 +4,12 @@ from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton ,InlineQueryResultArticle, InputTextMessageContent
 import json
 import requests
-#TODO they will communicate with Raspberry API and Arduino API 
-def start_irr():
-    pass
-def stop_irr():
-    pass
 
 class MyBot:
-    
-
-    def __init__(self,token,logger):
+   
+    def __init__(self,token,logger,catreq):
     # Local token
+        self.catreq = catreq
         self.logger = logger
         self.chat_ID = ""
         self.tokenBot=token
@@ -40,10 +35,11 @@ class MyBot:
         #self._logger.debug(f'Callback Query: {query_id}, {from_id}, {query_data}') 
         if(query_data == "start"):
             self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
-            start_irr()
+            self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='on'")
         if(query_data == "stop"): 
             self.bot.sendMessage(self.chat_ID,text="You stopped irrigation")
-            stop_irr()
+            self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
+
         #if(query_data == "close"):
 
         #self.bot.answerCallbackQuery(query_id, text='Got it')
