@@ -22,11 +22,16 @@ class MyBot:
     def on_chat_message(self,msg):
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[               # show buttons on telegram chat
+        self.bot.sendMessage(self.chat_ID, message)
+        if message == "/switch" :
+            self.bot.sendMessage(self.chat_ID, message)
+
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[               # show buttons on telegram chat
                    [InlineKeyboardButton(text='Start Irrigation', callback_data='start')],
                    [InlineKeyboardButton(text='Stop Irrigation', callback_data='stop')]
                ])
-        self.bot.sendMessage(self.chat_ID, 'Seleziona uno dei seguenti comandi', reply_markup=keyboard) # send message on telegram chat
+            self.bot.sendMessage(self.chat_ID, 'Seleziona uno dei seguenti comandi', reply_markup=keyboard) # send message on telegram chat
+           
         #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
     
     def on_callback_query(self,msg):
