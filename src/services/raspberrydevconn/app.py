@@ -66,9 +66,11 @@ class App(WIOTRestApp):
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "RaspberryDevConn", ServiceType.DEVICE, ServiceSubType.RASPBERRY)
-            self.addRESTEndpoint("/switch", [EndpointParam("state")])
+            self.addRESTEndpoint("/airhumidity", [EndpointParam("state")])
+            self.addRESTEndpoint("/airtemperature", [EndpointParam("state")])
+            self.addRESTEndpoint("/terrainhumidity", [EndpointParam("state")])
             self.addMQTTEndpoint("/airhumidity", "data of the air humidity from the DHT11")
-            self.addMQTTEndpoint("/temperature", "data of the air temperature from the DHT11")
+            self.addMQTTEndpoint("/airtemperature", "data of the air temperature from the DHT11")
             self.addMQTTEndpoint("/terrainhumidity", "dafa of the terrain humidity from the arduino board")
 
             self.mount(RaspberryDevConnAPI(self, self._settings), self.conf)
