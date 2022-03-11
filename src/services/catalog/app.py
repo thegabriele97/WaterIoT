@@ -50,6 +50,9 @@ class CatalogAPI(RESTBase):
                 self._mqtt_broker_idx = idx
                 break
 
+        if not self._mqttclient.is_connected():
+            self.logger.warn("Unable to connect to any MQTT broker!")
+
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
 
