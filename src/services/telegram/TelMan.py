@@ -23,6 +23,8 @@ class MyBot:
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
         self.bot.sendMessage(self.chat_ID, message)
+        if message == "/start":
+            self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /switch <on/off> - Turn on or off the irrigator \n/getTemperatureAir - Retrive temperature of the air\n/getUmidityAir - Retrive umidity of the air\n/getUmiditySoil - Retrive umidity of the soil")
         if message == "/switch" :
             self.bot.sendMessage(self.chat_ID, message)
 
