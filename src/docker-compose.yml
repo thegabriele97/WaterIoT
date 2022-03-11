@@ -56,6 +56,25 @@ services:
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
+  raspberrydevconn:
+    build: 
+      context: ./
+      dockerfile: ./services/raspberrydevconn/Dockerfile
+    ports:
+      - "8087:8087"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/arduinodevconn | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"  
+    environment:
+      - ONRASPBERRY=${ONRASPBERRY}
+
   openweatheradaptor:
     build: 
       context: ./
