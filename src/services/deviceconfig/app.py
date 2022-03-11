@@ -1,5 +1,7 @@
 import logging
+from weakref import KeyedRef
 import cherrypy
+from numpy import isin
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -19,18 +21,46 @@ class DeviceConfigAPI(RESTBase):
     def GET(self, *path, **args):
 
         if len(path) > 0:
-            if path[0] == "configs":
-                return self.asjson(self._confsmngr.get("/"))
+            try:
+                if len(path) == 1 and path[0] == "configs":
+                    return self.asjson(self._confsmngr.get("/"))
+                else:
+                    d = self.asjson(self._confsmngr.get(f"/{'/'.join(path[1:])}"))
+                    if isinstance(d, dict):
+                        return self.asjson(d)
+                    else:
+                        return self.asjson({"v": d})
+            except KeyError:
+                return self.asjson_error("Not found", 404)
 
         return self.asjson_error("request error", 404)
 
     @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
-    def POST(self, *path, **args):
+    def PUT(self, *path, **args):
 
         if len(path) > 0:
-            if path[0] == "configs":
-                pass
+            if len(path) == 1 and path[0] == "configs":
+                return self.asjson_error("Wrong endpoint!", 403)
+            else:
+                p = f"/{'/'.join(path[1:])}"
+                body = json.loads(cherrypy.request.body.read())
+                try:
+                    self._confsmngr.set(p, body["v"])
+
+                    d = self.asjson(self._confsmngr.get(p))
+                    
+                    if isinstance(d, dict):
+                        r = d
+                    else:
+                        r = {"v": d}
+                    
+                    self._catreq.publishMQTT("DeviceConfig", f"/conf{p}", json.dumps(r))
+                    return self.asjson(r)
+
+                except ValueError as e:
+                    return self.asjson_error(f"Unable to update: {str(e)}")
+                except KeyError:
+                    return self.asjson_error("Not found", 404)
 
         return self.asjson_error("request error", 404)
 
