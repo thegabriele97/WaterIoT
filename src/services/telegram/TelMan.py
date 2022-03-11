@@ -16,8 +16,7 @@ class MyBot:
     #Catalog token
     #self.tokenBot=requests.get("http://catalogIP/telegram_token").json()["telegramToken"]
         self.bot=telepot.Bot(self.tokenBot)
-        MessageLoop(self.bot, {'chat': self.on_chat_message,
-                  'callback_query': self.on_callback_query}).run_as_thread() # take as input the bot to wich listen the message and the handler of the message
+        MessageLoop(self.bot, {'chat': self.on_chat_message}).run_as_thread() # take as input the bot to wich listen the message and the handler of the message
 
     def on_chat_message(self,msg):
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
@@ -29,17 +28,22 @@ class MyBot:
             if message.split[1].lower() == 'on'  :
                 self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
                 self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='on'")
-            else if message.split[1].lower() == 'off':
+            elif message.split[1].lower() == 'off':
                 self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
                 self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
             else:
                 self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please, use 'on' or 'off'.")    
         if message == "/getairt " :
-        
+            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature'")
         if message == "/getairu " :
-        
+            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity)
         if message == "/getsoilu " :
-           
+            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity'")
+
+
         #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
     
    # def on_callback_query(self,msg):
