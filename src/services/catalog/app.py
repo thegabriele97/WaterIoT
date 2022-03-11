@@ -130,7 +130,7 @@ class CatalogAPI(RESTBase):
                     return self.asjson_error("Forbidden: the service already exists", 403)
 
                 self._serviceManager.add_service(s)
-                return self.asjson_info(f"Service {s.name} created")
+                return self.asjson_info(f"Service {s.name} created", 201)
 
         return self.asjson_error("invalid request", 404)
 
