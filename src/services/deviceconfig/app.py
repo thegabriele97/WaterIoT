@@ -21,17 +21,19 @@ class DeviceConfigAPI(RESTBase):
     def GET(self, *path, **args):
 
         if len(path) > 0:
-            try:
-                if len(path) == 1 and path[0] == "configs":
-                    return self.asjson(self._confsmngr.get("/"))
-                else:
-                    d = self.asjson(self._confsmngr.get(f"/{'/'.join(path[1:])}"))
+
+            if path[0] == "configs":
+                if "path" not in args:
+                    return self.asjson_error("Path not specified")
+                
+                try:
+                    d = self.asjson(self._confsmngr.get(f"/{str(args['path'][1:])}"))
                     if isinstance(d, dict):
                         return self.asjson(d)
                     else:
                         return self.asjson({"v": d})
-            except KeyError:
-                return self.asjson_error("Not found", 404)
+                except KeyError:
+                    return self.asjson_error("Not found", 404)
 
         return self.asjson_error("request error", 404)
 
@@ -39,10 +41,12 @@ class DeviceConfigAPI(RESTBase):
     def PUT(self, *path, **args):
 
         if len(path) > 0:
-            if len(path) == 1 and path[0] == "configs":
-                return self.asjson_error("Wrong endpoint!", 403)
-            else:
-                p = f"/{'/'.join(path[1:])}"
+            if path[0] == "configs":
+
+                if "path" not in args:
+                    return self.asjson_error("Path not specified")
+
+                p = f"/{str(args['path'][1:])}"
                 body = json.loads(cherrypy.request.body.read())
                 try:
                     self._confsmngr.set(p, body["v"])
@@ -74,10 +78,10 @@ class App(WIOTRestApp):
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "DeviceConfig", ServiceType.SERVICE)
-            self.addRESTEndpoint("/configs")
+            self.addRESTEndpoint("/configs", [EndpointParam("path")])
             self.addMQTTEndpoint("/conf/sensors/temp/sampleperiod", "Publish new value of sensors/temp/sampleperiod configuration when it changes")
-            self.addMQTTEndpoint("/conf/sensors/airhum/sampleperiod", "Publish new value of sensors/temp/sampleperiod configuration when it changes")
-            self.addMQTTEndpoint("/conf/sensors/soilhum/sampleperiod", "Publish new value of sensors/temp/sampleperiod configuration when it changes")
+            self.addMQTTEndpoint("/conf/sensors/airhum/sampleperiod", "Publish new value of sensors/airhum/sampleperiod configuration when it changes")
+            self.addMQTTEndpoint("/conf/sensors/soilhum/sampleperiod", "Publish new value of sensors/soilhum/sampleperiod configuration when it changes")
 
             self.mount(DeviceConfigAPI(self, self._settings), self.conf)
             self.loop()
