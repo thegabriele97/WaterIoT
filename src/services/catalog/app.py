@@ -43,7 +43,7 @@ class CatalogAPI(RESTBase):
             try:
                 self._mqttclient.connect(broker.host, broker.port)
                 self._mqttclient.loop(timeout=5)
-            except socket.timeout:
+            except:
                 pass
 
             if self._mqttclient.is_connected():
