@@ -25,27 +25,31 @@ class MyBot:
         self.bot.sendMessage(self.chat_ID, message)
         if message == "/start":
             self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /switch <on/off> - Turn on or off the irrigator \n/getTemperatureAir - Retrive temperature of the air\n/getUmidityAir - Retrive umidity of the air\n/getUmiditySoil - Retrive umidity of the soil")
-        if message == "/switch" :
-            self.bot.sendMessage(self.chat_ID, message)
-
-            keyboard = InlineKeyboardMarkup(inline_keyboard=[               # show buttons on telegram chat
-                   [InlineKeyboardButton(text='Start Irrigation', callback_data='start')],
-                   [InlineKeyboardButton(text='Stop Irrigation', callback_data='stop')]
-               ])
-            self.bot.sendMessage(self.chat_ID, 'Seleziona uno dei seguenti comandi', reply_markup=keyboard) # send message on telegram chat
+        if message.split[0] == "/switch" :
+            if message.split[1].lower() == 'on'  :
+                self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+                self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='on'")
+            else if message.split[1].lower() == 'off':
+                self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+                self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
+            else:
+                self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please, use 'on' or 'off'.")    
+        if message == "/getairt " :
+        
+        if message == "/getairu " :
+        
+        if message == "/getsoilu " :
            
         #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
     
-    def on_callback_query(self,msg):
-        query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+   # def on_callback_query(self,msg):
+    #    query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         #used to debug
         #self._logger.debug(f'Callback Query: {query_id}, {from_id}, {query_data}') 
-        if(query_data == "start"):
-            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
-            self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='on'")
-        if(query_data == "stop"): 
-            self.bot.sendMessage(self.chat_ID,text="You stopped irrigation")
-            self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
+     #   if(query_data == "start"):
+       #     self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+      #  if(query_data == "stop"): 
+        #    self.bot.sendMessage(self.chat_ID,text="You stopped irrigation")
 
         #if(query_data == "close"):
 
