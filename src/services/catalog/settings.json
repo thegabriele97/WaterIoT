@@ -8,6 +8,22 @@
         {
             "host": "test.mosquitto.org",
             "port": 1883
+        },
+        {
+            "host": "mqtt.eclipse.org",
+            "port": 1883
+        },
+        {
+            "host": "broker.hivemq.com",
+            "port": 1883
+        },
+        {
+            "host": "mqtt.fluux.io",
+            "port": 1883
+        },
+        {
+            "host": "broker.emqx.io",
+            "port": 1883
         }
     ],
     "watchdog": {
