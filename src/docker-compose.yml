@@ -96,3 +96,18 @@ services:
       - THINGSPEAKAPIKEYHUMIDITYREAD=${THINGSPEAKAPIKEYHUMIDITYREAD}
       - CHANNELIDTEMPERATURE=${CHANNELIDTEMPERATURE}
       - CHANNELIDHUMIDITY=${CHANNELIDHUMIDITY}
+
+  deviceconfig:
+    build: 
+      context: ./
+      dockerfile: ./services/deviceconfig/Dockerfile
+    ports:
+      - "8087:8087"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/deviceconfig | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
