@@ -23,27 +23,28 @@ class MyBot:
         message=msg['text']
         self.bot.sendMessage(self.chat_ID, message)
         if message == "/start":
-            self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /switch <on/off> - Turn on or off the irrigator \n/getTemperatureAir - Retrive temperature of the air\n/getUmidityAir - Retrive umidity of the air\n/getUmiditySoil - Retrive umidity of the soil")
-        if message.split[0] == "/switch" :
-            if message.split[1].lower() == 'on'  :
-                self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+            self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil")
+        elif message == "/getairt":
+            self.bot.sendMessage(self.chat_ID,"You will get air temperature")
+            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature")
+        elif message == "/getairu":
+            self.bot.sendMessage(self.chat_ID,"You will get air umidity")
+            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity")
+        elif message == "/getsoilu":
+            self.bot.sendMessage(self.chat_ID,"You will get soil umidity")
+            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity")
+        elif message.split()[0]=="/switch":
+            if len(message.split()) == 1:
+                self.bot.sendMessage(self.chat_ID,"No parameter. Please, use '/switch on' or '/switch off'.")
+            elif message.split()[1].lower() == "on":
+                self.bot.sendMessage(self.chat_ID,"You started irrigation")
                 self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='on'")
-            elif message.split[1].lower() == 'off':
-                self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
+            elif message.split()[1].lower() == "off":
+                self.bot.sendMessage(self.chat_ID,"You stopped irrigation")
                 self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
             else:
-                self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please, use 'on' or 'off'.")    
-        if message == "/getairt " :
-            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
-            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature'")
-        if message == "/getairu " :
-            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
-            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity)
-        if message == "/getsoilu " :
-            self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
-            #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity'")
-
-
+                self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please, use 'on' or 'off'.")
+        
         #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
     
    # def on_callback_query(self,msg):
