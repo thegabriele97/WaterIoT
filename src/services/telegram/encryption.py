@@ -2,11 +2,6 @@
 import bcrypt 
 import json
 
-data = {
-    'hashed' : '',
-    'ids' : []
-    }
-
 def setPassword():
     data = {
     'hashed' : '',
