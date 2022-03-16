@@ -23,6 +23,7 @@ class TelegramAdaptorAPI(RESTBase):
                 if not "text" in args: # check correct HTTP argument
                     cherrypy.response.status = 400
                     return self.asjson_error("Missing text argument")
+                    self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
             except Exception as e:
                 self.logger.error(f"Error occurred in sending message: {str(e)}") # exception rised if is sent a message
                 cherrypy.response.status = 500 #Server side error                   before the user send a first message 

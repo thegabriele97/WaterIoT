@@ -4,6 +4,7 @@ from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton ,InlineQueryResultArticle, InputTextMessageContent
 import json
 import requests
+from encryption import *
 
 class MyBot:
    
@@ -21,7 +22,7 @@ class MyBot:
     def on_chat_message(self,msg):
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
-        self.bot.sendMessage(self.chat_ID, message)
+        id = self.chat_ID, self.bot.getUpdates()[0]["message"]["from"]["id"]
         if message == "/start":
             self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil")
         elif message == "/getairt":
@@ -44,6 +45,8 @@ class MyBot:
                 self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
             else:
                 self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please, use 'on' or 'off'.")
+        else:
+            self.bot.sendMessage(self.chat_ID,"Wrong command. Please use one on the list")
         
         #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
     
