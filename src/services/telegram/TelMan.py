@@ -42,13 +42,13 @@ class MyBot:
                 self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /psw <password> - Subscribe the user. \n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil")
             elif message == "/getairt":
                 self.bot.sendMessage(self.chat_ID,"You will get air temperature")
-                #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature")
+                self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature")
             elif message == "/getairu":
                 self.bot.sendMessage(self.chat_ID,"You will get air umidity")
-                #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity")
+                self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity")
             elif message == "/getsoilu":
                 self.bot.sendMessage(self.chat_ID,"You will get soil umidity")
-                #self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity")
+                self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity")
             elif message.split()[0]=="/switch":
                 if len(message.split()) == 1:
                     self.bot.sendMessage(self.chat_ID,"No parameter. Please, use '/switch on' or '/switch off'.")
