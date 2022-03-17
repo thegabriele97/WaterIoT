@@ -1,61 +1,49 @@
 import io
 import logging
 import cherrypy
-import smbus
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
 from common.SettingsNode import *
 from common.RESTBase import RESTBase
 from common.CatalogRequest import *
+from common.WIOThread import WIOThread
 
 class RaspberryDevConnAPI(RESTBase):
 
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+        self._th = WIOThread(target=self._airhumidity, name="Air Humidity Thread")
+        self._th1 = WIOThread(target=self._airtemperature, name="Air Temperature Thread")
+        self._th2 = WIOThread(target=self._terrainhumidity, name="Terrain Humidity Thread")
+        upperRESTSrvcApp.subsribe_evt_stop(self._th.stop)
+        upperRESTSrvcApp.subsribe_evt_stop(self._th1.stop)
+        upperRESTSrvcApp.subsribe_evt_stop(self._th2.stop)
+        self._th.run()
+        self._th1.run()
+        self._th2.run()
 
-        try:
-            self.logger.debug(f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
-            self._onrpi = str(os.environ["ONRASPBERRY"]) == "1"
-        except KeyError:
-            self._onrpi = False
-
-        if self._onrpi:
-            # setup connection to arduino
-            self._bus = smbus.SMBus(settings.arduino.i2c_dev)
-            self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
-
-            pass
-
-        if not self._onrpi:
-            self.logger.warning("Raspberry not found or error as occurred while Arduino init. Running as dummy device!")
+    def _airhumidity(self):
+        while not self._th.is_stop_requested:
+            self._th.wait(5)                                                   
+            self._catreq.publishMQTT("RaspberryDevConn", "/airhumidity", "airhumiditypayload")
+    
+    def _airtemperature(self):
+        while not self._th.is_stop_requested:
+            self._th.wait(5)                                                   
+            self._catreq.publishMQTT("RaspberryDevConn", "/airtemperature", "airtemperaturepayload")
+        
+    def _terrainhumidity(self):
+        while not self._th.is_stop_requested:
+            self._th.wait(5)                                                   
+            self._catreq.publishMQTT("RaspberryDevConn", "/terrainhumidity", "terrainhumiditypayload")
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
-
-        if len(path) > 0:
-            if path[0] == "switch":
-
-                if not "state" in args:
-                    return self.asjson_error("Missing state argument", 400)
-
-                st = str(args["state"]).lower()
-                if st != "on" and st != "off":
-                    return self.asjson_error("Valid states are: {on, off}", 400)
-
-                self.logger.info(f"Arduino: switching {st}")
-
-                if self._onrpi:
-                    self._bus.write_byte_data(self._ard_i2c_addr, 0, 1 if st == "on" else 0)
-
-                is_on = st == "on" # to change w raspberry
-                r = {"is_on": is_on}
-                self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r))
-
-                return self.asjson(r)
-
-        return self.asjson_error("invalid request", 404)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/airhumidity", self.onMessageReceive)
+        return self.asjson("invalid request")
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
@@ -66,6 +54,7 @@ class App(WIOTRestApp):
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "RaspberryDevConn", ServiceType.DEVICE, ServiceSubType.RASPBERRY)
+            self.addRESTEndpoint("/")
             self.addRESTEndpoint("/airhumidity", [EndpointParam("state")])
             self.addRESTEndpoint("/airtemperature", [EndpointParam("state")])
             self.addRESTEndpoint("/terrainhumidity", [EndpointParam("state")])

@@ -26,6 +26,16 @@ class ThingSpeakAPI(RESTBase):
         self._catreq = CatalogRequest(self.logger, settings)
         self._catreq.subscribeMQTT("ArduinoDevConn", "/switch")
         self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceive)
+
+        # self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
+        # self._catreq.callbackOnTopic("RaspberryDevConn", "/airhumidity", self.onMessageReceive)
+
+        # self._catreq.subscribeMQTT("RaspberryDevConn", "/airtemperature")
+        # self._catreq.callbackOnTopic("RaspberryDevConn", "/airtemperature", self.onMessageReceive)
+
+        # self._catreq.subscribeMQTT("RaspberryDevConn", "/terrainhumidity")
+        # self._catreq.callbackOnTopic("RaspberryDevConn", "/terrainhumidity", self.onMessageReceive)
+
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
         self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
         self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
