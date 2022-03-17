@@ -44,6 +44,7 @@ services:
       dockerfile: ./services/telegram/Dockerfile
     ports:
       - "8085:8085"
+    hostname : "telegramadaptor"
     depends_on:
       catalog:
           condition: service_started
