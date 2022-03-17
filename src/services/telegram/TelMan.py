@@ -22,19 +22,19 @@ class MyBot:
     def on_chat_message(self,msg):
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
-        with open('data.json', 'r') as f:
-            data = json.load(f)
-        id = self.chat_ID, self.bot.getUpdates()[0]["message"]["from"]["id"]
+        #with open('data.json', 'r') as f:
+        #    data = json.load(f)
+        #id = self.chat_ID, self.bot.getUpdates()[0]["message"]["from"]["id"]
         if message.split()[0]=="/psw":
                 if len(message.split()) == 1:
                     self.bot.sendMessage(self.chat_ID,"No password. Please, write a password after the command.")
                 else :
                     if checkPassword(message.split()[1]):
-                        addID(str(id[0])) # for some reason it return the id twice from getupdate
+                        addID(self.chat_ID) # for some reason it return the id twice from getupdate
                         self.bot.sendMessage(self.chat_ID,"Correct password. The user is now subscribed and can access the functionality.")
                     else :
                         self.bot.sendMessage(self.chat_ID,"Wrond password")
-        elif not checkID(str(id[0])) :
+        elif not checkID(self.chat_ID) :
             self.bot.sendMessage(self.chat_ID,"Unsubscribed user. Please insert the password using /psw <password> command")
         else:
             
@@ -42,13 +42,13 @@ class MyBot:
                 self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /psw <password> - Subscribe the user. \n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil")
             elif message == "/getairt":
                 self.bot.sendMessage(self.chat_ID,"You will get air temperature")
-                self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature")
+                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature"))
             elif message == "/getairu":
                 self.bot.sendMessage(self.chat_ID,"You will get air umidity")
-                self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity")
+                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity"))
             elif message == "/getsoilu":
                 self.bot.sendMessage(self.chat_ID,"You will get soil umidity")
-                self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity")
+                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity"))
             elif message.split()[0]=="/switch":
                 if len(message.split()) == 1:
                     self.bot.sendMessage(self.chat_ID,"No parameter. Please, use '/switch on' or '/switch off'.")
