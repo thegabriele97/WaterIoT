@@ -6,7 +6,7 @@ RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/example/requirements.txt
 
 COPY . /app
-WORKDIR /app/services/example
+WORKDIR /app/services/raspberrydevconn
 
 # RUN pip install pipreqs
 # RUN pipreqs 
