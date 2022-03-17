@@ -41,9 +41,15 @@ class RaspberryDevConnAPI(RESTBase):
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/airhumidity", self.onMessageReceive)
-        return self.asjson("invalid request")
+        if len(path) == 0:
+            return self.asjson_info("Raspberry Device Connector Endpoint")
+        elif path[0] == "airhumidity":
+            return self.asjson("airhumidityvalue")
+        elif path[0] == "airtemperature":
+            return self.asjson("airtemperature")
+        elif path[0] == "terrainhumidity":
+            return self.asjson("terrainhumidity")
+        return self.asjson("error")
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
