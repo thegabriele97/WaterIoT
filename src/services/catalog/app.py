@@ -1,7 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
 import logging
-from multiprocessing.sharedctypes import Value
 import socket
 import cherrypy
 import json
@@ -99,18 +98,54 @@ class CatalogAPI(RESTBase):
                 return self.asjson({"services": [s.toDict() for s in self._serviceManager.dead_services.values()]})
             elif len(path) > 1:
                 # /catalog/services/service_name
-                if len(path) == 2 and (path[1] in self._serviceManager.services.keys() or path[1] in self._serviceManager.dead_services.keys()):
-                    online = path[1] in self._serviceManager.services.keys()
-                    tos = self._serviceManager.services if online else self._serviceManager.dead_services
 
-                    sum = Httpdate.from_timestamp(tos[path[1]].timestamp + self._settings.watchdog.expire_sec)
-                    cherrypy.response.headers["Expires"] = sum if online else 0
-                    cherrypy.response.headers["Last-Modified"] = Httpdate.from_timestamp(tos[path[1]].timestamp)
+                # let's understand if it's a service (single) or a device (multiple)
+                merg = {**self._serviceManager.services, **self._serviceManager.dead_services}
+                for s in [v for v in merg.values() if v.name == path[1]]:
+                    if s.stype == ServiceType.DEVICE:
 
-                    return self.asjson({
-                        "online": online,
-                        "service": tos[path[1]].toDict()
-                    })
+                        if not "devid" in args:
+                            # send a list of all DEVICE
+                            ss = [v for v in merg.values() if v.name == path[1]]
+                            return self.asjson({"services": [s.toDict() for s in ss]})
+
+                        if not str(args["devid"]).isdigit():
+                            return self.asjson_error("devid argument required, must be integer")
+
+                        if len(path) == 2 and path[1] in [k.name for k in merg.values()]:
+                            s_wdev_dict = {k: s for k, s in merg.items() if s.deviceid == int(args["devid"])}
+                            if len(list(s_wdev_dict.keys())) != 1:
+                                return self.asjson_error(f"Unable to find service {path[1]} ({args['devid']})")
+
+                            s_wdev_k = list(s_wdev_dict.keys())[0]
+                            s_wdev = s_wdev_dict[s_wdev_k]
+
+                            online = s_wdev_k in self._serviceManager.services.keys()
+
+                            sum = Httpdate.from_timestamp(s_wdev.timestamp + self._settings.watchdog.expire_sec)
+                            cherrypy.response.headers["Expires"] = sum if online else 0
+                            cherrypy.response.headers["Last-Modified"] = Httpdate.from_timestamp(s_wdev.timestamp)
+
+                            return self.asjson({
+                                "online": online,
+                                "service": s_wdev.toDict()
+                            })
+
+                    elif s.stype == ServiceType.SERVICE:
+                        if len(path) == 2 and (path[1] in self._serviceManager.services.keys() or path[1] in self._serviceManager.dead_services.keys()):
+                            online = path[1] in self._serviceManager.services.keys()
+                            tos = self._serviceManager.services if online else self._serviceManager.dead_services
+
+                            sum = Httpdate.from_timestamp(tos[path[1]].timestamp + self._settings.watchdog.expire_sec)
+                            cherrypy.response.headers["Expires"] = sum if online else 0
+                            cherrypy.response.headers["Last-Modified"] = Httpdate.from_timestamp(tos[path[1]].timestamp)
+
+                            return self.asjson({
+                                "online": online,
+                                "service": tos[path[1]].toDict()
+                            })
+
+                return self.asjson_error("Service not found", 404)
 
             else:
                 # /catalog/services

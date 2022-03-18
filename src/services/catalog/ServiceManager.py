@@ -29,11 +29,13 @@ class ServiceManager:
             tm = time()
 
             for s in copy.deepcopy(self._services).values():
-                self._logger.debug(f"Watchdog: checking {s.name}")
+                self._logger.debug(f"Watchdog: checking {s.name} ({s.deviceid})")
                 if tm - s.timestamp >= self._settings.watchdog.expire_sec:
-                    dead = self._services.pop(s.name)
-                    self._dead_services[dead.name] = dead
-                    self._logger.info(f"Service {s.name} expired")
+                    sappend = f"-{s.deviceid}" if s.deviceid is not None else ""
+                    sname = f"{s.name}{sappend}"
+                    dead = self._services.pop(sname)
+                    self._dead_services[sname] = dead
+                    self._logger.info(f"Service {sname} expired")
 
             self._lock.release()
             self._th1_evtstop.wait(self._settings.watchdog.timeout_ms / 1e3)
@@ -48,9 +50,13 @@ class ServiceManager:
         self._logger.info("Catalog Watchdog stopped")
 
     def add_service(self, service: Service):
+
+        sappend = f"-{service.deviceid}" if service.deviceid is not None else ""
+        sname = f"{service.name}{sappend}"
+
         self._lock.acquire()
-        self._dead_services.pop(service.name, None)
-        self._services[service.name] = service
+        self._dead_services.pop(sname, None)
+        self._services[sname] = service
         service.updateTimestamp()
         self._lock.release()
 

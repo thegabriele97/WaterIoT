@@ -18,7 +18,7 @@ class WIOTRestApp(RESTServiceApp):
     def __init__(self, log_stdout_level: int = logging.INFO, log_filename: str = None) -> None:
         super().__init__(log_stdout_level, log_filename)
 
-    def create(self, settings: SettingsManager, serviceName: str, srvT: ServiceType, srvSubT: ServiceSubType = None):
+    def create(self, settings: SettingsManager, serviceName: str, srvT: ServiceType, srvSubT: ServiceSubType = None, devid: int = None):
         self._settings = settings
         port = self._settings.rest_server.port
         host = self._settings.rest_server.host
@@ -26,7 +26,7 @@ class WIOTRestApp(RESTServiceApp):
         catalogPort = self._settings.catalog.port
         catalogPing = self._settings.catalog.ping_ms
 
-        self._service = Service(serviceName, srvT, host, port, srvSubT)
+        self._service = Service(serviceName, srvT, host, port, srvSubT, devid)
         self._pinger = PingCatalog(self._service, catalogHost, catalogPort, catalogPing, self._logger)
 
         self.subsribe_evt_stop(self._pinger.stop)
@@ -59,8 +59,9 @@ class WIOTRestApp(RESTServiceApp):
 
         if uri[0] != '/':
             raise ValueError("Uri must begin with a '/'")
-
-        self._service.addEndpoint(Endpoint(f"/{self._service.name}{uri}", EndpointType.MQTT, mqttDescription=description))
+ 
+        ap = f"/{self.service.deviceid}" if self.service.deviceid is not None else ""
+        self._service.addEndpoint(Endpoint(f"/{self._service.name}{ap}{uri}", EndpointType.MQTT, mqttDescription=description))
 
     @property
     def service(self):

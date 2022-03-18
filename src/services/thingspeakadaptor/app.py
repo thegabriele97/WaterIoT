@@ -24,8 +24,8 @@ class ThingSpeakAPI(RESTBase):
     ) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._catreq.subscribeMQTT("ArduinoDevConn", "/switch")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceive)
+        self._catreq.subscribeMQTT("ArduinoDevConn", "/+/switch", devid=0)
+        self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive, devid=0)
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
         self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
         self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
