@@ -1,7 +1,5 @@
 import logging
-from weakref import KeyedRef
 import cherrypy
-from numpy import isin
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -79,15 +77,30 @@ class App(WIOTRestApp):
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "DeviceConfig", ServiceType.SERVICE)
             self.addRESTEndpoint("/configs", [EndpointParam("path")])
-            self.addMQTTEndpoint("/conf/sensors/temp/sampleperiod", "Publish new value of sensors/temp/sampleperiod configuration when it changes")
-            self.addMQTTEndpoint("/conf/sensors/airhum/sampleperiod", "Publish new value of sensors/airhum/sampleperiod configuration when it changes")
-            self.addMQTTEndpoint("/conf/sensors/soilhum/sampleperiod", "Publish new value of sensors/soilhum/sampleperiod configuration when it changes")
+
+            with open(SettingsManager.relfile2abs("confs.json")) as fp:
+                keys = self._rec_dict(json.load(fp))
+                for k in keys:
+                    self.addMQTTEndpoint(f"/conf{k}", f"Publish new value of {k} configuration when it changes")
 
             self.mount(DeviceConfigAPI(self, self._settings), self.conf)
             self.loop()
 
         except Exception as e:
             self.logger.exception(str(e))
+
+    def _rec_dict(self, d: dict, path: str = "") -> list[str]:
+
+        ret = []
+        for k, v in d.items():
+
+            p = f"{path}/{k}"
+            if isinstance(v, dict):
+                ret = [*ret, *self._rec_dict(v, p)]
+            else:
+                ret.append(p)
+            
+        return ret
 
 
 if __name__ == "__main__":
