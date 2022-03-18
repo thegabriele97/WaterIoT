@@ -98,10 +98,17 @@ class CatalogRequest:
         if r.status_code == 404 or r == None:
             raise Exception(f"{rpath} return status code 404")
 
-        if not r.json()["online"]:
-            raise Exception(f"Service {service} is not online")
+        # checking if we are dealing with a multiple device
+        if "services" in r.json():
+            devid = r.json()["services"][0]["deviceid"]
+            dservice = r.json()["services"][0] 
+        else:
+            dservice = r.json()["service"]
+
+        # if not r.json()["online"]:
+        #     raise Exception(f"Service {service} is not online")
             
-        epoints_raw = r.json()["service"]["endpoints"][EndpointType.MQTT.name]
+        epoints_raw = dservice["endpoints"][EndpointType.MQTT.name]
         ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
         epoint = [e for e in epoints_raw if mqtt.topic_matches_sub(f"/{service}{ap}{path}", e["uri"])]
 

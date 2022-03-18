@@ -24,8 +24,8 @@ class ThingSpeakAPI(RESTBase):
     ) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._catreq.subscribeMQTT("ArduinoDevConn", "/+/switch", devid=0)
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive, devid=0)
+        self._catreq.subscribeMQTT("ArduinoDevConn", "/+/switch")
+        self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive)
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
         self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
         self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
@@ -86,7 +86,7 @@ class ThingSpeakAPI(RESTBase):
             return self.asjson_info(None)
 
     def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
-        self.logger.debug(msg.payload)
+        self.logger.debug(f"{msg.topic}: {msg.payload}")
         #TODO: wait for rpi device connector to knwo hwo the data are sent
 
 class App(WIOTRestApp):
