@@ -16,7 +16,7 @@ class TelegramAdaptorAPI(RESTBase):
         self._bot = MyBot(telegramkey,self.logger,self._catreq)
 
     @cherrypy.tools.json_out()
-    def GET(self, *path, **args):
+    def GET(self, *path, **args): # /sendMessage?text=<message> where message is the string that is going to be printed on tel chat 
 
         if len(path)>0 and path[0] == "sendMessage":
             try:
