@@ -21,17 +21,14 @@ class TelegramAdaptorAPI(RESTBase):
         if len(path)>0 and path[0] == "sendMessage":
             try:
                 if not "text" in args: # check correct HTTP argument
-                    cherrypy.response.status = 400
-                    return self.asjson_error("Missing text argument")
-                    self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
+                    return self.asjson_error("Missing text argument",400)
+                self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
             except Exception as e:
                 self.logger.error(f"Error occurred in sending message: {str(e)}") # exception rised if is sent a message
-                cherrypy.response.status = 500 #Server side error                   before the user send a first message 
-                return self.asjson_error(f"Server error")                         # on chat ( chat_id is retrived)
+                return self.asjson_error(f"Server error",500)                         # on chat ( chat_id is retrived)
             return True 
             
-        cherrypy.response.status = 404
-        return self.asjson_error("Invalid request")
+        return self.asjson_error("Invalid request",404)
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
@@ -45,7 +42,7 @@ class App(WIOTRestApp):
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "TelegramAdaptor", ServiceType.SERVICE)
-            self.addRESTEndpoint("/turnON", [EndpointParam("a", True)])
+            self.addRESTEndpoint("/sendMessage", [EndpointParam("text", True)])
 
             self.mount(TelegramAdaptorAPI(self, self._settings, telegrammapkey), self.conf)
             self.loop()
