@@ -1,6 +1,7 @@
 import io
 import logging
 import cherrypy
+import paho.mqtt.client as mqtt
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -23,7 +24,11 @@ class RaspberryDevConnAPI(RESTBase):
         self._th.run()
         self._th1.run()
         self._th2.run()
-
+        with open(SettingsManager.relfile2abs("../deviceconfig/confs.json")) as fp:
+                keys = self._rec_dict(json.load(fp))
+                for k in keys:
+                    self._catreq.subscribeMQTT("DeviceConfig", f"/conf{k}")
+                    self._catreq.callbackOnTopic("DeviceConfig", f"/conf{k}", self.onMessageReceive)
     def _airhumidity(self):
         while not self._th.is_stop_requested:
             self._th.wait(5)                                                   
@@ -50,11 +55,26 @@ class RaspberryDevConnAPI(RESTBase):
         elif path[0] == "terrainhumidity":
             return self.asjson("terrainhumidity")
         return self.asjson("error")
+    
+    def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
+        self.logger.debug(msg.payload)
+    
+    def _rec_dict(self, d: dict, path: str = "") -> list[str]:
+        ret = []
+        for k, v in d.items():
+
+            p = f"{path}/{k}"
+            if isinstance(v, dict):
+                ret = [*ret, *self._rec_dict(v, p)]
+            else:
+                ret.append(p)
+            
+        return ret
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.INFO)
+        super().__init__(log_stdout_level=logging.DEBUG)
 
         try:
 
