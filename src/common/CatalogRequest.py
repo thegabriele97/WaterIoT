@@ -82,7 +82,7 @@ class CatalogRequest:
     def _check_mqtt_endpoint(self, service: str, path: str, devid: int = None):
 
         service = service.lower()
-        rpath = f"{self._catalogURL}/catalog/services/{service}" if devid is None else f"{self._catalogURL}/catalog/services/{service}?devid={devid}"
+        rpath = f"{self._catalogURL}/catalog/services/{service}"
         self._logger.debug(f"Requesting MQTT service info @ {rpath}")
 
         r = None
