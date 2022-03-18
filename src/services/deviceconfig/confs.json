@@ -1,0 +1,13 @@
+{
+    "sensors": {
+        "temp": {
+            "sampleperiod": 1000
+        },
+        "airhum": {
+            "sampleperiod": 1000
+        },
+        "soilhum": {
+            "sampleperiod": 1000
+        }
+    }
+}
