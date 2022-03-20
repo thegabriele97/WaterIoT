@@ -5,6 +5,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton ,Inlin
 import json
 import requests
 from encryption import *
+from common.CatalogRequest import *
 
 class MyBot:
    
@@ -22,9 +23,6 @@ class MyBot:
     def on_chat_message(self,msg):
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
-        #with open('data.json', 'r') as f:
-        #    data = json.load(f)
-        #id = self.chat_ID, self.bot.getUpdates()[0]["message"]["from"]["id"]
         if message.split()[0]=="/psw":
                 if len(message.split()) == 1:
                     self.bot.sendMessage(self.chat_ID,"No password. Please, write a password after the command.")
@@ -37,8 +35,18 @@ class MyBot:
         elif not checkID(self.chat_ID) :
             self.bot.sendMessage(self.chat_ID,"Unsubscribed user. Please insert the password using /psw <password> command")
         else:
-            
-            if message == "/start":
+            if message.split()[0] == "/config":
+                if len(message.split()) != 3:
+                    self.bot.sendMessage(self.chat_ID,"No parameter. Please select one sensor (<temp>,<airhum>,<soilhum>) as first parameter and a value as second")
+                elif message.split()[1] not in ["temp","airhum","soilhum"]:
+                    self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second")
+                else:
+                    try: # verify if the value is an integer
+                        self.catreq.reqREST("DeviceConfig",f"DeviceConfig/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
+                    except ValueError:
+                        self.bot.sendMessage(self.chat_ID,"Please insert an integer value")
+
+            elif message == "/start":
                 self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /psw <password> - Subscribe the user. \n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil")
             elif message == "/getairt":
                 self.bot.sendMessage(self.chat_ID,"You will get air temperature")

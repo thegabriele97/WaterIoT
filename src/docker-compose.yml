@@ -140,7 +140,7 @@ services:
       context: ./
       dockerfile: ./services/deviceconfig/Dockerfile
     ports:
-      - "8087:8087"
+      - "8088:8088"
     depends_on:
       catalog:
           condition: service_started
