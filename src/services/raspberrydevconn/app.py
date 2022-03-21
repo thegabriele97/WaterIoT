@@ -25,33 +25,43 @@ class RaspberryDevConnAPI(RESTBase):
         upperRESTSrvcApp.subsribe_evt_stop(self._th.stop)
         upperRESTSrvcApp.subsribe_evt_stop(self._th1.stop)
         upperRESTSrvcApp.subsribe_evt_stop(self._th2.stop)
-        f = open("../deviceconfig/confs.json")
-        data = json.load(f)
-        self.wait_air_temp = data["sensors"]["temp"]["sampleperiod"] / 1000
-        self.logger.debug(self.wait_air_temp)
-        self.wait_air_hum = data["sensors"]["airhum"]["sampleperiod"] / 1000
-        self.logger.debug(self.wait_air_hum)
-        self.wait_soil_hum = data["sensors"]["soilhum"]["sampleperiod"] / 1000
-        self.logger.debug(self.wait_soil_hum)
+        self.wait_air_temp = (
+            self._catreq.reqREST(
+                "DeviceConfig", "/configs?path=/sensors/temp/sampleperiod"
+            ).json_response["v"]
+            / 1000
+        )
+        self.wait_air_hum = (
+            self._catreq.reqREST(
+                "DeviceConfig", "/configs?path=/sensors/airhum/sampleperiod"
+            ).json_response["v"]
+            / 1000
+        )
+        self.wait_soil_hum = (
+            self._catreq.reqREST(
+                "DeviceConfig", "/configs?path=/sensors/soilhum/sampleperiod"
+            ).json_response["v"]
+            / 1000
+        )
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/sensors/temp/sampleperiod")
+        self._catreq.callbackOnTopic(
+            "DeviceConfig", "/conf/sensors/temp/sampleperiod", self.onMessageReceiveTemp
+        )
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/sensors/airhum/sampleperiod")
+        self._catreq.callbackOnTopic(
+            "DeviceConfig",
+            "/conf/sensors/airhum/sampleperiod",
+            self.onMessageReceiveAirhum,
+        )
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/sensors/soilhum/sampleperiod")
+        self._catreq.callbackOnTopic(
+            "DeviceConfig",
+            "/conf/sensors/soilhum/sampleperiod",
+            self.onMessageReceiveSoilhum,
+        )
         self._th.run()
         self._th1.run()
         self._th2.run()
-        with open(SettingsManager.relfile2abs("../deviceconfig/confs.json")) as fp:
-            keys = self._rec_dict(json.load(fp))
-            for k in keys:
-                self._catreq.subscribeMQTT("DeviceConfig", f"/conf{k}")
-                if f"/conf{k}" == "/conf/sensors/temp/sampleperiod":
-                    self._catreq.callbackOnTopic(
-                        "DeviceConfig", f"/conf{k}", self.onMessageReceiveTemp
-                    )
-                elif f"/conf{k}" == "/conf/sensors/airhum/sampleperiod":
-                    self._catreq.callbackOnTopic(
-                        "DeviceConfig", f"/conf{k}", self.onMessageReceiveAirhum
-                    )
-                elif f"/conf{k}" == "/conf/sensors/soilhum/sampleperiod":
-                    self._catreq.callbackOnTopic(
-                        "DeviceConfig", f"/conf{k}", self.onMessageReceiveSoilhum
-                    )
 
     def _airhumidity(self):
         while not self._th.is_stop_requested:
@@ -106,18 +116,6 @@ class RaspberryDevConnAPI(RESTBase):
         self.wait_soil_hum = json_string["v"] / 1000
         self.logger.debug(self.wait_soil_hum)
         self._th2.restart()
-
-    def _rec_dict(self, d: dict, path: str = "") -> list[str]:
-        ret = []
-        for k, v in d.items():
-
-            p = f"{path}/{k}"
-            if isinstance(v, dict):
-                ret = [*ret, *self._rec_dict(v, p)]
-            else:
-                ret.append(p)
-
-        return ret
 
 
 class App(WIOTRestApp):
