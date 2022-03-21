@@ -60,10 +60,10 @@ class DeviceConfigAPI(RESTBase):
                     self._catreq.publishMQTT("DeviceConfig", f"/conf{p}", json.dumps(r))
                     return self.asjson(r)
 
-                except ValueError as e:
-                    return self.asjson_error(f"Unable to update: {str(e)}")
                 except KeyError:
-                    return self.asjson_error("Not found", 404)
+                    return self.asjson_error("Wrong requst body")
+                except Exception as e:
+                    return self.asjson_error(f"Unable to update: {str(e)}")
 
         return self.asjson_error("request error", 404)
 

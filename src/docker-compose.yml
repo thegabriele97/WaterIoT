@@ -80,9 +80,11 @@ services:
       context: ./
       dockerfile: ./services/raspberrydevconn/Dockerfile
     ports:
-      - "8087:8087"
+      - "8088:8088"
     depends_on:
       catalog:
+          condition: service_started
+      deviceconfig:
           condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/raspberrydevconn | grep online | grep -c true"]
