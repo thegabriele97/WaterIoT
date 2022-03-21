@@ -42,7 +42,8 @@ class MyBot:
                     self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second")
                 else:
                     try: # verify if the value is an integer
-                        self.catreq.reqREST("DeviceConfig",f"DeviceConfig/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
+                        #self.catreq.reqREST("DeviceConfig",f"DeviceConfig/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
+                        self.catreq.reqREST("DeviceConfig",f"/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
                     except ValueError:
                         self.bot.sendMessage(self.chat_ID,"Please insert an integer value")
 
