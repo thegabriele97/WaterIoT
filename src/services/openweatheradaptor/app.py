@@ -53,7 +53,7 @@ class OpenWeatherAPI(RESTBase):
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.DEBUG)
+        super().__init__(log_stdout_level=logging.INFO)
 
         try:
 
