@@ -48,7 +48,7 @@ class MyBot:
                         self.bot.sendMessage(self.chat_ID,"Please insert an integer value")
 
             elif message == "/start":
-                self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /psw <password> - Subscribe the user. \n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil")
+                self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /psw <password> - Subscribe the user. \n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil.\n /config (<temp>|<airhum>|<soilhum> ) <value> - Config the sensors: sets the period of sampling of the sensors. ")
             elif message == "/getairt":
                 self.bot.sendMessage(self.chat_ID,"You will get air temperature")
                 self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature"))
