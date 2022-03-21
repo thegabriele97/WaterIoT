@@ -49,13 +49,13 @@ class RaspberryDevConnAPI(RESTBase):
             self._catreq.publishMQTT("RaspberryDevConn", "/airhumidity", "airhumiditypayload")
     
     def _airtemperature(self):
-        while not self._th.is_stop_requested:
+        while not self._th1.is_stop_requested:
             self._th1.wait(self.wait_temp_hum)                                                   
             self._catreq.publishMQTT("RaspberryDevConn", "/airtemperature", "airtemperaturepayload")
         
     def _terrainhumidity(self):
-        while not self._th.is_stop_requested:
-            self._th.wait(self.wait_soil_hum)                                                   
+        while not self._th2.is_stop_requested:
+            self._th2.wait(self.wait_soil_hum)                                                   
             self._catreq.publishMQTT("RaspberryDevConn", "/terrainhumidity", "terrainhumiditypayload")
 
     @cherrypy.tools.json_out()
@@ -117,9 +117,9 @@ class App(WIOTRestApp):
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "RaspberryDevConn", ServiceType.DEVICE, ServiceSubType.RASPBERRY)
             self.addRESTEndpoint("/")
-            self.addRESTEndpoint("/airhumidity", [EndpointParam("state")], endpointTypeSub=EndpointTypeSub.RESOURCE)
-            self.addRESTEndpoint("/airtemperature", [EndpointParam("state")], endpointTypeSub=EndpointTypeSub.RESOURCE)
-            self.addRESTEndpoint("/terrainhumidity", [EndpointParam("state")], endpointTypeSub=EndpointTypeSub.RESOURCE)
+            self.addRESTEndpoint("/airhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE)
+            self.addRESTEndpoint("/airtemperature", endpointTypeSub=EndpointTypeSub.RESOURCE)
+            self.addRESTEndpoint("/terrainhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE)
             self.addMQTTEndpoint("/airhumidity", "data of the air humidity from the DHT11")
             self.addMQTTEndpoint("/airtemperature", "data of the air temperature from the DHT11")
             self.addMQTTEndpoint("/terrainhumidity", "dafa of the terrain humidity from the arduino board")
