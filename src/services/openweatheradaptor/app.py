@@ -23,8 +23,7 @@ class OpenWeatherAPI(RESTBase):
         elif path[0] == "currentweather":
             r = requests.get(f"http://api.openweathermap.org/data/2.5/weather?lat={args['lat']}&lon={args['lon']}&units=metric&appid={self._openweathersecret}")
             if r.status_code != 200:
-                cherrypy.response.status = 400
-                return self.asjson_error({"response": r.json()})
+                return self.asjson_error({"response": r.json()}, 400)
 
             return self.asjson({
                 "temp": r.json()["main"]["temp"],
@@ -35,8 +34,7 @@ class OpenWeatherAPI(RESTBase):
         elif path[0] == "forecastweather":
             r = requests.get(f"http://api.openweathermap.org/data/2.5/onecall?exclude=minutely,current,alerts,daily&lat={args['lat']}&lon={args['lon']}&units=metric&appid={self._openweathersecret}")
             if r.status_code != 200:
-                cherrypy.response.status = 400
-                return self.asjson_error({"response": r.json()})
+                return self.asjson_error({"response": r.json()}, 400)
 
             return self.asjson({
                 "hourly": [
@@ -50,13 +48,12 @@ class OpenWeatherAPI(RESTBase):
                 ]
             })
 
-        cherrypy.response.status = 404
-        return self.asjson_error("invalid request")
+        return self.asjson_error("invalid request", 404)
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.DEBUG)
+        super().__init__(log_stdout_level=logging.INFO)
 
         try:
 
