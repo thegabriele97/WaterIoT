@@ -1,0 +1,12 @@
+{
+    "rest_server": {
+        "host": "0.0.0.0",
+        "port": 8087
+    },
+    "indent_level": 4,
+    "catalog": {
+        "host": "catalog",
+        "port": 8080,
+        "ping_ms": 2000
+    }
+}
