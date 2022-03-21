@@ -91,26 +91,21 @@ class RaspberryDevConnAPI(RESTBase):
         json_string = json.loads(string)
         self.wait_air_temp = json_string["v"] / 1000
         self.logger.debug(self.wait_air_temp)
-        self._th1.stop()
-        self._th1 = WIOThread(target=self._airtemperature, name="Air Temperature Thread")
+        self._th1.restart()
 
     def onMessageReceiveAirhum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         string = msg.payload.decode("ascii")
         json_string = json.loads(string)
         self.wait_air_hum = json_string["v"] / 1000
         self.logger.debug(self.wait_air_hum)
-        self._th.stop()
-        self._th = WIOThread(target=self._airhumidity, name="Air Humidity Thread")
+        self._th.restart()
 
     def onMessageReceiveSoilhum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         string = msg.payload.decode("ascii")
         json_string = json.loads(string)
         self.wait_soil_hum = json_string["v"] / 1000
         self.logger.debug(self.wait_soil_hum)
-        self._th2.stop()
-        self._th2 = WIOThread(
-            target=self._terrainhumidity, name="Terrain Humidity Thread"
-        )
+        self._th2.restart()
 
     def _rec_dict(self, d: dict, path: str = "") -> list[str]:
         ret = []
