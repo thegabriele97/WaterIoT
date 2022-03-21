@@ -72,10 +72,10 @@ class RaspberryDevConnAPI(RESTBase):
 
     def _airtemperature(self):
         while not self._th1.is_stop_requested:
-            self._th1.wait(self.wait_air_temp)
             self._catreq.publishMQTT(
                 "RaspberryDevConn", "/airtemperature", "airtemperaturepayload"
             )
+            self._th1.wait(self.wait_air_temp)
 
     def _terrainhumidity(self):
         while not self._th2.is_stop_requested:
