@@ -51,22 +51,22 @@ class MyBot:
                 self.bot.sendMessage(self.chat_ID,"Hello!\n Here the commands:\n /psw <password> - Subscribe the user. \n /switch <on/off> - Turn on or off the irrigator \n/getairt - Retrive temperature of the air\n/getairu  - Retrive umidity of the air\n/getsoilu - Retrive umidity of the soil.\n /config (<temp>|<airhum>|<soilhum> ) <value> - Config the sensors: sets the period of sampling of the sensors. ")
             elif message == "/getairt":
                 self.bot.sendMessage(self.chat_ID,"You will get air temperature")
-                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airtemperature"))
+                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","/airtemperature"))
             elif message == "/getairu":
                 self.bot.sendMessage(self.chat_ID,"You will get air umidity")
-                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/airhumidity"))
+                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","/airhumidity"))
             elif message == "/getsoilu":
                 self.bot.sendMessage(self.chat_ID,"You will get soil umidity")
-                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","RaspberryDevConn/terrainhumidity"))
+                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","/terrainhumidity"))
             elif message.split()[0]=="/switch":
                 if len(message.split()) == 1:
                     self.bot.sendMessage(self.chat_ID,"No parameter. Please, use '/switch on' or '/switch off'.")
                 elif message.split()[1].lower() == "on":
                     self.bot.sendMessage(self.chat_ID,"You started irrigation")
-                    self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='on'")
+                    self.catreq.reqREST("ArduinoDevConn","/switch?state='on'")
                 elif message.split()[1].lower() == "off":
                     self.bot.sendMessage(self.chat_ID,"You stopped irrigation")
-                    self.catreq.reqREST("ArduinoDevConn","ArduinoDevConn/switch?state='off'")
+                    self.catreq.reqREST("ArduinoDevConn","/switch?state='off'")
                 else:
                     self.bot.sendMessage(self.chat_ID,"Wrong parameter. Please, use 'on' or 'off'.")
             else:
