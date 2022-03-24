@@ -125,5 +125,10 @@ services:
       dockerfile: ./services/uptime/Dockerfile
     ports:
       - "9000:3001" 
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li localhost:3001 | grep -c '200 OK'"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
     volumes:
       - ${PWD}/services/uptime/data:/app/data
