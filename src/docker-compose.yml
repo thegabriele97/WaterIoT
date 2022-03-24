@@ -28,6 +28,7 @@ services:
       dockerfile: ./services/calculator/Dockerfile
     ports:
       - "8081:8081"
+    hostname: "calculator"
     depends_on:
       catalog:
           condition: service_started
@@ -43,6 +44,7 @@ services:
       dockerfile: ./services/arduinodevconn/Dockerfile
     ports:
       - "8086:8086"
+    hostname: "arduinodevconn0"
     depends_on:
       catalog:
           condition: service_started
@@ -62,6 +64,7 @@ services:
       dockerfile: ./services/openweatheradaptor/Dockerfile
     ports:
       - "8082:8082"
+    hostname: "openweatheradaptor"
     depends_on:
       catalog:
           condition: service_started
@@ -79,6 +82,7 @@ services:
       dockerfile: ./services/thingspeakadaptor/Dockerfile
     ports:
       - "8083:8083"
+    hostname: "thingspeakadaptor"
     depends_on:
       catalog:
         condition: service_started
@@ -103,6 +107,7 @@ services:
       dockerfile: ./services/deviceconfig/Dockerfile
     ports:
       - "8087:8087"
+    hostname: "deviceconfig"
     depends_on:
       catalog:
           condition: service_started
@@ -113,3 +118,12 @@ services:
       retries: 5
     volumes:
       - ${PWD}/services/deviceconfig/confs.json:/app/services/deviceconfig/confs.json:rw
+
+  uptime:
+    build:
+      context: ./
+      dockerfile: ./services/uptime/Dockerfile
+    ports:
+      - "9000:3001" 
+    volumes:
+      - ${PWD}/services/uptime/data:/app/data

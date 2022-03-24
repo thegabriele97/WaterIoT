@@ -34,7 +34,9 @@ class ArduinoDevConnAPI(RESTBase):
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
 
-        if len(path) > 0:
+        if len(path) <= 0:
+            return self.asjson_info("Arduino Device Connector API endpoint!")
+        else:
             if path[0] == "switch":
 
                 if not "state" in args:
