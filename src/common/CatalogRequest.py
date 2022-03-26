@@ -137,7 +137,17 @@ class CatalogRequest:
                     jsonresp = cache[1].response
 
             if jsonresp is None:
-                r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+
+                r = None
+                for _ in range(0, 10):
+                    r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+                    if r.status_code == 404:
+                        time.sleep(0.5)
+                    elif r.status_code != 200:
+                        r.raise_for_status()
+                    else:
+                        break
+
                 jsonresp = r.json()
                 coderesp = r.status_code
 
