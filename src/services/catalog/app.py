@@ -107,7 +107,7 @@ class CatalogAPI(RESTBase):
                         if not "devid" in args:
                             # send a list of all DEVICE
                             ss = [v for v in merg.values() if v.name == path[1]]
-                            return self.asjson({"services": [s.toDict() for s in ss]})
+                            return self.asjson({"services": [{"online": (s.name+f"-{s.deviceid}" if s.deviceid is not None else "") in self._serviceManager.services.keys(), "service": s.toDict()} for s in ss]})
 
                         if not str(args["devid"]).isdigit():
                             return self.asjson_error("devid argument required, must be integer")

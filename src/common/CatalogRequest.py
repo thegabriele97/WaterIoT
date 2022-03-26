@@ -100,8 +100,8 @@ class CatalogRequest:
 
         # checking if we are dealing with a multiple device
         if "services" in r.json():
-            devid = r.json()["services"][0]["deviceid"]
-            dservice = r.json()["services"][0] 
+            devid = r.json()["services"][0]["service"]["deviceid"]
+            dservice = r.json()["services"][0]["service"]
         else:
             dservice = r.json()["service"]
 
