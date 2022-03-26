@@ -114,7 +114,7 @@ class CatalogRequest:
 
         return len(epoint) == 1
 
-    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, data = None, devid: int = None):
+    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
@@ -194,13 +194,13 @@ class CatalogRequest:
 
             url = f"http://{host}:{str(port)}{path}"
             if reqt == RequestType.GET:
-                r = requests.get(url=url, data=data)
+                r = requests.get(url=url, json=datarequest)
             elif reqt == RequestType.POST:
-                r = requests.post(url=url, data=data)
+                r = requests.post(url=url, json=datarequest)
             elif reqt == RequestType.PUT:
-                r = requests.put(url=url, data=data)
+                r = requests.put(url=url, json=datarequest)
             elif reqt == RequestType.DELETE:
-                r = requests.delete(url=url, data=data)
+                r = requests.delete(url=url, json=datarequest)
 
             jsonresp = r.json()
             coderesp = r.status_code

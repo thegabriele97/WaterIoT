@@ -1,11 +1,12 @@
 import copy
 import logging
 
-from threading import Thread, Lock, Event
+from threading import Lock
 from time import sleep, time
 
 from common.SettingsNode import SettingsNode
 from common.Service import Service
+from common.WIOThread import WIOThread
 
 class ServiceManager:
 
@@ -15,16 +16,15 @@ class ServiceManager:
         self._services = dict[str, Service]()
         self._dead_services = dict[str, Service]()
         self._lock = Lock()
-        self._th1_evtstop = Event()
 
-        self._th1 = Thread(target=self._thread_cleaner, name="ServiceManager: Thread Cleaner")
+        self._th1 = WIOThread(target=self._thread_cleaner, name="ServiceManager: Thread Cleaner")
 
     def _thread_cleaner(self):
 
         self._logger.info("Catalog Watchdog started")
 
         sleep(0.5)
-        while not self._th1_evtstop.is_set():
+        while not self._th1.is_stop_requested:
             self._lock.acquire()
             tm = time()
 
@@ -35,18 +35,16 @@ class ServiceManager:
                     sname = f"{s.name}{sappend}"
                     dead = self._services.pop(sname)
                     self._dead_services[sname] = dead
-                    self._logger.info(f"Service {sname} expired")
+                    self._logger.warn(f"Service {sname} expired")
 
             self._lock.release()
-            self._th1_evtstop.wait(self._settings.watchdog.timeout_ms / 1e3)
+            self._th1.wait(self._settings.watchdog.timeout_ms / 1e3)
 
     def run_watchdog(self):
-        self._th1_evtstop.clear()
-        self._th1.start()
+        self._th1.run()
 
     def stop_watchdog(self):
-        self._th1_evtstop.set()
-        self._th1.join()
+        self._th1.stop()
         self._logger.info("Catalog Watchdog stopped")
 
     def add_service(self, service: Service):
