@@ -2,6 +2,7 @@ import io
 import logging
 import cherrypy
 import paho.mqtt.client as mqtt
+import smbus
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -15,6 +16,21 @@ class RaspberryDevConnAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+        try:
+            self.logger.debug(f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
+            self._onrpi = str(os.environ["ONRASPBERRY"]) == "1"
+        except KeyError:
+            self._onrpi = False
+
+        if self._onrpi:
+            # setup connection to arduino
+            self._bus = smbus.SMBus(settings.arduino.i2c_dev)
+            self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
+            pass
+
+        if not self._onrpi:
+            self.logger.warning("Raspberry not found or error as occurred while Arduino init. Running as dummy device!")
+
         self._th = WIOThread(target=self._airhumidity, name="Air Humidity Thread")
         self._th1 = WIOThread(
             target=self._airtemperature, name="Air Temperature Thread"
@@ -80,8 +96,11 @@ class RaspberryDevConnAPI(RESTBase):
     def _terrainhumidity(self):
         while not self._th2.is_stop_requested:
             self._th2.wait(self.wait_soil_hum)
+            data = bus.read_word_data(0x8,5)
+            mask = 0x3FF
+            data = data & mask
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/terrainhumidity", "terrainhumiditypayload"
+                "RaspberryDevConn", "/terrainhumidity", self.asjson(data)
             )
 
     @cherrypy.tools.json_out()
@@ -93,7 +112,10 @@ class RaspberryDevConnAPI(RESTBase):
         elif path[0] == "airtemperature":
             return self.asjson("airtemperature")
         elif path[0] == "terrainhumidity":
-            return self.asjson("terrainhumidity")
+            data = bus.read_word_data(0x8,5)
+            mask = 0x3FF
+            data = data & mask
+            return self.asjson(data)
         return self.asjson("error")
 
     def onMessageReceiveTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
