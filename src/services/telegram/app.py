@@ -13,7 +13,7 @@ class TelegramAdaptorAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp: WIOTRestApp, settings: SettingsNode, telegramkey) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._bot = MyBot(telegramkey,self.logger,self._catreq)
+        self._bot = MyBot(telegramkey, self.logger, self._catreq, settings)
         upperRESTSrvcApp.subsribe_evt_stop(self._bot._bot_th.stop)
 
     @cherrypy.tools.json_out()

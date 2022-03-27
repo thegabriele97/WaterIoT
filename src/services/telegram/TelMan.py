@@ -12,32 +12,19 @@ from SuperTelepotBot import SuperTelepotBot
 
 class MyBot:
    
-    def __init__(self,token,logger,catreq):
+    def __init__(self, token, logger, catreq, settings):
         # Local token
         self.catreq = catreq
         self.logger : logging.Logger = logger
         self.chat_ID = ""
         self.tokenBot=token
         self._update_id = None
+        self._settings = settings
         self._encr = Encryption()
         #Catalog token
         #self.tokenBot=requests.get("http://catalogIP/telegram_token").json()["telegramToken"]
         self.bot = SuperTelepotBot(self.tokenBot)
-
-        self._commands = {
-            "commands": [
-                {"command": "help",     "description": "Show the list of all available commands"},
-                {"command": "psw",      "description": "Subscribe the user"},
-                {"command": "switch",   "description": "Turn on or off the irrigator"},
-                {"command": "getairt",  "description": "Retrieve temperature of the air"},
-                {"command": "getairu",  "description": "Retrieve humidity of the air"},
-                {"command": "getsoilu", "description": "Retrieve humidity of the soil"},
-                {"command": "config",   "description": "Sets the sampling period of the sensors"}
-            ],
-            "language_code": "en"
-        }
-
-        self.bot.setCommands(self._commands)
+        self.bot.setCommands(self._settings.telegram.commands.toDict())
 
         self._bot_th = WIOThread(target=self._handler_bot_th, name="Telegram Bot Handler")
         self._bot_th.run()
@@ -48,7 +35,7 @@ class MyBot:
             
             response = None
             try:
-                response = self.bot.getUpdates(offset=self._update_id);
+                response = self.bot.getUpdates(offset=self._update_id); # getting all last messages from last poll
             except:
                 self.logger.exception("Bad exception occurred! Stopping Telegram Bot Handler..")
                 while not self._bot_th.is_stop_requested:
@@ -60,18 +47,17 @@ class MyBot:
                 self._update_id = resp["update_id"] + 1
 
                 try:
-                    self.on_chat_message(resp["message"])
+                    self.on_chat_message(resp["message"]) # for each new message, call on_chat_message
                 except Exception as e:
                     self.logger.exception(f"Exception occurred while handling a Telegram message: {str(e)}")
 
-            self._bot_th.wait(1)
+            self._bot_th.wait(self._settings.telegram.poll_time)
 
 
     def on_chat_message(self,msg):
 
         content_type, chat_type ,self.chat_ID = telepot.glance(msg)
         message=msg['text']
-        self.logger.debug(self.chat_ID)
 
         if message.split()[0]=="/psw":
             if len(message.split()) == 1:
