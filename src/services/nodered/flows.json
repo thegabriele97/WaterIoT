@@ -1,0 +1,463 @@
+[
+    {
+        "id": "6644ea9bf3513060",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "d345a28cf5a1a276",
+        "type": "mqtt in",
+        "z": "6644ea9bf3513060",
+        "name": "subscriberAirTemp",
+        "topic": "/ThingSpeakAdaptor/airtemp",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "73dd0102c2465c32",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 140,
+        "wires": [
+            [
+                "1b961cc9fa7fac5b"
+            ]
+        ]
+    },
+    {
+        "id": "1b961cc9fa7fac5b",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"AirTemperature\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
+        "outputs": 1,
+        "x": 390,
+        "y": 80,
+        "wires": [
+            [
+                "8f522d24a672c68a",
+                "e8290b67a4197e91"
+            ]
+        ]
+    },
+    {
+        "id": "8f522d24a672c68a",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "e8290b67a4197e91",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "9c715f7262b589f7",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Air Temperature chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 660,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9d13a3d53ab81e05",
+        "type": "mqtt in",
+        "z": "6644ea9bf3513060",
+        "name": "subscriberSoilHum",
+        "topic": "/ThingSpeakAdaptor/soilhum",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "73dd0102c2465c32",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 240,
+        "wires": [
+            [
+                "ac89bfb8b4a1f54d"
+            ]
+        ]
+    },
+    {
+        "id": "ac89bfb8b4a1f54d",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"SoilHumidity\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
+        "outputs": 1,
+        "x": 390,
+        "y": 240,
+        "wires": [
+            [
+                "029cb5f77be45a57",
+                "61125d8d1a4ec9b6"
+            ]
+        ]
+    },
+    {
+        "id": "029cb5f77be45a57",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "61125d8d1a4ec9b6",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "6d55652b11d1503d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Soil Humidity chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 650,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b2bff48ab9e027d7",
+        "type": "mqtt in",
+        "z": "6644ea9bf3513060",
+        "name": "subscriberAirHum",
+        "topic": "/ThingSpeakAdaptor/airhum",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "73dd0102c2465c32",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 380,
+        "wires": [
+            [
+                "a06bdc94c73c2139"
+            ]
+        ]
+    },
+    {
+        "id": "a06bdc94c73c2139",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"AirHumidity\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
+        "outputs": 1,
+        "x": 390,
+        "y": 380,
+        "wires": [
+            [
+                "1f809cf30d5597ba",
+                "75b473799f49a9d8"
+            ]
+        ]
+    },
+    {
+        "id": "1f809cf30d5597ba",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "75b473799f49a9d8",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "39d17713b68b1b67",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Air Humidity chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "20",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 650,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "80b320529316f478",
+        "type": "inject",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 600,
+        "wires": [
+            [
+                "630691048e440277"
+            ]
+        ]
+    },
+    {
+        "id": "630691048e440277",
+        "type": "change",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 320,
+        "y": 600,
+        "wires": [
+            [
+                "5a01521c0c95157b"
+            ]
+        ]
+    },
+    {
+        "id": "5a01521c0c95157b",
+        "type": "http request",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "persist": false,
+        "authType": "",
+        "senderr": false,
+        "x": 510,
+        "y": 600,
+        "wires": [
+            [
+                "c6d65515fca7f3fa"
+            ]
+        ]
+    },
+    {
+        "id": "c6d65515fca7f3fa",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "73dd0102c2465c32",
+        "type": "mqtt-broker",
+        "name": "mosquitto",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "9c715f7262b589f7",
+        "type": "ui_group",
+        "name": "AirTempTab",
+        "tab": "aa8b95e31965cabf",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6d55652b11d1503d",
+        "type": "ui_group",
+        "name": "SoilHumTab",
+        "tab": "aa8b95e31965cabf",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "39d17713b68b1b67",
+        "type": "ui_group",
+        "name": "AirHumidityTab",
+        "tab": "aa8b95e31965cabf",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "aa8b95e31965cabf",
+        "type": "ui_tab",
+        "name": "UiTab",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
