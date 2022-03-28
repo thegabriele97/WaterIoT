@@ -16,7 +16,8 @@ class ArduinoDevConnAPI(RESTBase):
         self._catreq = CatalogRequest(self.logger, settings)
 
         try:
-            self.logger.debug(f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
+            self.logger.debug
+            (f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
             self._onrpi = str(os.environ["ONRASPBERRY"]) == "1"
         except KeyError:
             self._onrpi = False

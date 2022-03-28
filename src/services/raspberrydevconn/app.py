@@ -16,6 +16,8 @@ class RaspberryDevConnAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+
+        # start the connection with the board. If the board is not connected instance a dummy device
         try:
             self.logger.debug(f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
             self._onrpi = str(os.environ["ONRASPBERRY"]) == "1"
@@ -31,16 +33,15 @@ class RaspberryDevConnAPI(RESTBase):
         if not self._onrpi:
             self.logger.warning("Raspberry not found or error as occurred while Arduino init. Running as dummy device!")
 
+        # Initialize the thread for managing the read of the parameters
         self._th = WIOThread(target=self._airhumidity, name="Air Humidity Thread")
-        self._th1 = WIOThread(
-            target=self._airtemperature, name="Air Temperature Thread"
-        )
-        self._th2 = WIOThread(
-            target=self._terrainhumidity, name="Terrain Humidity Thread"
-        )
+        self._th1 = WIOThread(target=self._airtemperature, name="Air Temperature Thread")
+        self._th2 = WIOThread(target=self._terrainhumidity, name="Terrain Humidity Thread")
         upperRESTSrvcApp.subsribe_evt_stop(self._th.stop)
         upperRESTSrvcApp.subsribe_evt_stop(self._th1.stop)
         upperRESTSrvcApp.subsribe_evt_stop(self._th2.stop)
+
+        # Retrieve, by doing a GET request to the device config, the value of the sampleperiod of the parameters
         self.wait_air_temp = (
             self._catreq.reqREST(
                 "DeviceConfig", "/configs?path=/sensors/temp/sampleperiod"
@@ -59,6 +60,8 @@ class RaspberryDevConnAPI(RESTBase):
             ).json_response["v"]
             / 1000
         )
+
+        # Subscribe to mqtt topics where the data of the sampleperiod will be published and declare the function that will be executed when a value is published
         self._catreq.subscribeMQTT("DeviceConfig", "/conf/sensors/temp/sampleperiod")
         self._catreq.callbackOnTopic(
             "DeviceConfig", "/conf/sensors/temp/sampleperiod", self.onMessageReceiveTemp
@@ -75,17 +78,21 @@ class RaspberryDevConnAPI(RESTBase):
             "/conf/sensors/soilhum/sampleperiod",
             self.onMessageReceiveSoilhum,
         )
+
+        # Start the threads
         self._th.run()
         self._th1.run()
         self._th2.run()
 
+    # function of the threads
     def _airhumidity(self):
         while not self._th.is_stop_requested:
-            self._th.wait(self.wait_air_hum)
+            # wait for the value configured on the device config
             self._catreq.publishMQTT(
                 "RaspberryDevConn", "/airhumidity", "airhumiditypayload"
             )
-
+            self._th.wait(self.wait_air_hum)
+    # function of the threads      
     def _airtemperature(self):
         while not self._th1.is_stop_requested:
             self._catreq.publishMQTT(
@@ -93,15 +100,26 @@ class RaspberryDevConnAPI(RESTBase):
             )
             self._th1.wait(self.wait_air_temp)
 
+    # function of the threads      
     def _terrainhumidity(self):
         while not self._th2.is_stop_requested:
-            self._th2.wait(self.wait_soil_hum)
-            data = bus.read_word_data(0x8,5)
-            mask = 0x3FF
-            data = data & mask
+
+            # set a default value of 20 in case you are not connected to the board
+            data = 20 
+
+            # if you are on the rpi, ask arduino for the value of the soil humidity
+            if self._onrpi:
+                data = self._bus.read_word_data(self._ard_i2c_addr, 5)
+                mask = 0x3FF
+                data = data & mask
+                
             self._catreq.publishMQTT(
                 "RaspberryDevConn", "/terrainhumidity", self.asjson(data)
             )
+
+            self._th2.wait(self.wait_soil_hum)
+
+                
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
@@ -112,12 +130,21 @@ class RaspberryDevConnAPI(RESTBase):
         elif path[0] == "airtemperature":
             return self.asjson("airtemperature")
         elif path[0] == "terrainhumidity":
-            data = bus.read_word_data(0x8,5)
-            mask = 0x3FF
-            data = data & mask
+
+            # set a default value of 20 in case you are not connected to the board
+            data = 20
+
+            # if you are on the rpi, ask arduino for the value of the soil humidity
+            if self._onrpi:
+                data = self._bus.read_word_data(self._ard_i2c_addr, 5)
+                mask = 0x3FF
+                data = data & mask
+
             return self.asjson(data)
+        
         return self.asjson("error")
 
+    # function for the callback of the mqtt topic when a new value for the sampleperiod of the temperature is received
     def onMessageReceiveTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         string = msg.payload.decode("ascii")
         json_string = json.loads(string)
@@ -125,6 +152,7 @@ class RaspberryDevConnAPI(RESTBase):
         self.logger.debug(self.wait_air_temp)
         self._th1.restart()
 
+    # function for the callback of the mqtt topic when a new value for the sampleperiod of the air humidity is received
     def onMessageReceiveAirhum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         string = msg.payload.decode("ascii")
         json_string = json.loads(string)
@@ -132,6 +160,7 @@ class RaspberryDevConnAPI(RESTBase):
         self.logger.debug(self.wait_air_hum)
         self._th.restart()
 
+    # function for the callback of the mqtt topic when a new value for the sampleperiod of the soil humidity is received
     def onMessageReceiveSoilhum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         string = msg.payload.decode("ascii")
         json_string = json.loads(string)
@@ -147,6 +176,7 @@ class App(WIOTRestApp):
 
         try:
 
+            # open the json file with the configuration of the devices
             self._settings = SettingsManager.json2obj(
                 SettingsManager.relfile2abs("settings.json"), self.logger
             )
@@ -156,6 +186,8 @@ class App(WIOTRestApp):
                 ServiceType.DEVICE,
                 ServiceSubType.RASPBERRY,
             )
+
+            # Add all the necessary endpoints both for REST and MQTT
             self.addRESTEndpoint("/")
             self.addRESTEndpoint(
                 "/airhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE

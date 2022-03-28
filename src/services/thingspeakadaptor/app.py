@@ -24,18 +24,12 @@ class ThingSpeakAPI(RESTBase):
     ) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+
+        # Subscribe to arduino device connector mqtt topic
         self._catreq.subscribeMQTT("ArduinoDevConn", "/switch")
         self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceive)
 
-        # self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
-        # self._catreq.callbackOnTopic("RaspberryDevConn", "/airhumidity", self.onMessageReceive)
-
-        # self._catreq.subscribeMQTT("RaspberryDevConn", "/airtemperature")
-        # self._catreq.callbackOnTopic("RaspberryDevConn", "/airtemperature", self.onMessageReceive)
-
-        # self._catreq.subscribeMQTT("RaspberryDevConn", "/terrainhumidity")
-        # self._catreq.callbackOnTopic("RaspberryDevConn", "/terrainhumidity", self.onMessageReceive)
-
+        # Set the API keys
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
         self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
         self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
@@ -49,10 +43,12 @@ class ThingSpeakAPI(RESTBase):
             return self.asjson_info("ThingSpeak Adaptor Endpoint")
         elif path[0] == "temperature":
             if len(args) > 0:
+                # Get the last value of the air temperature
                 r = requests.get(
                 f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}&results={args['results']}"
                 )
             else:
+                # Get all values of the air temperature
                 r = requests.get(
                 f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}"
                 )
@@ -62,10 +58,12 @@ class ThingSpeakAPI(RESTBase):
             return r.json()["feeds"]
         elif path[0] == "humidity":
             if len(args) > 0:
+                # Get the last value of the air himidity
                 r = requests.get(
                 f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}&results={args['results']}"
                 )
             else:
+                # Get all values of the air humidity
                 r = requests.get(
                 f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}"
                 )
@@ -79,6 +77,7 @@ class ThingSpeakAPI(RESTBase):
         if len(path) == 0:
             return self.asjson_info("ThingSpeak Adaptor Endpoint")
         elif path[0] == "temperature":
+            # Write the air temperature to the ThingSpeak channel
             r = requests.get(
                 f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}"
             )
@@ -87,6 +86,7 @@ class ThingSpeakAPI(RESTBase):
                 return self.asjson_error({"response": r.json()})
             return self.asjson_info(None)
         elif path[0] == "humidity":
+            # Write the air humidity to the ThingSpeak channel
             r = requests.get(
                 f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}"
             )
@@ -106,12 +106,9 @@ class App(WIOTRestApp):
 
         try:
 
-            thingspeakapikeytemperaturewrite = os.environ[
-                "THINGSPEAKAPIKEYTEMPERATUREWRITE"
-            ]
-            thingspeakapikeytemperatureread = os.environ[
-                "THINGSPEAKAPIKEYTEMPERATUREREAD"
-            ]
+            # Get all the keys from the environment variables
+            thingspeakapikeytemperaturewrite = os.environ["THINGSPEAKAPIKEYTEMPERATUREWRITE"]
+            thingspeakapikeytemperatureread = os.environ["THINGSPEAKAPIKEYTEMPERATUREREAD"]
             thingspeakapikeyhumiditywrite = os.environ["THINGSPEAKAPIKEYHUMIDITYWRITE"]
             thingspeakapikeyhumidityread = os.environ["THINGSPEAKAPIKEYHUMIDITYREAD"]
             channelidtemperature = os.environ["CHANNELIDTEMPERATURE"]
@@ -127,6 +124,8 @@ class App(WIOTRestApp):
                 SettingsManager.relfile2abs("settings.json"), self.logger
             )
             self.create(self._settings, "ThingSpeakAdaptor", ServiceType.SERVICE)
+
+            # Add all necessary endpoints
             self.addRESTEndpoint("/")
             self.addRESTEndpoint("/temperature", [EndpointParam("temp")])
             self.addRESTEndpoint("/humidity", [EndpointParam("hum")])
