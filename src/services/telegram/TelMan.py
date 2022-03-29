@@ -113,7 +113,7 @@ class MyBot:
                     r = self.catreq.reqREST("ArduinoDevConn","/switch?state=on")
 
                     if not r.status or r.code_response != 200:
-                        self.bot.sendMessage(self.chat_ID, f"Error: code {r.code_response} - f{r.json_response}", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(self.chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
                     else:
                         self.bot.sendMessage(self.chat_ID, "You started irrigation", reply_markup=ReplyKeyboardRemove())
 
@@ -121,7 +121,7 @@ class MyBot:
                     r = self.catreq.reqREST("ArduinoDevConn","/switch?state=off")
 
                     if not r.status or r.code_response != 200:
-                        self.bot.sendMessage(self.chat_ID, f"Error: code {r.code_response} - f{r.json_response}", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(self.chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
                     else:
                         self.bot.sendMessage(self.chat_ID, "You stopped irrigation", reply_markup=ReplyKeyboardRemove())
 
