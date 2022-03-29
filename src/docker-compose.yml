@@ -52,7 +52,7 @@ services:
       timeout: 2s
       retries: 5
     devices:
-      - "/dev/i2c-1:/dev/i2c-1"  
+      # - "/dev/i2c-1:/dev/i2c-1"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -74,8 +74,8 @@ services:
       timeout: 2s
       retries: 5
     devices:
-      - "/dev/i2c-1:/dev/i2c-1"
-      - "/dev/gpiomem:/dev/gpiomem"  
+      # - "/dev/i2c-1:/dev/i2c-1"
+      # - "/dev/gpiomem:/dev/gpiomem"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
   
