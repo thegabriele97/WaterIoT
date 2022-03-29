@@ -24,7 +24,8 @@
         "y": 140,
         "wires": [
             [
-                "1b961cc9fa7fac5b"
+                "1b961cc9fa7fac5b",
+                "e275e663d784c501"
             ]
         ]
     },
@@ -302,7 +303,117 @@
         ]
     },
     {
-        "id": "80b320529316f478",
+        "id": "5a01521c0c95157b",
+        "type": "http request",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:8082/currentweather?lat=51.5085&lon=0.1258",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "x": 150,
+        "y": 600,
+        "wires": [
+            [
+                "c6d65515fca7f3fa",
+                "ea227e2980de4d35"
+            ]
+        ]
+    },
+    {
+        "id": "c6d65515fca7f3fa",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 390,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "e275e663d784c501",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 410,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "72e7b7e596d04321",
+        "type": "ui_template",
+        "z": "6644ea9bf3513060",
+        "group": "797b907f8cd74d9f",
+        "name": "",
+        "order": 1,
+        "width": "0",
+        "height": "0",
+        "format": "\n<div align=\"center\">\n<p>\n<img  src=\"{{msg.payload}}\" />\n</p>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 600,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea227e2980de4d35",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"payload\"]=payload[\"weather\"][0][\"icon\"]\nmsg[\"payload\"]=\"http://openweathermap.org/img/wn/\"+msg[\"payload\"]+\"@2x.png\"\nreturn msg",
+        "outputs": 1,
+        "x": 390,
+        "y": 600,
+        "wires": [
+            [
+                "72e7b7e596d04321",
+                "d0f04cbafdd3a7a7"
+            ]
+        ]
+    },
+    {
+        "id": "d0f04cbafdd3a7a7",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 650,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "ef2955c013057f2c",
         "type": "inject",
         "z": "6644ea9bf3513060",
         "name": "",
@@ -322,76 +433,13 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 160,
-        "y": 600,
-        "wires": [
-            [
-                "630691048e440277"
-            ]
-        ]
-    },
-    {
-        "id": "630691048e440277",
-        "type": "change",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 320,
-        "y": 600,
+        "x": 80,
+        "y": 680,
         "wires": [
             [
                 "5a01521c0c95157b"
             ]
         ]
-    },
-    {
-        "id": "5a01521c0c95157b",
-        "type": "http request",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "method": "GET",
-        "ret": "txt",
-        "paytoqs": false,
-        "url": "",
-        "persist": false,
-        "authType": "",
-        "senderr": false,
-        "x": 510,
-        "y": 600,
-        "wires": [
-            [
-                "c6d65515fca7f3fa"
-            ]
-        ]
-    },
-    {
-        "id": "c6d65515fca7f3fa",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 670,
-        "y": 600,
-        "wires": []
     },
     {
         "id": "73dd0102c2465c32",
@@ -447,6 +495,17 @@
         "name": "AirHumidityTab",
         "tab": "aa8b95e31965cabf",
         "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "797b907f8cd74d9f",
+        "type": "ui_group",
+        "name": "Meteo",
+        "tab": "aa8b95e31965cabf",
+        "order": 4,
         "disp": true,
         "width": "6",
         "collapse": false,
