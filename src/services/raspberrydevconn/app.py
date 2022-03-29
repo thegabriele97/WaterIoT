@@ -1,8 +1,10 @@
 import io
+import sys
 import logging
 import cherrypy
 import paho.mqtt.client as mqtt
 import smbus
+import Adafruit_DHT
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -28,6 +30,17 @@ class RaspberryDevConnAPI(RESTBase):
             # setup connection to arduino
             self._bus = smbus.SMBus(settings.arduino.i2c_dev)
             self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
+
+            # setup connection to DHT11
+            self.sensor = Adafruit_DHT.DHT11
+            self.logger.debug(type(self.sensor))
+            self.pin = "4"
+            self.logger.debug(type(self.pin))
+            humidity, temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+            if humidity is not None and temperature is not None:
+                self.logger.debug("Sensor connected correcly")
+            else:
+                self.logger.warning("Sensor not connected")
             pass
 
         if not self._onrpi:
