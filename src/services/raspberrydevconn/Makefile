@@ -4,3 +4,4 @@ genreq: requirements.txt
 
 requirements.txt: *.py
 	@pipreqs --force
+	@./gen.sh

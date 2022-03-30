@@ -4,7 +4,6 @@ import logging
 import cherrypy
 import paho.mqtt.client as mqtt
 import smbus
-import Adafruit_DHT
 
 from common.WIOTRestApp import *
 from common.SettingsManager import *
@@ -27,6 +26,8 @@ class RaspberryDevConnAPI(RESTBase):
             self._onrpi = False
 
         if self._onrpi:
+            import Adafruit_DHT
+
             # setup connection to arduino
             self._bus = smbus.SMBus(settings.arduino.i2c_dev)
             self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
