@@ -44,12 +44,18 @@ class RaspberryDevConnAPI(RESTBase):
             pass
 
         if not self._onrpi:
-            self.logger.warning("Raspberry not found or error as occurred while Arduino init. Running as dummy device!")
+            self.logger.warning(
+                "Raspberry not found or error as occurred while Arduino init. Running as dummy device!"
+            )
 
         # Initialize the thread for managing the read of the parameters
         self._th = WIOThread(target=self._airhumidity, name="Air Humidity Thread")
-        self._th1 = WIOThread(target=self._airtemperature, name="Air Temperature Thread")
-        self._th2 = WIOThread(target=self._terrainhumidity, name="Terrain Humidity Thread")
+        self._th1 = WIOThread(
+            target=self._airtemperature, name="Air Temperature Thread"
+        )
+        self._th2 = WIOThread(
+            target=self._terrainhumidity, name="Terrain Humidity Thread"
+        )
         upperRESTSrvcApp.subsribe_evt_stop(self._th.stop)
         upperRESTSrvcApp.subsribe_evt_stop(self._th1.stop)
         upperRESTSrvcApp.subsribe_evt_stop(self._th2.stop)
@@ -100,48 +106,62 @@ class RaspberryDevConnAPI(RESTBase):
     # function of the threads
     def _airhumidity(self):
         while not self._th.is_stop_requested:
-            # wait for the value configured on the device config
+            self.humidity = 50
+            
+            if self._onrpi:
+                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airhumidity", "airhumiditypayload"
+                "RaspberryDevConn", "/airhumidity", self.asjson(self.humidity)
             )
             self._th.wait(self.wait_air_hum)
-    # function of the threads      
+
+    # function of the threads
     def _airtemperature(self):
         while not self._th1.is_stop_requested:
+            self.temperature = 25
+            
+            if self._onrpi:
+                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+            
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airtemperature", "airtemperaturepayload"
+                "RaspberryDevConn", "/airtemperature", self.asjson(self.temperature)
             )
             self._th1.wait(self.wait_air_temp)
 
-    # function of the threads      
+    # function of the threads
     def _terrainhumidity(self):
         while not self._th2.is_stop_requested:
 
             # set a default value of 20 in case you are not connected to the board
-            data = 20 
+            data = 20
 
             # if you are on the rpi, ask arduino for the value of the soil humidity
             if self._onrpi:
                 data = self._bus.read_word_data(self._ard_i2c_addr, 5)
                 mask = 0x3FF
                 data = data & mask
-                
+
             self._catreq.publishMQTT(
                 "RaspberryDevConn", "/terrainhumidity", self.asjson(data)
             )
 
             self._th2.wait(self.wait_soil_hum)
 
-                
-
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
         if len(path) == 0:
             return self.asjson_info("Raspberry Device Connector Endpoint")
         elif path[0] == "airhumidity":
-            return self.asjson("airhumidityvalue")
+            self.humidity = 50
+            if self._onrpi:
+                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+            return self.asjson(self.humidity)
         elif path[0] == "airtemperature":
-            return self.asjson("airtemperature")
+            self.temperature = 25
+            if self._onrpi:
+                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+            return self.asjson(self.temperature)
         elif path[0] == "terrainhumidity":
 
             # set a default value of 20 in case you are not connected to the board
@@ -154,7 +174,7 @@ class RaspberryDevConnAPI(RESTBase):
                 data = data & mask
 
             return self.asjson(data)
-        
+
         return self.asjson("error")
 
     # function for the callback of the mqtt topic when a new value for the sampleperiod of the temperature is received
@@ -180,6 +200,7 @@ class RaspberryDevConnAPI(RESTBase):
         self.wait_soil_hum = json_string["v"] / 1000
         self.logger.debug(self.wait_soil_hum)
         self._th2.restart()
+
 
 
 class App(WIOTRestApp):
