@@ -10,10 +10,11 @@ from TelMan import MyBot
 
 class TelegramAdaptorAPI(RESTBase):
 
-    def __init__(self, upperRESTSrvcApp, settings: SettingsNode, telegramkey) -> None:
+    def __init__(self, upperRESTSrvcApp: WIOTRestApp, settings: SettingsNode, telegramkey) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._bot = MyBot(telegramkey,self.logger,self._catreq)
+        self._bot = MyBot(telegramkey, self.logger, self._catreq, settings)
+        upperRESTSrvcApp.subsribe_evt_stop(self._bot._bot_th.stop)
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args): # /sendMessage?text=<message> where message is the string that is going to be printed on tel chat 
@@ -33,7 +34,7 @@ class TelegramAdaptorAPI(RESTBase):
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.INFO)
+        super().__init__(log_stdout_level=logging.DEBUG)
 
         try:
 
