@@ -58,3 +58,7 @@ class Encryption:
     def checkID(self, check):
         data = self._data.get('/')
         return check in data["ids"]
+
+    def getIDs(self):
+        data = self._data.get('/')
+        return data["ids"]

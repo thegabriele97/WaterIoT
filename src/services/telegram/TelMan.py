@@ -130,17 +130,3 @@ class MyBot:
             else:
                 self.bot.sendMessage(self.chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
         
-        #self.bot.sendMessage(chat_ID,text="You sent:\n"+message)# send a message on the chat
-    
-   # def on_callback_query(self,msg):
-    #    query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-        #used to debug
-        #self._logger.debug(f'Callback Query: {query_id}, {from_id}, {query_data}') 
-     #   if(query_data == "start"):
-       #     self.bot.sendMessage(self.chat_ID,text="You started irrigation")# send a message on the chat
-      #  if(query_data == "stop"): 
-        #    self.bot.sendMessage(self.chat_ID,text="You stopped irrigation")
-
-        #if(query_data == "close"):
-
-        #self.bot.answerCallbackQuery(query_id, text='Got it')

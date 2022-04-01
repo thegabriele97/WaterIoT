@@ -23,7 +23,9 @@ class TelegramAdaptorAPI(RESTBase):
             try:
                 if not "text" in args: # check correct HTTP argument
                     return self.asjson_error("Missing text argument",400)
-                self._bot.bot.sendMessage(self._bot.chat_ID,args["text"])
+                for id in self._bot._encr.getIDs():
+                    self.logger.debug(id)
+                    self._bot.bot.sendMessage(id,args["text"])
             except Exception as e:
                 self.logger.error(f"Error occurred in sending message: {str(e)}") # exception rised if is sent a message
                 return self.asjson_error(f"Server error",500)                         # on chat ( chat_id is retrived)
