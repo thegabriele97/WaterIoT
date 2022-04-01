@@ -16,7 +16,6 @@ class MyBot:
         # Local token
         self.catreq = catreq
         self.logger : logging.Logger = logger
-        self.chat_ID = ""
         self.tokenBot=token
         self._update_id = None
         self._settings = settings
@@ -56,42 +55,42 @@ class MyBot:
 
     def on_chat_message(self,msg):
 
-        content_type, chat_type ,self.chat_ID = telepot.glance(msg)
+        content_type, chat_type ,chat_ID = telepot.glance(msg)
         message=msg['text']
 
         if message.split()[0]=="/psw":
             if len(message.split()) == 1:
-                self.bot.sendMessage(self.chat_ID, "No password. Please, write a password after the command.", reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID, "No password. Please, write a password after the command.", reply_markup=ReplyKeyboardRemove())
             else :
                 if self._encr.checkPassword(message.split()[1]):
-                    self._encr.addID(self.chat_ID) # for some reason it return the id twice from getupdate
-                    self.bot.sendMessage(self.chat_ID, "Correct password. The user is now subscribed and can access the functionality.", reply_markup=ReplyKeyboardRemove())
+                    self._encr.addID(chat_ID) # for some reason it return the id twice from getupdate
+                    self.bot.sendMessage(chat_ID, "Correct password. The user is now subscribed and can access the functionality.", reply_markup=ReplyKeyboardRemove())
                 else :
-                    self.bot.sendMessage(self.chat_ID, "Wrond password", reply_markup=ReplyKeyboardRemove())
-        elif not self._encr.checkID(self.chat_ID) :
-            self.bot.sendMessage(self.chat_ID, "Unsubscribed user. Please insert the password using /psw <password> command", reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID, "Wrond password", reply_markup=ReplyKeyboardRemove())
+        elif not self._encr.checkID(chat_ID) :
+            self.bot.sendMessage(chat_ID, "Unsubscribed user. Please insert the password using /psw <password> command", reply_markup=ReplyKeyboardRemove())
         else:
             if message.split()[0] == "/config":
                 if len(message.split()) != 3:
-                    self.bot.sendMessage(self.chat_ID, "No parameter. Please select one sensor (<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID, "No parameter. Please select one sensor (<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
                 elif message.split()[1] not in ["temp", "airhum","soilhum"]:
-                    self.bot.sendMessage(self.chat_ID, "Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID, "Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
                 else:
                     try: # verify if the value is an integer
                         self.catreq.reqREST("DeviceConfig",f"/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
                     except ValueError:
-                        self.bot.sendMessage(self.chat_ID,"Please insert an integer value", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID,"Please insert an integer value", reply_markup=ReplyKeyboardRemove())
             elif message.split()[0] == "/pos" :
                 if len(message.split()) != 3:
-                    self.bot.sendMessage(self.chat_ID, " No latitute and longitude values inserted.")
+                    self.bot.sendMessage(chat_ID, " No latitute and longitude values inserted.")
                 else:
                     try: # verify if the value is an integer
                         self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(message.split()[1])})
                         self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(message.split()[2])})
                     except ValueError:
-                        self.bot.sendMessage(self.chat_ID,"Please insert numerical values", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID,"Please insert numerical values", reply_markup=ReplyKeyboardRemove())
             elif message == "/start" or message == "/help":
-                self.bot.sendMessage(chat_id=self.chat_ID, parse_mode="MarkdownV2", reply_markup=ReplyKeyboardRemove(), text=(
+                self.bot.sendMessage(chat_id=chat_ID, parse_mode="MarkdownV2", reply_markup=ReplyKeyboardRemove(), text=(
                 "Hello\\!\n"
                 "Here the commands:\n"
                 "*/psw <password\\>* \\- Subscribe the user\n"
@@ -99,19 +98,20 @@ class MyBot:
                 "*/getairt* \\- Retrive temperature of the air\n"
                 "*/getairu*  \\- Retrive umidity of the air\n"
                 "*/getsoilu* \\- Retrive umidity of the soil\n"
+                "*/pos/* \\- Sets latitude and longitude where retrive weather forecasting\n"
                 "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) <value\\> \\- Config the sensors: sets the period of sampling of the sensors\n"))
             elif message == "/getairt":
-                self.bot.sendMessage(self.chat_ID,"You will get air temperature", reply_markup=ReplyKeyboardRemove())
-                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","/airtemperature"), reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID,"You will get air temperature", reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID,self.catreq.reqREST("RaspberryDevConn","/airtemperature"), reply_markup=ReplyKeyboardRemove())
             elif message == "/getairu":
-                self.bot.sendMessage(self.chat_ID,"You will get air umidity", reply_markup=ReplyKeyboardRemove())
-                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","/airhumidity"), reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID,"You will get air umidity", reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID,self.catreq.reqREST("RaspberryDevConn","/airhumidity"), reply_markup=ReplyKeyboardRemove())
             elif message == "/getsoilu":
-                self.bot.sendMessage(self.chat_ID,"You will get soil umidity")
-                self.bot.sendMessage(self.chat_ID,self.catreq.reqREST("RaspberryDevConn","/terrainhumidity"), reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID,"You will get soil umidity")
+                self.bot.sendMessage(chat_ID,self.catreq.reqREST("RaspberryDevConn","/terrainhumidity"), reply_markup=ReplyKeyboardRemove())
             elif message.split()[0]=="/switch":
                 if len(message.split()) == 1:
-                    self.bot.sendMessage(chat_id=self.chat_ID,
+                    self.bot.sendMessage(chat_id=chat_ID,
                         text="No parameter. Please, use '/switch on' or '/switch off'.", 
                         reply_markup=ReplyKeyboardMarkup(
                             keyboard=[[KeyboardButton(text="/switch on"), KeyboardButton(text="/switch off")]],
@@ -120,20 +120,20 @@ class MyBot:
                     r = self.catreq.reqREST("ArduinoDevConn","/switch?state=on")
 
                     if not r.status or r.code_response != 200:
-                        self.bot.sendMessage(self.chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
                     else:
-                        self.bot.sendMessage(self.chat_ID, "You started irrigation", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, "You started irrigation", reply_markup=ReplyKeyboardRemove())
 
                 elif message.split()[1].lower() == "off":
                     r = self.catreq.reqREST("ArduinoDevConn","/switch?state=off")
 
                     if not r.status or r.code_response != 200:
-                        self.bot.sendMessage(self.chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
                     else:
-                        self.bot.sendMessage(self.chat_ID, "You stopped irrigation", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, "You stopped irrigation", reply_markup=ReplyKeyboardRemove())
 
                 else:
-                    self.bot.sendMessage(self.chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())
             else:
-                self.bot.sendMessage(self.chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
+                self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
         
