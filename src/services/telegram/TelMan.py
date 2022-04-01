@@ -78,11 +78,18 @@ class MyBot:
                     self.bot.sendMessage(self.chat_ID, "Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
                 else:
                     try: # verify if the value is an integer
-                        #self.catreq.reqREST("DeviceConfig",f"DeviceConfig/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
                         self.catreq.reqREST("DeviceConfig",f"/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
                     except ValueError:
                         self.bot.sendMessage(self.chat_ID,"Please insert an integer value", reply_markup=ReplyKeyboardRemove())
-
+            elif message.split()[0] == "/pos" :
+                if len(message.split()) != 3:
+                    self.bot.sendMessage(self.chat_ID, " No latitute and longitude values inserted.")
+                else:
+                    try: # verify if the value is an integer
+                        self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(message.split()[1])})
+                        self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(message.split()[2])})
+                    except ValueError:
+                        self.bot.sendMessage(self.chat_ID,"Please insert numerical values", reply_markup=ReplyKeyboardRemove())
             elif message == "/start" or message == "/help":
                 self.bot.sendMessage(chat_id=self.chat_ID, parse_mode="MarkdownV2", reply_markup=ReplyKeyboardRemove(), text=(
                 "Hello\\!\n"
