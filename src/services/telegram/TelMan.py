@@ -60,9 +60,13 @@ class MyBot:
             if not self._encr.checkID(chat_ID) :
                 self.bot.sendMessage(chat_ID, "Unsubscribed user. Please insert the password using /psw <password> command", reply_markup=ReplyKeyboardRemove())
             else:    
-                self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(msg["location"]["latitude"])})
-                self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(msg["location"]["longitude"])})
-                self.bot.sendMessage(chat_ID, "location set properly", reply_markup=ReplyKeyboardRemove())
+                status,json_response,code_response1 = self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(msg["location"]["latitude"])})
+                status,json_response,code_response2= self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(msg["location"]["longitude"])})
+                if code_response1 == 200 and code_response2 == 200 :
+                    self.bot.sendMessage(chat_ID, "location set properly.", reply_markup=ReplyKeyboardRemove())
+                else:
+                    self.bot.sendMessage(chat_ID, "An error occour. ", reply_markup=ReplyKeyboardRemove())
+
         elif "text" in msg:
             message=msg["text"]
             if message.split()[0]=="/psw":
