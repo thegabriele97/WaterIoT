@@ -9,5 +9,11 @@
         "soilhum": {
             "sampleperiod": 1000
         }
+    },
+    "system": {
+        "location": {
+            "lat": 45.078770,
+            "lon": 6.704290
+        }
     }
 }
