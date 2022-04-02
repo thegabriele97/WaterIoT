@@ -30,11 +30,11 @@ class ThingSpeakAPI(RESTBase):
 
         # Subscribe to arduino device connector mqtt topic
         self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceiveAirHumidity)
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/airhumidity", self.onMessageReceiveAirHumidity)
         self._catreq.subscribeMQTT("RaspberryDevConn", "/airtemperature")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceiveAirTemperature)
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/airtemperature", self.onMessageReceiveAirTemperature)
         self._catreq.subscribeMQTT("RaspberryDevConn", "/terrainhumidity")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceiveTerrainHumidity)
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/terrainhumidity", self.onMessageReceiveTerrainHumidity)
 
         # Set the API keys
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
@@ -184,10 +184,13 @@ class App(WIOTRestApp):
             self.addRESTEndpoint("/")
             self.addRESTEndpoint("/temperature", [EndpointParam("temp")])
             self.addRESTEndpoint("/humidity", [EndpointParam("hum")])
+            self.addRESTEndpoint("/soil", [EndpointParam("soil")])
             self.addRESTEndpoint("/temperature", [EndpointParam("results")])
             self.addRESTEndpoint("/humidity", [EndpointParam("results")])
+            self.addRESTEndpoint("/soil", [EndpointParam("results")])
             self.addRESTEndpoint("/temperature")
             self.addRESTEndpoint("/humidity")
+            self.addRESTEndpoint("/soil")
             self.addMQTTEndpoint("/airtemp", "updates on switc")
             self.addMQTTEndpoint("/airhum", "updates on  status")
             self.addMQTTEndpoint("/soilhum", "updates switch status")
