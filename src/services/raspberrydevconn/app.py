@@ -17,6 +17,7 @@ class RaspberryDevConnAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+        self.settings = settings
 
         # start the connection with the board. If the board is not connected instance a dummy device
         try:
@@ -33,9 +34,9 @@ class RaspberryDevConnAPI(RESTBase):
             self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
 
             # setup connection to DHT11
-            self.sensor = Adafruit_DHT.DHT11
+            self.sensor = self.settings.sensor.type
             self.logger.debug(type(self.sensor))
-            self.pin = settings.sensor.pin
+            self.pin = self.settings.sensor.pin
             self.logger.debug(type(self.pin))
             humidity, temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             if humidity is not None and temperature is not None:
@@ -108,7 +109,7 @@ class RaspberryDevConnAPI(RESTBase):
     def _airhumidity(self):
         import Adafruit_DHT
         while not self._th.is_stop_requested:
-            self.humidity = 50
+            self.humidity = self.settings.default.humidity
             
             if self._onrpi:
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
@@ -122,7 +123,7 @@ class RaspberryDevConnAPI(RESTBase):
     def _airtemperature(self):
         import Adafruit_DHT
         while not self._th1.is_stop_requested:
-            self.temperature = 50
+            self.temperature = self.settings.default.temperature
             
             if self._onrpi:
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
@@ -137,7 +138,7 @@ class RaspberryDevConnAPI(RESTBase):
         while not self._th2.is_stop_requested:
 
             # set a default value of 20 in case you are not connected to the board
-            data = 50
+            data = self.settings.default.soil
 
             # if you are on the rpi, ask arduino for the value of the soil humidity
             if self._onrpi:
@@ -157,19 +158,19 @@ class RaspberryDevConnAPI(RESTBase):
         if len(path) == 0:
             return self.asjson_info("Raspberry Device Connector Endpoint")
         elif path[0] == "airhumidity":
-            self.humidity = 50
+            self.humidity = self.settings.default.humidity
             if self._onrpi:
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             return self.asjson(self.humidity)
         elif path[0] == "airtemperature":
-            self.temperature = 25
+            self.temperature = self.setting.default.temperature
             if self._onrpi:
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             return self.asjson(self.temperature)
         elif path[0] == "terrainhumidity":
 
             # set a default value of 20 in case you are not connected to the board
-            data = 20
+            data = self.settings.default.soil
 
             # if you are on the rpi, ask arduino for the value of the soil humidity
             if self._onrpi:

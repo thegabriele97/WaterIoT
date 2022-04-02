@@ -134,20 +134,38 @@ class ThingSpeakAPI(RESTBase):
             if r.status_code != 200:
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
+
+            value = {"value": args['soil']}
+            self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
             return self.asjson_info(None)
 
 
     def onMessageReceiveAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.debug(msg.payload)
-        self._catreq.reqREST("ThingSpeakAdaptor", f"/humidity?hum={msg.payload}", "POST")
+        self.logger.debug(msg.payload.decode("utf-8"))
+        r = requests.get(
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={msg.payload.decode('utf-8')}"
+        )
+        value = {"value": msg.payload.decode("utf-8")}
+        self._catreq.publishMQTT("ThingSpeakAdaptor", "/airhum", json.dumps(value))
+        # self._catreq.reqREST("ThingSpeakAdaptor", f"/humidity?hum={msg.payload}", "POST")
 
     def onMessageReceiveAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.debug(msg.payload)
-        self._catreq.reqREST("ThingSpeakAdaptor", f"/temperature?temp={msg.payload}", "POST")
+        self.logger.debug(msg.payload.decode("utf-8"))
+        r = requests.get(
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={msg.payload.decode('utf-8')}"
+        )
+        value = {"value": msg.payload.decode("utf-8")}
+        self._catreq.publishMQTT("ThingSpeakAdaptor", "/airtemp", json.dumps(value))
+        # self._catreq.reqREST("ThingSpeakAdaptor", f"/temperature?temp={msg.payload}", "POST")
 
     def onMessageReceiveTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.debug(msg.payload)
-        self._catreq.reqREST("ThingSpeakAdaptor", f"/soil?soil={msg.payload}", "POST")
+        self.logger.debug(msg.payload.decode("utf-8"))
+        r = requests.get(
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={msg.payload.decode('utf-8')}"
+        )
+        value = {"value": msg.payload.decode("utf-8")}
+        self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
+        # self._catreq.reqREST("ThingSpeakAdaptor", f"/soil?soil={msg.payload}", "POST")
 
 
 
