@@ -20,6 +20,7 @@ class MyBot:
         self._update_id = None
         self._settings = settings
         self._encr = Encryption()
+        self._required_loc = False
         #Catalog token
         #self.tokenBot=requests.get("http://catalogIP/telegram_token").json()["telegramToken"]
         self.bot = SuperTelepotBot(self.tokenBot)
@@ -55,19 +56,8 @@ class MyBot:
 
     def on_chat_message(self,msg):
 
-        content_type, chat_type ,chat_ID = telepot.glance(msg)
-        if "location" in msg :
-            if not self._encr.checkID(chat_ID) :
-                self.bot.sendMessage(chat_ID, "Unsubscribed user. Please insert the password using /psw <password> command", reply_markup=ReplyKeyboardRemove())
-            else:    
-                status,json_response,code_response1 = self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(msg["location"]["latitude"])})
-                status,json_response,code_response2= self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(msg["location"]["longitude"])})
-                if code_response1 == 200 and code_response2 == 200 :
-                    self.bot.sendMessage(chat_ID, "location set properly.", reply_markup=ReplyKeyboardRemove())
-                else:
-                    self.bot.sendMessage(chat_ID, "An error occour. ", reply_markup=ReplyKeyboardRemove())
-
-        elif "text" in msg:
+        content_type, chat_type, chat_ID = telepot.glance(msg)
+        if "text" in msg:
             message=msg["text"]
             if message.split()[0]=="/psw":
                 if len(message.split()) == 1:
@@ -97,7 +87,8 @@ class MyBot:
                             self.bot.sendMessage(chat_ID,"Please insert an integer value", reply_markup=ReplyKeyboardRemove())
                 elif message.split()[0] == "/pos" :
                     if len(message.split()) != 3:
-                        self.bot.sendMessage(chat_ID, " No latitute and longitude values inserted.")
+                        self.bot.sendMessage(chat_ID, "Please, send your location...", reply_markup=ReplyKeyboardRemove())
+                        self._required_loc = True
                     else:
                         try: # verify if the value is an integer
                             self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(message.split()[1])})
@@ -113,7 +104,7 @@ class MyBot:
                 "*/getairt* \\- Retrive temperature of the air\n"
                 "*/getairu*  \\- Retrive umidity of the air\n"
                 "*/getsoilu* \\- Retrive umidity of the soil\n"
-                "*/pos/* \\- Sets latitude and longitude where retrive weather forecasting\n"
+                "*/pos* \\- Sets latitude and longitude where retrive weather forecasting\n"
                 "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) <value\\> \\- Config the sensors: sets the period of sampling of the sensors\n"))
                 elif message == "/getairt":
                     self.bot.sendMessage(chat_ID,"You will get air temperature", reply_markup=ReplyKeyboardRemove())
@@ -146,7 +137,20 @@ class MyBot:
                     else:
                         self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())
                 else:
-                    #self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
-                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
+                    # self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove())
 
+        elif "location" in msg:
+
+            if self._required_loc:
+                status, json_response_0, code_response1 = self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(msg["location"]["latitude"])})
+                status, json_response_1, code_response2 = self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(msg["location"]["longitude"])})
+                if code_response1 == 200 and code_response2 == 200 :
+                    self.bot.sendMessage(chat_ID, "Location set properly!", reply_markup=ReplyKeyboardRemove())
+                else:
+                    self.bot.sendMessage(chat_ID, f"An error occourred:\nlat:\n{json_response_0}\n\nlon:\n{json_response_1}", reply_markup=ReplyKeyboardRemove())
+
+                self._required_loc = False
         
+            else:
+                self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
