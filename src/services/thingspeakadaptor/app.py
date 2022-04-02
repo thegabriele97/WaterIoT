@@ -19,8 +19,11 @@ class ThingSpeakAPI(RESTBase):
         thingspeakapikeytemperatureread,
         thingspeakapikeyhumiditywrite,
         thingspeakapikeyhumidityread,
+        thingspeakapikeysoilwrite,
+        thingspeakapikeysoilread,
         channelidtemperature,
         channelidhumidity,
+        channelidsoil,
     ) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
@@ -34,6 +37,8 @@ class ThingSpeakAPI(RESTBase):
         self._thingspeakapikeytemperatureread = thingspeakapikeytemperatureread
         self._thingspeakapikeyhumiditywrite = thingspeakapikeyhumiditywrite
         self._thingspeakapikeyhumidityread = thingspeakapikeyhumidityread
+        self._thingspeakapikeysoilwrite = thingspeakapikeysoilwrite
+        self._thingspeakapikeysoilread = thingspeakapikeysoilread
         self._channelidtemperature = channelidtemperature
         self._channelidhumidity = channelidhumidity
 
@@ -71,6 +76,21 @@ class ThingSpeakAPI(RESTBase):
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
             return r.json()["feeds"]
+        elif path[0] == "soil":
+            if len(args) > 0:
+                # Get the last value of the soil humidity
+                r = requests.get(
+                f"https://api.thingspeak.com/channels/{self._channelidsoil}/feeds.json?api_key={self._thingspeakapikeysoilread}&results={args['results']}"
+                )
+            else:
+                # Get all values of the soil humidity
+                r = requests.get(
+                f"https://api.thingspeak.com/channels/{self._channelidsoil}/feeds.json?api_key={self._thingspeakapikeysoilread}"
+                )
+            if r.status_code != 200:
+                cherrypy.response.status = 400
+                return self.asjson_error({"response": r.json()})
+            return r.json()["feeds"]
 
     def POST(self, *path, **args):
 
@@ -94,6 +114,16 @@ class ThingSpeakAPI(RESTBase):
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
             return self.asjson_info(None)
+        elif path[0] == "soil":
+            # Write the soil humidity to the ThingSpeak channel
+            r = requests.get(
+                f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={args['soil']}"
+            )
+            if r.status_code != 200:
+                cherrypy.response.status = 400
+                return self.asjson_error({"response": r.json()})
+            return self.asjson_info(None)
+
 
     def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
         self.logger.debug(msg.payload)
@@ -111,8 +141,11 @@ class App(WIOTRestApp):
             thingspeakapikeytemperatureread = os.environ["THINGSPEAKAPIKEYTEMPERATUREREAD"]
             thingspeakapikeyhumiditywrite = os.environ["THINGSPEAKAPIKEYHUMIDITYWRITE"]
             thingspeakapikeyhumidityread = os.environ["THINGSPEAKAPIKEYHUMIDITYREAD"]
+            thingspeakapikeysoilwrite=os.environ["THINGSPEAKAPIKEYSOILWRITE"]
+            thingpseakapikeysoilread=os.environ["THINGSPEAKAPIKEYSOILREAD"]
             channelidtemperature = os.environ["CHANNELIDTEMPERATURE"]
             channelidhumidity = os.environ["CHANNELIDHUMIDITY"]
+            channelidsoil=os.environ["CHANNELIDSOIL"]
             self.logger.debug(
                 "thingspeak api key write set to: "
                 + thingspeakapikeytemperaturewrite
@@ -142,8 +175,11 @@ class App(WIOTRestApp):
                     thingspeakapikeytemperatureread,
                     thingspeakapikeyhumiditywrite,
                     thingspeakapikeyhumidityread,
+                    thingspeakapikeysoilwrite,
+                    thingpseakapikeysoilread,
                     channelidtemperature,
                     channelidhumidity,
+                    channelidsoil,
                 ),
                 self.conf,
             )
