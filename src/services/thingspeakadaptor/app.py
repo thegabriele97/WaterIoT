@@ -50,12 +50,12 @@ class ThingSpeakAPI(RESTBase):
             if len(args) > 0:
                 # Get the last value of the air temperature
                 r = requests.get(
-                f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}&results={args['results']}"
+                    f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}&results={args['results']}"
                 )
             else:
                 # Get all values of the air temperature
                 r = requests.get(
-                f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}"
+                    f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}"
                 )
             if r.status_code != 200:
                 cherrypy.response.status = 400
@@ -65,12 +65,12 @@ class ThingSpeakAPI(RESTBase):
             if len(args) > 0:
                 # Get the last value of the air himidity
                 r = requests.get(
-                f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}&results={args['results']}"
+                    f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}&results={args['results']}"
                 )
             else:
                 # Get all values of the air humidity
                 r = requests.get(
-                f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}"
+                    f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}"
                 )
             if r.status_code != 200:
                 cherrypy.response.status = 400
@@ -104,6 +104,10 @@ class ThingSpeakAPI(RESTBase):
             if r.status_code != 200:
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
+
+            value = {"value": args['temp']}
+            self._catreq.publishMQTT("ThingSpeakAdaptor", "/airtemp", json.dumps(value))
+            
             return self.asjson_info(None)
         elif path[0] == "humidity":
             # Write the air humidity to the ThingSpeak channel
@@ -113,6 +117,9 @@ class ThingSpeakAPI(RESTBase):
             if r.status_code != 200:
                 cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
+
+            value = {"value": args['hum']}
+            self._catreq.publishMQTT("ThingSpeakAdaptor", "/airhum", json.dumps(value))
             return self.asjson_info(None)
         elif path[0] == "soil":
             # Write the soil humidity to the ThingSpeak channel
@@ -125,9 +132,10 @@ class ThingSpeakAPI(RESTBase):
             return self.asjson_info(None)
 
 
-    def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
+    def onMessageReceive(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         self.logger.debug(msg.payload)
-        #TODO: wait for rpi device connector to knwo hwo the data are sent
+        # TODO: wait for rpi device connector to knwo how the data are sent
+
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
@@ -166,6 +174,9 @@ class App(WIOTRestApp):
             self.addRESTEndpoint("/humidity", [EndpointParam("results")])
             self.addRESTEndpoint("/temperature")
             self.addRESTEndpoint("/humidity")
+            self.addMQTTEndpoint("/airtemp", "updates on switc")
+            self.addMQTTEndpoint("/airhum", "updates on  status")
+            self.addMQTTEndpoint("/soilhum", "updates switch status")
 
             self.mount(
                 ThingSpeakAPI(
