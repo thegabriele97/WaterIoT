@@ -33,7 +33,7 @@ class RaspberryDevConnAPI(RESTBase):
             self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
 
             # setup connection to DHT11
-            self.sensor = settings.sensor.type
+            self.sensor = Adafruit_DHT.DHT11
             self.logger.debug(type(self.sensor))
             self.pin = settings.sensor.pin
             self.logger.debug(type(self.pin))
