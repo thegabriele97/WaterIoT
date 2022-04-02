@@ -29,8 +29,12 @@ class ThingSpeakAPI(RESTBase):
         self._catreq = CatalogRequest(self.logger, settings)
 
         # Subscribe to arduino device connector mqtt topic
-        self._catreq.subscribeMQTT("ArduinoDevConn", "/switch")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceive)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
+        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceiveAirHumidity)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/airtemperature")
+        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceiveAirTemperature)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/terrainhumidity")
+        self._catreq.callbackOnTopic("ArduinoDevConn", "/switch", self.onMessageReceiveTerrainHumidity)
 
         # Set the API keys
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
@@ -41,6 +45,7 @@ class ThingSpeakAPI(RESTBase):
         self._thingspeakapikeysoilread = thingspeakapikeysoilread
         self._channelidtemperature = channelidtemperature
         self._channelidhumidity = channelidhumidity
+        self._channelidsoil = channelidsoil
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
@@ -132,9 +137,18 @@ class ThingSpeakAPI(RESTBase):
             return self.asjson_info(None)
 
 
-    def onMessageReceive(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+    def onMessageReceiveAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         self.logger.debug(msg.payload)
-        # TODO: wait for rpi device connector to knwo how the data are sent
+        self._catreq.reqREST("ThingSpeakAdaptor", f"/humidity?hum={msg.payload}", "POST")
+
+    def onMessageReceiveAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        self.logger.debug(msg.payload)
+        self._catreq.reqREST("ThingSpeakAdaptor", f"/temperature?temp={msg.payload}", "POST")
+
+    def onMessageReceiveTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        self.logger.debug(msg.payload)
+        self._catreq.reqREST("ThingSpeakAdaptor", f"/soil?soil={msg.payload}", "POST")
+
 
 
 class App(WIOTRestApp):

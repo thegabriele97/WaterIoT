@@ -33,9 +33,9 @@ class RaspberryDevConnAPI(RESTBase):
             self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
 
             # setup connection to DHT11
-            self.sensor = Adafruit_DHT.DHT11
+            self.sensor = settings.sensor.type
             self.logger.debug(type(self.sensor))
-            self.pin = "4"
+            self.pin = settings.sensor.pin
             self.logger.debug(type(self.pin))
             humidity, temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             if humidity is not None and temperature is not None:
@@ -120,7 +120,7 @@ class RaspberryDevConnAPI(RESTBase):
     # function of the threads
     def _airtemperature(self):
         while not self._th1.is_stop_requested:
-            self.temperature = 25
+            self.temperature = 50
             
             if self._onrpi:
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
@@ -135,7 +135,7 @@ class RaspberryDevConnAPI(RESTBase):
         while not self._th2.is_stop_requested:
 
             # set a default value of 20 in case you are not connected to the board
-            data = 20
+            data = 50
 
             # if you are on the rpi, ask arduino for the value of the soil humidity
             if self._onrpi:

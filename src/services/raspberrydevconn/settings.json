@@ -12,5 +12,14 @@
     "arduino": {
         "i2c_dev": 1,
         "i2c_addr": "0x08"
+    },
+    "sensor": {
+        "type": "Adafruit_DHT.DHT11",
+        "pin": 4
+    },
+    "default": {
+        "temperature": 25,
+        "humidity": 50,
+        "soil": 20
     }
 }
