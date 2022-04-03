@@ -6,3 +6,10 @@ while IFS= read -r line; do
         sed -i 's/Adafruit_DHT.*//g' requirements.txt
     fi
 done < "requirements.txt"
+
+if [ "${ONRASPBERRY}" != "1" ]; then
+    if [ -f "requirements_rpi.txt" ]; then
+        echo "" > requirements_rpi.txt
+    fi
+fi
+

@@ -107,7 +107,6 @@ class RaspberryDevConnAPI(RESTBase):
 
     # function of the threads
     def _airhumidity(self):
-        import Adafruit_DHT
         while not self._th.is_stop_requested:
             self.humidity = self.settings.default.humidity
             
@@ -121,7 +120,6 @@ class RaspberryDevConnAPI(RESTBase):
 
     # function of the threads
     def _airtemperature(self):
-        import Adafruit_DHT
         while not self._th1.is_stop_requested:
             self.temperature = self.settings.default.temperature
             
@@ -227,16 +225,15 @@ class App(WIOTRestApp):
             )
 
             # Add all the necessary endpoints both for REST and MQTT
-            self.addRESTEndpoint("/")
-            # self.addRESTEndpoint(
-            #     "/airhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE
-            # )
-            # self.addRESTEndpoint(
-            #     "/airtemperature", endpointTypeSub=EndpointTypeSub.RESOURCE
-            # )
-            # self.addRESTEndpoint(
-            #     "/terrainhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE
-            # )
+            self.addRESTEndpoint(
+                "/airhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE
+            )
+            self.addRESTEndpoint(
+                "/airtemperature", endpointTypeSub=EndpointTypeSub.RESOURCE
+            )
+            self.addRESTEndpoint(
+                "/terrainhumidity", endpointTypeSub=EndpointTypeSub.RESOURCE
+            )
             self.addMQTTEndpoint(
                 "/airhumidity", "data of the air humidity from the DHT11"
             )
