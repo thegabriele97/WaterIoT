@@ -96,43 +96,45 @@ class ThingSpeakAPI(RESTBase):
 
     def POST(self, *path, **args):
 
-        if len(path) == 0:
-            return self.asjson_info("ThingSpeak Adaptor Endpoint")
-        elif path[0] == "temperature":
-            # Write the air temperature to the ThingSpeak channel
-            r = requests.get(
-                f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}"
-            )
-            if r.status_code != 200:
-                return self.asjson_error({"response": r.json()})
+        if len(path) > 0:
+            if path[0] == "temperature":
+                # Write the air temperature to the ThingSpeak channel
+                r = requests.get(
+                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}"
+                )
+                if r.status_code != 200:
+                    return self.asjson_error({"response": r.json()})
 
-            value = {"value": args['temp']}
-            self._catreq.publishMQTT("ThingSpeakAdaptor", "/airtemp", json.dumps(value))
-            
-            return self.asjson_info(None)
-        elif path[0] == "humidity":
-            # Write the air humidity to the ThingSpeak channel
-            r = requests.get(
-                f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}"
-            )
-            if r.status_code != 200:
-                return self.asjson_error({"response": r.json()})
+                value = {"value": args['temp']}
+                self._catreq.publishMQTT("ThingSpeakAdaptor", "/airtemp", json.dumps(value))
+                return self.asjson_info("ok", 201)
 
-            value = {"value": args['hum']}
-            self._catreq.publishMQTT("ThingSpeakAdaptor", "/airhum", json.dumps(value))
-            return self.asjson_info(None)
-        elif path[0] == "soil":
-            # Write the soil humidity to the ThingSpeak channel
-            r = requests.get(
-                f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={args['soil']}"
-            )
+            elif path[0] == "humidity":
+                # Write the air humidity to the ThingSpeak channel
+                r = requests.get(
+                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}"
+                )
+                if r.status_code != 200:
+                    return self.asjson_error({"response": r.json()})
 
-            if r.status_code != 200:
-                return self.asjson_error({"response": r.json()})
+                value = {"value": args['hum']}
+                self._catreq.publishMQTT("ThingSpeakAdaptor", "/airhum", json.dumps(value))
+                return self.asjson_info("ok", 201)
 
-            value = {"value": args['soil']}
-            self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
-            return self.asjson_info("ok", 201)
+            elif path[0] == "soil":
+                # Write the soil humidity to the ThingSpeak channel
+                r = requests.get(
+                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={args['soil']}"
+                )
+
+                if r.status_code != 200:
+                    return self.asjson_error({"response": r.json()})
+
+                value = {"value": args['soil']}
+                self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
+                return self.asjson_info("ok", 201)
+
+        return self.asjson_error("not found", 404)
 
 
     def onMessageReceiveAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
@@ -214,19 +216,16 @@ class App(WIOTRestApp):
             self.create(self._settings, "ThingSpeakAdaptor", ServiceType.SERVICE)
 
             # Add all necessary endpoints
-            self.addRESTEndpoint("/")
             self.addRESTEndpoint("/temperature", [EndpointParam("temp")])
             self.addRESTEndpoint("/humidity", [EndpointParam("hum")])
             self.addRESTEndpoint("/soil", [EndpointParam("soil")])
-            self.addRESTEndpoint("/temperature", [EndpointParam("results")])
-            self.addRESTEndpoint("/humidity", [EndpointParam("results")])
-            self.addRESTEndpoint("/soil", [EndpointParam("results")])
-            self.addRESTEndpoint("/temperature")
-            self.addRESTEndpoint("/humidity")
-            self.addRESTEndpoint("/soil")
-            self.addMQTTEndpoint("/airtemp", "updates on switc")
-            self.addMQTTEndpoint("/airhum", "updates on  status")
-            self.addMQTTEndpoint("/soilhum", "updates switch status")
+            self.addRESTEndpoint("/temperature", [EndpointParam("results", required=False)])
+            self.addRESTEndpoint("/humidity", [EndpointParam("results", required=False)])
+            self.addRESTEndpoint("/soil", [EndpointParam("results", required=False)])
+
+            self.addMQTTEndpoint("/airtemp", "updates on air temperature sampling")
+            self.addMQTTEndpoint("/airhum", "updates on air humidity sampling")
+            self.addMQTTEndpoint("/soilhum", "updates switch soil humidity sampling")
 
             self.mount(
                 ThingSpeakAPI(
