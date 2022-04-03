@@ -94,6 +94,8 @@ class ThingSpeakAPI(RESTBase):
                 return self.asjson_error({"response": r.json()})
             return r.json()["feeds"]
 
+        return self.asjson_error("Not found", 404)
+
     def POST(self, *path, **args):
 
         if len(path) > 0:
