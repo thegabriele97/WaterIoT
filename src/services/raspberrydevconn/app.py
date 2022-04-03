@@ -114,7 +114,7 @@ class RaspberryDevConnAPI(RESTBase):
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
 
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airhumidity", self.asjson(self.humidity)
+                "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", self.humidity, "%"))
             )
             self._th.wait(self.wait_air_hum)
 
@@ -127,7 +127,7 @@ class RaspberryDevConnAPI(RESTBase):
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airtemperature", self.asjson(self.temperature)
+                "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", self.temperature, "°C"))
             )
             self._th1.wait(self.wait_air_temp)
 
@@ -145,26 +145,25 @@ class RaspberryDevConnAPI(RESTBase):
                 data = data & mask
 
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/terrainhumidity", self.asjson(data)
+                "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", data, "%"))
             )
 
             self._th2.wait(self.wait_soil_hum)
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
-        import Adafruit_DHT
         if len(path) == 0:
             return self.asjson_info("Raspberry Device Connector Endpoint")
         elif path[0] == "airhumidity":
-            self.humidity = self.settings.default.humidity
+            humidity = self.settings.default.humidity
             if self._onrpi:
-                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
-            return self.asjson(self.humidity)
+                humidity, _ = Adafruit_DHT.read_retry(self.sensor, self.pin)
+            return self.asjson(self._to_json_sensor(f"dht-airhum", humidity, "%"))
         elif path[0] == "airtemperature":
-            self.temperature = self.setting.default.temperature
+            temperature = self.settings.default.temperature
             if self._onrpi:
-                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
-            return self.asjson(self.temperature)
+                _, temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+            return self.asjson(self._to_json_sensor(f"dht-temp", temperature, "°C"))
         elif path[0] == "terrainhumidity":
 
             # set a default value of 20 in case you are not connected to the board
@@ -176,9 +175,9 @@ class RaspberryDevConnAPI(RESTBase):
                 mask = 0x3FF
                 data = data & mask
 
-            return self.asjson(data)
+            return self.asjson(self._to_json_sensor(f"soilhum", data, "%"))
 
-        return self.asjson("error")
+        return self.asjson_error("error", 404)
 
     # function for the callback of the mqtt topic when a new value for the sampleperiod of the temperature is received
     def onMessageReceiveTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
@@ -204,6 +203,13 @@ class RaspberryDevConnAPI(RESTBase):
         self.logger.debug(self.wait_soil_hum)
         self._th2.restart()
 
+    def _to_json_sensor(self, name, value, unit):
+        return {
+            "n": name,
+            "u": unit,
+            "v": value,
+            "t": time.time()
+        }
 
 
 class App(WIOTRestApp):

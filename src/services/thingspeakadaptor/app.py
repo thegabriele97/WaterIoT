@@ -63,7 +63,6 @@ class ThingSpeakAPI(RESTBase):
                     f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}"
                 )
             if r.status_code != 200:
-                cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
             return r.json()["feeds"]
         elif path[0] == "humidity":
@@ -78,7 +77,6 @@ class ThingSpeakAPI(RESTBase):
                     f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}"
                 )
             if r.status_code != 200:
-                cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
             return r.json()["feeds"]
         elif path[0] == "soil":
@@ -93,7 +91,6 @@ class ThingSpeakAPI(RESTBase):
                 f"https://api.thingspeak.com/channels/{self._channelidsoil}/feeds.json?api_key={self._thingspeakapikeysoilread}"
                 )
             if r.status_code != 200:
-                cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
             return r.json()["feeds"]
 
@@ -107,7 +104,6 @@ class ThingSpeakAPI(RESTBase):
                 f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}"
             )
             if r.status_code != 200:
-                cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
 
             value = {"value": args['temp']}
@@ -120,7 +116,6 @@ class ThingSpeakAPI(RESTBase):
                 f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}"
             )
             if r.status_code != 200:
-                cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
 
             value = {"value": args['hum']}
@@ -131,39 +126,59 @@ class ThingSpeakAPI(RESTBase):
             r = requests.get(
                 f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={args['soil']}"
             )
+
             if r.status_code != 200:
-                cherrypy.response.status = 400
                 return self.asjson_error({"response": r.json()})
 
             value = {"value": args['soil']}
             self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
-            return self.asjson_info(None)
+            return self.asjson_info("ok", 201)
 
 
     def onMessageReceiveAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.debug(msg.payload.decode("utf-8"))
+        
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(payl)
+
         r = requests.get(
-            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={msg.payload.decode('utf-8')}"
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={payl['v']}"
         )
-        value = {"value": msg.payload.decode("utf-8")}
+
+        if r.status_code != 200:
+            self.logger.warning(f"Error writing air humidity to ThingSpeak ({r.status_code}): {r.json()}")
+
+        value = {"value": payl["v"]}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/airhum", json.dumps(value))
         # self._catreq.reqREST("ThingSpeakAdaptor", f"/humidity?hum={msg.payload}", "POST")
 
     def onMessageReceiveAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.debug(msg.payload.decode("utf-8"))
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(payl)
+
         r = requests.get(
-            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={msg.payload.decode('utf-8')}"
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={payl['v']}"
         )
-        value = {"value": msg.payload.decode("utf-8")}
+
+        if r.status_code != 200:
+            self.logger.warning(f"Error writing air temperature to ThingSpeak ({r.status_code}): {r.json()}")
+
+        value = {"value": payl['v']}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/airtemp", json.dumps(value))
         # self._catreq.reqREST("ThingSpeakAdaptor", f"/temperature?temp={msg.payload}", "POST")
 
     def onMessageReceiveTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.debug(msg.payload.decode("utf-8"))
+
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(payl)
+
         r = requests.get(
-            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={msg.payload.decode('utf-8')}"
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={payl['v']}"
         )
-        value = {"value": msg.payload.decode("utf-8")}
+
+        if r.status_code != 200:
+            self.logger.warning(f"Error writing soil humidity to ThingSpeak ({r.status_code}): {r.json()}")
+
+        value = {"value": payl['v']}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
         # self._catreq.reqREST("ThingSpeakAdaptor", f"/soil?soil={msg.payload}", "POST")
 
