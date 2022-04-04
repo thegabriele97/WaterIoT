@@ -107,6 +107,7 @@ class RaspberryDevConnAPI(RESTBase):
 
     # function of the threads
     def _airhumidity(self):
+        import Adafruit_DHT
         while not self._th.is_stop_requested:
             self.humidity = self.settings.default.humidity
             
@@ -120,6 +121,7 @@ class RaspberryDevConnAPI(RESTBase):
 
     # function of the threads
     def _airtemperature(self):
+        import Adafruit_DHT
         while not self._th1.is_stop_requested:
             self.temperature = self.settings.default.temperature
             
@@ -152,6 +154,7 @@ class RaspberryDevConnAPI(RESTBase):
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
+        import Adafruit_DHT
         if len(path) == 0:
             return self.asjson_info("Raspberry Device Connector Endpoint")
         elif path[0] == "airhumidity":
