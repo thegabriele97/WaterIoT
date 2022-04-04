@@ -230,6 +230,7 @@ class App(WIOTRestApp):
                 "RaspberryDevConn",
                 ServiceType.DEVICE,
                 ServiceSubType.RASPBERRY,
+                devid=self._settings.getattrORdef("deviceid", 0)
             )
 
             # Add all the necessary endpoints both for REST and MQTT

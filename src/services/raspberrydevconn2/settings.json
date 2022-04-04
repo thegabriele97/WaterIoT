@@ -1,9 +1,9 @@
 {
     "rest_server": {
         "host": "0.0.0.0",
-        "port": 8088
+        "port": 8090
     },
-    "deviceid": 0,
+    "deviceid": 1,
     "indent_level": 4,
     "catalog": {
         "host": "catalog",

@@ -116,9 +116,11 @@ class CatalogAPI(RESTBase):
                             return self.asjson_error("devid argument required, must be integer")
 
                         if len(path) == 2 and path[1] in [k.name for k in merg.values()]:
-                            s_wdev_dict = {k: s for k, s in merg.items() if s.deviceid == int(args["devid"])}
+                            s_wdev_dict = {k: s for k, s in merg.items() if s.deviceid == int(args["devid"]) and s.name == path[1]}
+                            self.logger.debug(f"merg: {merg}")
+                            self.logger.debug(f"s_wdev: {s_wdev_dict}")
                             if len(list(s_wdev_dict.keys())) != 1:
-                                return self.asjson_error(f"Unable to find service {path[1]} ({args['devid']})")
+                                return self.asjson_error(f"Unable to find service {path[1]} ({args['devid']})", 404)
 
                             s_wdev_k = list(s_wdev_dict.keys())[0]
                             s_wdev = s_wdev_dict[s_wdev_k]
@@ -188,7 +190,7 @@ class CatalogAPI(RESTBase):
 
 class App(RESTServiceApp):
     def __init__(self) -> None:
-        super().__init__(log_stdout_level=logging.INFO)
+        super().__init__(log_stdout_level=logging.DEBUG)
 
         try:
 
