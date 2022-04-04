@@ -81,7 +81,7 @@
         "ymin": "",
         "ymax": "",
         "removeOlder": "20",
-        "removeOlderPoints": "",
+        "removeOlderPoints": "1000",
         "removeOlderUnit": "1",
         "cutout": 0,
         "useOneColor": false,
@@ -152,8 +152,8 @@
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
         "x": 610,
@@ -178,8 +178,8 @@
         "dot": false,
         "ymin": "",
         "ymax": "",
-        "removeOlder": "20",
-        "removeOlderPoints": "",
+        "removeOlder": "200",
+        "removeOlderPoints": "1000",
         "removeOlderUnit": "1",
         "cutout": 0,
         "useOneColor": false,
@@ -277,7 +277,7 @@
         "ymin": "",
         "ymax": "",
         "removeOlder": "20",
-        "removeOlderPoints": "",
+        "removeOlderPoints": "1000",
         "removeOlderUnit": "1",
         "cutout": 0,
         "useOneColor": false,
@@ -309,38 +309,20 @@
         "name": "",
         "method": "GET",
         "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "http://localhost:8082/currentweather?lat=51.5085&lon=0.1258",
+        "paytoqs": "query",
+        "url": "http://localhost:8082/currentweather?lat={{latitude}}&lon={{longitude}}",
         "tls": "",
         "persist": false,
         "proxy": "",
         "authType": "",
         "senderr": false,
-        "x": 150,
-        "y": 600,
+        "x": 830,
+        "y": 560,
         "wires": [
             [
-                "c6d65515fca7f3fa",
                 "ea227e2980de4d35"
             ]
         ]
-    },
-    {
-        "id": "c6d65515fca7f3fa",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 390,
-        "y": 520,
-        "wires": []
     },
     {
         "id": "e275e663d784c501",
@@ -368,14 +350,14 @@
         "order": 1,
         "width": "0",
         "height": "0",
-        "format": "\n<div align=\"center\">\n<p>\n<img  src=\"{{msg.payload}}\" />\n</p>\n</div>\n",
+        "format": "<div align=\"center\">\n<big><b>{{msg.name}}</b></big>\n<p>\n<img  src=\"{{msg.payload}}\" />\n</p>\n</div>\n",
         "storeOutMessages": true,
         "fwdInMessages": true,
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 600,
-        "y": 600,
+        "x": 1280,
+        "y": 560,
         "wires": [
             []
         ]
@@ -385,32 +367,15 @@
         "type": "python3-function",
         "z": "6644ea9bf3513060",
         "name": "",
-        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"payload\"]=payload[\"weather\"][0][\"icon\"]\nmsg[\"payload\"]=\"http://openweathermap.org/img/wn/\"+msg[\"payload\"]+\"@2x.png\"\nreturn msg",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"payload\"]=payload[\"weather\"][0][\"icon\"]\nmsg[\"payload\"]=\"http://openweathermap.org/img/wn/\"+msg[\"payload\"]+\"@2x.png\"\nmsg[\"name\"]=payload[\"name\"]\nreturn msg",
         "outputs": 1,
-        "x": 390,
-        "y": 600,
+        "x": 1070,
+        "y": 560,
         "wires": [
             [
-                "72e7b7e596d04321",
-                "d0f04cbafdd3a7a7"
+                "72e7b7e596d04321"
             ]
         ]
-    },
-    {
-        "id": "d0f04cbafdd3a7a7",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 650,
-        "y": 680,
-        "wires": []
     },
     {
         "id": "ef2955c013057f2c",
@@ -433,11 +398,66 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 80,
-        "y": 680,
+        "x": 140,
+        "y": 620,
         "wires": [
             [
-                "5a01521c0c95157b"
+                "b63c5b867f4ae8cb"
+            ]
+        ]
+    },
+    {
+        "id": "b63c5b867f4ae8cb",
+        "type": "http request",
+        "z": "6644ea9bf3513060",
+        "name": "Position",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:8087/configs?path=/system/location",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "x": 320,
+        "y": 620,
+        "wires": [
+            [
+                "79d0aabe19f2e075"
+            ]
+        ]
+    },
+    {
+        "id": "e08b4b1d404b534a",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "79d0aabe19f2e075",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"latitude\"]=payload[\"lat\"]\nmsg[\"longitude\"]=payload[\"lon\"]\nreturn msg",
+        "outputs": 1,
+        "x": 600,
+        "y": 620,
+        "wires": [
+            [
+                "5a01521c0c95157b",
+                "e08b4b1d404b534a"
             ]
         ]
     },
