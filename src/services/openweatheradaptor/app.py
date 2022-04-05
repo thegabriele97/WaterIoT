@@ -26,6 +26,7 @@ class OpenWeatherAPI(RESTBase):
                 return self.asjson_error({"response": r.json()}, 400)
 
             return self.asjson({
+                "name": r.json()["name"],
                 "temp": r.json()["main"]["temp"],
                 "pressure": r.json()["main"]["pressure"],
                 "humidity": r.json()["main"]["humidity"],

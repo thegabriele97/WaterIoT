@@ -1,0 +1,52 @@
+{
+    "rest_server": {
+        "host": "0.0.0.0",
+        "port": 8085
+    },
+    "indent_level": 4,
+    "catalog": {
+        "host": "catalog",
+        "port": 8080,
+        "ping_ms": 2000
+    },
+    "telegram": {
+        "poll_time": 0.5,
+        "commands": {
+            "commands": [
+                {
+                    "command": "help",
+                    "description": "Show the list of all available commands"
+                },
+                {
+                    "command": "psw",
+                    "description": "Subscribe the user"
+                },
+                {
+                    "command": "switch",
+                    "description": "Turn on or off the irrigator"
+                },
+                {
+                    "command": "getairt",
+                    "description": "Retrieve temperature of the air"
+                },
+                {
+                    "command": "getairu",
+                    "description": "Retrieve humidity of the air"
+                },
+                {
+                    "command": "getsoilu",
+                    "description": "Retrieve humidity of the soil"
+                },
+                {
+                    "command": "config",
+                    "description": "Sets the sampling period of the sensors"
+                },
+                {
+                    "command": "pos",
+                    "description": "Sets latitude and longitude where retrive weather forecasting"
+                }
+            ],
+            "language_code": "en"
+        }
+    }
+}
