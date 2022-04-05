@@ -37,6 +37,27 @@ services:
       timeout: 2s
       retries: 5
 
+
+  telegramadaptor:
+    build: 
+      context: ./
+      dockerfile: ./services/telegram/Dockerfile
+    ports:
+      - "8085:8085"
+    hostname : "telegramadaptor"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/telegramadaptor | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    environment:
+      - TELEGRAMAPAPIKEY=${TELEGRAMAPAPIKEY}
+    volumes:
+      - ${PWD}/services/telegram/data.json:/app/services/telegram/data.json:rw
+
   arduinodevconn:
     build: 
       context: ./
@@ -56,6 +77,29 @@ services:
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
+  raspberrydevconn:
+    build: 
+      context: ./
+      dockerfile: ./services/raspberrydevconn/Dockerfile
+    privileged: true
+    ports:
+      - "8088:8088"
+    depends_on:
+      catalog:
+          condition: service_started
+      deviceconfig:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/raspberrydevconn | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"
+    #   - "/dev/gpiomem:/dev/gpiomem"  
+    environment:
+      - ONRASPBERRY=${ONRASPBERRY}
+  
   openweatheradaptor:
     build: 
       context: ./
@@ -84,6 +128,8 @@ services:
         condition: service_started
       arduinodevconn:
         condition: service_started
+      raspberrydevconn:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/thingspeakadaptor | grep online | grep -c true"]
       interval: 15s
@@ -94,5 +140,25 @@ services:
       - THINGSPEAKAPIKEYTEMPERATUREREAD=${THINGSPEAKAPIKEYTEMPERATUREREAD}
       - THINGSPEAKAPIKEYHUMIDITYWRITE=${THINGSPEAKAPIKEYHUMIDITYWRITE}
       - THINGSPEAKAPIKEYHUMIDITYREAD=${THINGSPEAKAPIKEYHUMIDITYREAD}
+      - THINGSPEAKAPIKEYSOILWRITE=${THINGSPEAKAPIKEYSOILWRITE}
+      - THINGSPEAKAPIKEYSOILREAD=${THINGSPEAKAPIKEYSOILREAD}
       - CHANNELIDTEMPERATURE=${CHANNELIDTEMPERATURE}
       - CHANNELIDHUMIDITY=${CHANNELIDHUMIDITY}
+      - CHANNELIDSOIL=${CHANNELIDSOIL}
+
+  deviceconfig:
+    build: 
+      context: ./
+      dockerfile: ./services/deviceconfig/Dockerfile
+    ports:
+      - "8087:8087"
+    depends_on:
+      catalog:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/deviceconfig | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    volumes:
+      - ${PWD}/services/deviceconfig/confs.json:/app/services/deviceconfig/confs.json:rw

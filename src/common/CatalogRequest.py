@@ -102,7 +102,7 @@ class CatalogRequest:
 
         return len(epoint) == 1
 
-    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, data = None):
+    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
@@ -137,7 +137,17 @@ class CatalogRequest:
                     jsonresp = cache[1].response
 
             if jsonresp is None:
-                r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+
+                r = None
+                for _ in range(0, 10):
+                    r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+                    if r.status_code == 404:
+                        time.sleep(0.5)
+                    elif r.status_code != 200:
+                        r.raise_for_status()
+                    else:
+                        break
+
                 jsonresp = r.json()
                 coderesp = r.status_code
 
@@ -181,13 +191,13 @@ class CatalogRequest:
 
             url = f"http://{host}:{str(port)}{path}"
             if reqt == RequestType.GET:
-                r = requests.get(url=url, data=data)
+                r = requests.get(url=url, json=datarequest)
             elif reqt == RequestType.POST:
-                r = requests.post(url=url, data=data)
+                r = requests.post(url=url, json=datarequest)
             elif reqt == RequestType.PUT:
-                r = requests.put(url=url, data=data)
+                r = requests.put(url=url, json=datarequest)
             elif reqt == RequestType.DELETE:
-                r = requests.delete(url=url, data=data)
+                r = requests.delete(url=url, json=datarequest)
 
             jsonresp = r.json()
             coderesp = r.status_code
