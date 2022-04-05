@@ -1,9 +1,11 @@
 FROM python:3
 
 COPY common/requirements.txt /app/common/requirements.txt
-COPY services/example/requirements.txt /app/services/example/requirements.txt
+COPY services/raspberrydevconn/requirements.txt /app/services/raspberrydevconn/requirements.txt
+COPY services/raspberrydevconn/requirements_rpi.txt /app/services/raspberrydevconn/requirements_rpi.txt
 RUN pip3 install -r /app/common/requirements.txt
-RUN pip3 install -r /app/services/example/requirements.txt
+RUN pip3 install -r /app/services/raspberrydevconn/requirements.txt
+RUN pip3 install -r /app/services/raspberrydevconn/requirements_rpi.txt
 
 COPY . /app
 WORKDIR /app/services/raspberrydevconn
