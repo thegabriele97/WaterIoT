@@ -29,8 +29,8 @@ class ThingSpeakAPI(RESTBase):
         self._catreq = CatalogRequest(self.logger, settings)
 
         # TODO: temporary
-        self._catreq.subscribeMQTT("ArduinoDevConn", "/+/switch")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive)
+        # self._catreq.subscribeMQTT("ArduinoDevConn", "/+/switch")
+        # self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive)
 
         # Subscribe to arduino device connector mqtt topic
         self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
@@ -57,12 +57,12 @@ class ThingSpeakAPI(RESTBase):
             return self.asjson_info("ThingSpeak Adaptor Endpoint")
         elif path[0] == "temperature":
             if len(args) > 0:
-                # Get the last value of the air temperature
+                # Get the last value of the air temperature for all devices
                 r = requests.get(
                     f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}&results={args['results']}"
                 )
             else:
-                # Get all values of the air temperature
+                # Get all values of the air temperature for all devices
                 r = requests.get(
                     f"https://api.thingspeak.com/channels/{self._channelidtemperature}/feeds.json?api_key={self._thingspeakapikeytemperatureread}"
                 )
@@ -71,12 +71,12 @@ class ThingSpeakAPI(RESTBase):
             return r.json()["feeds"]
         elif path[0] == "humidity":
             if len(args) > 0:
-                # Get the last value of the air himidity
+                # Get the last value of the air humidity for all devices
                 r = requests.get(
                     f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}&results={args['results']}"
                 )
             else:
-                # Get all values of the air humidity
+                # Get all values of the air humidity for all devices
                 r = requests.get(
                     f"https://api.thingspeak.com/channels/{self._channelidhumidity}/feeds.json?api_key={self._thingspeakapikeyhumidityread}"
                 )
@@ -85,12 +85,12 @@ class ThingSpeakAPI(RESTBase):
             return r.json()["feeds"]
         elif path[0] == "soil":
             if len(args) > 0:
-                # Get the last value of the soil humidity
+                # Get the last value of the soil humidity for all devices
                 r = requests.get(
                 f"https://api.thingspeak.com/channels/{self._channelidsoil}/feeds.json?api_key={self._thingspeakapikeysoilread}&results={args['results']}"
                 )
             else:
-                # Get all values of the soil humidity
+                # Get all values of the soil humidity for all devices
                 r = requests.get(
                 f"https://api.thingspeak.com/channels/{self._channelidsoil}/feeds.json?api_key={self._thingspeakapikeysoilread}"
                 )
@@ -106,7 +106,7 @@ class ThingSpeakAPI(RESTBase):
             if path[0] == "temperature":
                 # Write the air temperature to the ThingSpeak channel
                 r = requests.get(
-                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}"
+                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={args['temp']}&field2={args['id']}&field3={args['timestamp']}"
                 )
                 if r.status_code != 200:
                     return self.asjson_error({"response": r.json()})
@@ -118,7 +118,7 @@ class ThingSpeakAPI(RESTBase):
             elif path[0] == "humidity":
                 # Write the air humidity to the ThingSpeak channel
                 r = requests.get(
-                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}"
+                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={args['hum']}&field2={args['id']}&field3={args['timestamp']}"
                 )
                 if r.status_code != 200:
                     return self.asjson_error({"response": r.json()})
@@ -130,7 +130,7 @@ class ThingSpeakAPI(RESTBase):
             elif path[0] == "soil":
                 # Write the soil humidity to the ThingSpeak channel
                 r = requests.get(
-                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={args['soil']}"
+                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={args['soil']}&field2={args['id']}&field3={args['timestamp']}"
                 )
 
                 if r.status_code != 200:
@@ -148,9 +148,8 @@ class ThingSpeakAPI(RESTBase):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(payl)
 
-        # TODO: field for timestamp and device id #############
         r = requests.get(
-            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={payl['v']}"
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={payl['v']}&field2={payl['i']}&field3={payl['t']}"
         )
 
         if r.status_code != 200:
@@ -158,14 +157,13 @@ class ThingSpeakAPI(RESTBase):
 
         value = {"value": payl["v"]}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/airhum", json.dumps(value))
-        # self._catreq.reqREST("ThingSpeakAdaptor", f"/humidity?hum={msg.payload}", "POST")
 
     def onMessageReceiveAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(payl)
 
         r = requests.get(
-            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={payl['v']}"
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={payl['v']}&field2={payl['i']}&field3={payl['t']}"
         )
 
         if r.status_code != 200:
@@ -173,7 +171,6 @@ class ThingSpeakAPI(RESTBase):
 
         value = {"value": payl['v']}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/airtemp", json.dumps(value))
-        # self._catreq.reqREST("ThingSpeakAdaptor", f"/temperature?temp={msg.payload}", "POST")
 
     def onMessageReceiveTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
 
@@ -181,7 +178,7 @@ class ThingSpeakAPI(RESTBase):
         self.logger.debug(payl)
 
         r = requests.get(
-            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={payl['v']}"
+            f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={payl['v']}&field2={payl['i']}&field3={payl['t']}"
         )
 
         if r.status_code != 200:
@@ -189,12 +186,6 @@ class ThingSpeakAPI(RESTBase):
 
         value = {"value": payl['v']}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
-        # self._catreq.reqREST("ThingSpeakAdaptor", f"/soil?soil={msg.payload}", "POST")
-
-
-    # TODO: to remove
-    def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
-        self.logger.debug(f"{msg.topic}: {msg.payload}")
 
 
 class App(WIOTRestApp):
@@ -227,9 +218,9 @@ class App(WIOTRestApp):
             self.create(self._settings, "ThingSpeakAdaptor", ServiceType.SERVICE)
 
             # Add all necessary endpoints
-            self.addRESTEndpoint("/temperature", [EndpointParam("temp")])
-            self.addRESTEndpoint("/humidity", [EndpointParam("hum")])
-            self.addRESTEndpoint("/soil", [EndpointParam("soil")])
+            self.addRESTEndpoint("/temperature", [EndpointParam("temp"), EndpointParam("id"), EndpointParam("timestamp")])
+            self.addRESTEndpoint("/humidity", [EndpointParam("hum"), EndpointParam("id"), EndpointParam("timestamp")])
+            self.addRESTEndpoint("/soil", [EndpointParam("soil"), EndpointParam("id"), EndpointParam("timestamp")])
             self.addRESTEndpoint("/temperature", [EndpointParam("results", required=False)])
             self.addRESTEndpoint("/humidity", [EndpointParam("results", required=False)])
             self.addRESTEndpoint("/soil", [EndpointParam("results", required=False)])
