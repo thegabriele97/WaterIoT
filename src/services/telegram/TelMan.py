@@ -1,3 +1,4 @@
+from datetime import datetime
 import telepot
 import time
 from telepot.loop import MessageLoop
@@ -107,14 +108,41 @@ class MyBot:
                 "*/pos* \\- Sets latitude and longitude where retrive weather forecasting\n"
                 "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) <value\\> \\- Config the sensors: sets the period of sampling of the sensors\n"))
                 elif message == "/getairt":
-                    self.bot.sendMessage(chat_ID,"You will get air temperature", reply_markup=ReplyKeyboardRemove())
-                    self.bot.sendMessage(chat_ID,self.catreq.reqREST("RaspberryDevConn","/airtemperature"), reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID,"You will get air temperature..", reply_markup=ReplyKeyboardRemove())
+                    status, resp, code = self.catreq.reqREST("RaspberryDevConn","/airtemperature")
+                    if not status or code != 200:
+                        self.bot.sendMessage(chat_ID, f"Error while requesting data {code}: {resp}", reply_markup=ReplyKeyboardRemove())
+
+                    msg  = '<pre>'
+                    msg += f'sensor: {resp["n"]}\n'
+                    msg += f'time  : {datetime.fromtimestamp(resp["t"])}\n'
+                    msg += f'value : {resp["v"]}{resp["u"]}'
+                    msg += '</pre>'
+                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 elif message == "/getairu":
-                    self.bot.sendMessage(chat_ID,"You will get air umidity", reply_markup=ReplyKeyboardRemove())
-                    self.bot.sendMessage(chat_ID,self.catreq.reqREST("RaspberryDevConn","/airhumidity"), reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID,"You will get air umidity..", reply_markup=ReplyKeyboardRemove())
+                    status, resp, code = self.catreq.reqREST("RaspberryDevConn","/airhumidity")
+                    if not status or code != 200:
+                        self.bot.sendMessage(chat_ID, f"Error while requesting data {code}: {resp}", reply_markup=ReplyKeyboardRemove())
+
+                    msg  = '<pre>'
+                    msg += f'sensor: {resp["n"]}\n'
+                    msg += f'time  : {datetime.fromtimestamp(resp["t"])}\n'
+                    msg += f'value : {resp["v"]}{resp["u"]}'
+                    msg += '</pre>'
+                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 elif message == "/getsoilu":
-                    self.bot.sendMessage(chat_ID,"You will get soil umidity")
-                    self.bot.sendMessage(chat_ID,self.catreq.reqREST("RaspberryDevConn","/terrainhumidity"), reply_markup=ReplyKeyboardRemove())
+                    self.bot.sendMessage(chat_ID,"You will get soil umidity..")
+                    status, resp, code = self.catreq.reqREST("RaspberryDevConn","/terrainhumidity")
+                    if not status or code != 200:
+                        self.bot.sendMessage(chat_ID, f"Error while requesting data {code}: {resp}", reply_markup=ReplyKeyboardRemove())
+
+                    msg  = '<pre>'
+                    msg += f'sensor: {resp["n"]}\n'
+                    msg += f'time  : {datetime.fromtimestamp(resp["t"])}\n'
+                    msg += f'value : {resp["v"]}{resp["u"]}'
+                    msg += '</pre>'
+                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 elif message.split()[0]=="/switch":
                     if len(message.split()) == 1:
                         self.bot.sendMessage(chat_id=chat_ID,
