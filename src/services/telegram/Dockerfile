@@ -5,7 +5,8 @@ COPY services/telegram/requirements.txt /app/services/telegram/requirements.txt
 RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/telegram/requirements.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services/telegram /app/services/telegram
 WORKDIR /app/services/telegram
 
 # RUN pip install pipreqs

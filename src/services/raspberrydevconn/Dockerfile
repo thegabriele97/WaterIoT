@@ -7,7 +7,8 @@ RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/raspberrydevconn/requirements.txt
 RUN pip3 install -r /app/services/raspberrydevconn/requirements_rpi.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services/raspberrydevconn /app/services/raspberrydevconn
 WORKDIR /app/services/raspberrydevconn
 
 # RUN pip install pipreqs
