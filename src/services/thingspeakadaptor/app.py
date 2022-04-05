@@ -33,12 +33,12 @@ class ThingSpeakAPI(RESTBase):
         self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive)
 
         # Subscribe to arduino device connector mqtt topic
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/airhumidity", self.onMessageReceiveAirHumidity)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/airtemperature")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/airtemperature", self.onMessageReceiveAirTemperature)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/terrainhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/terrainhumidity", self.onMessageReceiveTerrainHumidity)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onMessageReceiveAirHumidity)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onMessageReceiveAirTemperature)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onMessageReceiveTerrainHumidity)
 
         # Set the API keys
         self._thingspeakapikeytemperaturewrite = thingspeakapikeytemperaturewrite
@@ -148,6 +148,7 @@ class ThingSpeakAPI(RESTBase):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(payl)
 
+        # TODO: field for timestamp and device id #############
         r = requests.get(
             f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={payl['v']}"
         )

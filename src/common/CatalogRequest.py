@@ -54,7 +54,7 @@ class CatalogRequest:
 
         ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
         self._mqttclient.publish(f"/{service}{ap}{path}", payload)
-        self._logger.debug(f"MQTT published to /{service}{path}: {payload}")
+        self._logger.debug(f"MQTT published to /{service}{ap}{path}: {payload}")
 
     def subscribeMQTT(self, service: str, path: str, devid: int = None):
 
@@ -66,7 +66,7 @@ class CatalogRequest:
 
         ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
         self._mqttclient.subscribe(f"/{service}{ap}{path}")
-        self._logger.debug(f"MQTT subscribed to /{service}{path}")
+        self._logger.debug(f"MQTT subscribed to /{service}{ap}{path}")
 
     def callbackOnTopic(self, service: str, path: str, callback, devid: int = None):
 
@@ -83,7 +83,7 @@ class CatalogRequest:
 
         service = service.lower()
         rpath = f"{self._catalogURL}/catalog/services/{service}"
-        self._logger.debug(f"Requesting MQTT service info @ {rpath}")
+        self._logger.debug(f"Requesting MQTT ({path}, dev #{devid}) service info @ {rpath}")
 
         r = None
         for _ in range(0, 10):
@@ -100,19 +100,18 @@ class CatalogRequest:
 
         # checking if we are dealing with a multiple device
         if "services" in r.json():
-            devid = r.json()["services"][0]["service"]["deviceid"]
-            dservice = r.json()["services"][0]["service"]
+            epoints_raw = [list(s["service"]["endpoints"][EndpointType.MQTT.name]) for s in r.json()["services"]]
+            epoints_raw = [item for sublist in epoints_raw for item in sublist]
         else:
-            dservice = r.json()["service"]
+            epoints_raw = r.json()["service"]["endpoints"][EndpointType.MQTT.name]
 
         # if not r.json()["online"]:
         #     raise Exception(f"Service {service} is not online")
             
-        epoints_raw = dservice["endpoints"][EndpointType.MQTT.name]
         ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
         epoint = [e for e in epoints_raw if mqtt.topic_matches_sub(f"/{service}{ap}{path}", e["uri"])]
 
-        return len(epoint) == 1
+        return len(epoint) > 0
 
     def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None):
         """
