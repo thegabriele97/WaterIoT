@@ -18,8 +18,8 @@
                     "description": "Show the list of all available commands"
                 },
                 {
-                    "command": "psw",
-                    "description": "Subscribe the user"
+                    "command": "status",
+                    "description": "Get the actual system status"
                 },
                 {
                     "command": "switch",
@@ -44,6 +44,10 @@
                 {
                     "command": "pos",
                     "description": "Sets latitude and longitude where retrive weather forecasting"
+                },
+                {
+                    "command": "psw",
+                    "description": "Subscribe the user"
                 }
             ],
             "language_code": "en"
