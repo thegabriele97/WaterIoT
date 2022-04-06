@@ -28,10 +28,6 @@ class ThingSpeakAPI(RESTBase):
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
 
-        # TODO: temporary
-        self._catreq.subscribeMQTT("ArduinoDevConn", "/+/switch")
-        self._catreq.callbackOnTopic("ArduinoDevConn", "/+/switch", self.onMessageReceive)
-
         # Subscribe to arduino device connector mqtt topic
         self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
         self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onMessageReceiveAirHumidity)
@@ -190,11 +186,6 @@ class ThingSpeakAPI(RESTBase):
         value = {"value": payl['v']}
         self._catreq.publishMQTT("ThingSpeakAdaptor", "/soilhum", json.dumps(value))
         # self._catreq.reqREST("ThingSpeakAdaptor", f"/soil?soil={msg.payload}", "POST")
-
-
-    # TODO: to remove
-    def onMessageReceive(self, paho_mqtt , userdata, msg:mqtt.MQTTMessage):
-        self.logger.debug(f"{msg.topic}: {msg.payload}")
 
 
 class App(WIOTRestApp):

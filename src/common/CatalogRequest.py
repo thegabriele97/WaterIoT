@@ -119,9 +119,7 @@ class CatalogRequest:
         ie. /calculator/sum?a=2&b=3
         """
 
-        b1 = False
-        b2 = False
-        b3 = False
+        b1 = b2 = b3 = b4 = False
         jsonresp = None
         coderesp = None
 
@@ -152,7 +150,7 @@ class CatalogRequest:
 
                 r = None
                 for _ in range(0, 10):
-                    r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+                    r = requests.get(url=rpath)
                     if r.status_code == 404:
                         time.sleep(0.5)
                     elif r.status_code != 200:
@@ -211,6 +209,8 @@ class CatalogRequest:
             elif reqt == RequestType.DELETE:
                 r = requests.delete(url=url, json=datarequest)
 
+            b4 = True
+
             jsonresp = r.json()
             coderesp = r.status_code
             
@@ -218,8 +218,46 @@ class CatalogRequest:
             self._logger.error(f"Catalog request error: {str(e)}")
         
         finally:
-            self._logger.debug(f"Service {b1}. Endpoint {b2}. Params {b3}")
-            return RetType(b1 and b2 and b3, jsonresp, coderesp)
+            self._logger.debug(f"Service {b1}. Endpoint {b2}. Params {b3}. Reachable {b4}")
+            return RetType(b1 and b2 and b3 and b4, jsonresp, coderesp)
+
+    def reqDeviceIdsList(self, service: str) -> list[int]:
+        """
+        Returns a list of device ids for the given service
+        """
+        service = service.lower()
+        rpath = f"{self._catalogURL}/catalog/services/{service}/ids"
+
+        r = None
+        for _ in range(0, 10):
+            r = requests.get(url=rpath)
+            if r.status_code == 404:
+                time.sleep(0.5)
+            elif r.status_code != 200:
+                r.raise_for_status()
+            else:
+                break
+
+        return r.json()["ids"]
+
+    def reqDeviceServices(self, service: str):
+        """
+        Returns a list of services for the given device
+        """
+        service = service.lower()
+        rpath = f"{self._catalogURL}/catalog/services/{service}"
+
+        r = None
+        for _ in range(0, 10):
+            r = requests.get(url=rpath)
+            if r.status_code == 404:
+                time.sleep(0.5)
+            elif r.status_code != 200:
+                r.raise_for_status()
+            else:
+                break
+
+        return r.json()["services"]
 
     def _cb_on_connect(self, mqtt: mqtt.Client, userdata, flags, rc):
         self._logger.info(f"Connected to MQTT broker {mqtt._host}:{mqtt._port}")
