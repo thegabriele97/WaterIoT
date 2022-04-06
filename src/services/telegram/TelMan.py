@@ -1,11 +1,8 @@
 from datetime import datetime
 from xmlrpc.client import DateTime
 import telepot
-import time
 from telepot.loop import MessageLoop
 from telepot.namedtuple import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
-import json
-import requests
 import logging
 from encryption import Encryption
 from common.CatalogRequest import *
@@ -59,7 +56,10 @@ class MyBot:
     def on_chat_message(self,msg):
 
         content_type, chat_type, chat_ID = telepot.glance(msg)
+
         if "text" in msg:
+            self.logger.info(f"New text from {chat_ID}: {msg['text']}")
+
             message=msg["text"]
             if message.split()[0]=="/psw":
                 if len(message.split()) == 1:
@@ -102,6 +102,7 @@ class MyBot:
                 "Hello\\!\n"
                 "Here the commands:\n"
                 "*/psw <password\\>* \\- Subscribe the user\n"
+                "*/status* \\- Get the actual system status\n"
                 "*/switch <on/off\\>* \\- Turn on or off the irrigator\n"
                 "*/getairt* \\- Retrive temperature of the air\n"
                 "*/getairu*  \\- Retrive umidity of the air\n"
@@ -175,6 +176,23 @@ class MyBot:
                             self.bot.sendMessage(chat_ID, "You stopped irrigation", reply_markup=ReplyKeyboardRemove())
                     else:
                         self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())
+                elif message.split()[0]=="/status":
+                    
+                    msg = ""
+                    ss = self.catreq.reqAllServices()
+
+                    if len(ss["online"]) > 0:
+                        msg += "<b>✅ online</b>:\n"
+                        for s in ss["online"]:
+                            msg += f"  🛸 <pre>{s['name']}</pre>\n"
+
+                    if len(ss["offline"]) > 0:
+                        msg += "\n<b>❌ offline</b>:\n"
+                        for s in ss["offline"]:
+                            msg += f"  🚑 <pre>{s['name']}</pre>\n"
+
+                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
+
                 else:
                     self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
                     # self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove())

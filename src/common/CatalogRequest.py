@@ -259,6 +259,21 @@ class CatalogRequest:
 
         return r.json()["services"]
 
+    def reqAllServices(self) -> dict[str, list]:
+        """
+        Returns a list of all services
+        """
+
+        r1 = requests.get(url=f"{self._catalogURL}/catalog/services")
+        if r1.status_code != 200:
+            r1.raise_for_status()
+
+        r2 = requests.get(url=f"{self._catalogURL}/catalog/services/expired")
+        if r2.status_code != 200:
+            r2.raise_for_status()
+
+        return {"online": r1.json()["services"], "offline": r2.json()["services"]}
+
     def _cb_on_connect(self, mqtt: mqtt.Client, userdata, flags, rc):
         self._logger.info(f"Connected to MQTT broker {mqtt._host}:{mqtt._port}")
         if self._on_connect is not None:
