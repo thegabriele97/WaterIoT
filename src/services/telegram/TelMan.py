@@ -1,4 +1,5 @@
 from datetime import datetime
+from xmlrpc.client import DateTime
 import telepot
 import time
 from telepot.loop import MessageLoop
@@ -144,11 +145,13 @@ class MyBot:
                         self.bot.sendMessage(chat_ID, f"Error while requesting data {code}: {resp}", reply_markup=ReplyKeyboardRemove())
                         return
 
+                    dt = datetime.fromtimestamp(resp["t"]).strftime("%d-%m-%Y %H:%M:%S")
+
                     msg  = '<pre>'
-                    msg += f'sensor   : {resp["n"]}\n'
-                    msg += f'device id: {resp["i"]}\n'
-                    msg += f'time     : {datetime.fromtimestamp(resp["t"])}\n'
-                    msg += f'value    : {resp["v"]}{resp["u"]}'
+                    msg += f'🖥️ sensor: {resp["n"]}\n'
+                    msg += f'🔢 dev # : {resp["i"]}\n'
+                    msg += f'🕟 time  : {dt}\n'
+                    msg += f'📟 value : {resp["v"]}{resp["u"]}'
                     msg += '</pre>'
                     self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 elif message.split()[0]=="/switch":
