@@ -5,7 +5,8 @@ COPY services/openweatheradaptor/requirements.txt /app/services/openweatheradapt
 RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/openweatheradaptor/requirements.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services/openweatheradaptor /app/services/openweatheradaptor
 WORKDIR /app/services/openweatheradaptor
 
 # RUN pip install pipreqs

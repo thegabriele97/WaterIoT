@@ -5,7 +5,8 @@ COPY services/thingspeakadaptor/requirements.txt /app/services/thingspeakadaptor
 RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/thingspeakadaptor/requirements.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services/thingspeakadaptor /app/services/thingspeakadaptor
 WORKDIR /app/services/thingspeakadaptor
 
 # RUN pip install pipreqs

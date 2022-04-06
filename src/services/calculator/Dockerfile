@@ -5,7 +5,8 @@ COPY services/calculator/requirements.txt /app/services/calculator/requirements.
 RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/calculator/requirements.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services/calculator /app/services/calculator
 WORKDIR /app/services/calculator
 
 # RUN pip install pipreqs
