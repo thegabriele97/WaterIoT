@@ -101,9 +101,14 @@ class CatalogAPI(RESTBase):
                 return self.asjson({"services": [s.toDict() for s in self._serviceManager.dead_services.values()]})
             elif len(path) > 1:
                 # /catalog/services/service_name
+                merg = {**self._serviceManager.services, **self._serviceManager.dead_services}
+
+                if len(path) == 3:
+                    # /catalog/services/service_name/ids
+                    if path[2] == "ids":
+                        return self.asjson({"ids": list(set([s.deviceid for s in merg.values() if s.name == path[1] and s.deviceid != None]))})
 
                 # let's understand if it's a service (single) or a device (multiple)
-                merg = {**self._serviceManager.services, **self._serviceManager.dead_services}
                 for s in [v for v in merg.values() if v.name == path[1]]:
                     if s.stype == ServiceType.DEVICE:
 
