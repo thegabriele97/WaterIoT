@@ -38,6 +38,7 @@ class DeviceConfigAPI(RESTBase):
     @cherrypy.tools.json_out()
     def PUT(self, *path, **args):
 
+
         if len(path) > 0:
             if path[0] == "configs":
 

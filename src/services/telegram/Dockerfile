@@ -1,13 +1,13 @@
 FROM python:3
 
 COPY common/requirements.txt /app/common/requirements.txt
-COPY services/catalog/requirements.txt /app/services/catalog/requirements.txt
+COPY services/telegram/requirements.txt /app/services/telegram/requirements.txt
 RUN pip3 install -r /app/common/requirements.txt
-RUN pip3 install -r /app/services/catalog/requirements.txt
+RUN pip3 install -r /app/services/telegram/requirements.txt
 
 COPY ./common /app/common
-COPY ./services/catalog /app/services/catalog
-WORKDIR /app/services/catalog
+COPY ./services/telegram /app/services/telegram
+WORKDIR /app/services/telegram
 
 # RUN pip install pipreqs
 # RUN pipreqs 

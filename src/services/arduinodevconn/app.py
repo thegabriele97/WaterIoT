@@ -14,6 +14,7 @@ class ArduinoDevConnAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
+        self._devid = settings.getattrORdef("deviceid", 0)
 
         try:
             self.logger.debug(f"ENV ONRASPBERRY = {str(os.environ['ONRASPBERRY'])}")
@@ -25,8 +26,6 @@ class ArduinoDevConnAPI(RESTBase):
             # setup connection to arduino
             self._bus = smbus.SMBus(settings.arduino.i2c_dev)
             self._ard_i2c_addr = int(settings.arduino.i2c_addr, 0)
-
-            pass
 
         if not self._onrpi:
             self.logger.warning("Raspberry not found or error as occurred while Arduino init. Running as dummy device!")
@@ -51,7 +50,7 @@ class ArduinoDevConnAPI(RESTBase):
 
                 is_on = st == "on" # to change w raspberry
                 r = {"is_on": is_on}
-                self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r))
+                self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r), devid=self._devid)
 
                 return self.asjson(r)
 
@@ -65,7 +64,7 @@ class App(WIOTRestApp):
         try:
 
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
-            self.create(self._settings, "ArduinoDevConn", ServiceType.DEVICE, ServiceSubType.ARDUINO)
+            self.create(self._settings, "ArduinoDevConn", ServiceType.DEVICE, ServiceSubType.ARDUINO, devid=self._settings.getattrORdef("deviceid", 0))
             self.addRESTEndpoint("/switch", [EndpointParam("state")])
             self.addMQTTEndpoint("/switch", "updates on switch status")
 

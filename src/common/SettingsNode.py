@@ -6,6 +6,7 @@ class SettingsNode:
     def __init__(self, dict: dict, logger: logging) -> None:
 
         self._logger = logger;
+        self._original_dict = dict
 
         for a, b in dict.items():
             if isinstance(b, (list, tuple)):
@@ -37,5 +38,5 @@ class SettingsNode:
         return default
 
     def toDict(self):
-        return {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+        return self._original_dict
     

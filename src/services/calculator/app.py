@@ -19,6 +19,8 @@ class CalculatorAPI(RESTBase):
         if len(path) == 1 and path[0] == "sum":
             return self.asjson({"r": int(args["a"]) + int(args["b"]) + int(args.get("c", 0))})
 
+        self._catreq.reqREST("arduinodevconn", "/switch?state=on", devid=0)
+        self._catreq.reqREST("arduinodevconn", "/switch?state=on", devid=1)
         r = self._catreq.reqREST("calculator", "/sum?a=2&b=3")
         self._catreq.reqREST("calculator", "/sum?a=2&b=3", RequestType.POST)
         self._catreq.publishMQTT("calculator", "/calcs", json.dumps({"d": r}))

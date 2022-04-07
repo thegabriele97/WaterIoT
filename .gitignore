@@ -5,3 +5,4 @@ requirements.txt
 .DS_Store
 *.http
 loadenv.sh
+requirements_rpi.txt

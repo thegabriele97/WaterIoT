@@ -15,10 +15,11 @@ class ServiceSubType(WIOTEnum):
 
 
 class Service:
-    def __init__(self, name: str, stype: ServiceType, host: str = None, port: int = None, subtype: ServiceSubType = None) -> None:
+    def __init__(self, name: str, stype: ServiceType, host: str = None, port: int = None, subtype: ServiceSubType = None, deviceID: int = None) -> None:
         self.name = name.lower()
         self.stype = stype
         self.subtype = subtype
+        self.deviceid = deviceID # type int if it's a Device, otherwise None
         self.host = host
         self.port = port
         self.timestamp = time.time() 
@@ -69,13 +70,14 @@ class Service:
         name = d["name"]
         stype = ServiceType.value_of(d["stype"])
         subtype = ServiceSubType.value_of(d["subtype"])
+        devid = int(d["deviceid"]) if d["deviceid"] is not None else None
         epoints_rest = [Endpoint.fromDict(e, EndpointType.REST) for e in d["endpoints"][EndpointType.REST.name].get("list", [])]
         epoints_mqtt = [Endpoint.fromDict(e, EndpointType.MQTT) for e in d["endpoints"][EndpointType.MQTT.name]]
         # host = dict(d["endpoints"][EndpointType.REST.name]).get("host", None)
         host = request_ip
         port = dict(d["endpoints"][EndpointType.REST.name]).get("port", None)
 
-        s = Service(name, stype, host, port, subtype)
+        s = Service(name, stype, host, port, subtype, devid)
         for e in [*epoints_rest, *epoints_mqtt]:
             s.addEndpoint(e)
 
