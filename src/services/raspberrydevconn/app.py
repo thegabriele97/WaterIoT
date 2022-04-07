@@ -16,6 +16,7 @@ class RaspberryDevConnAPI(RESTBase):
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
         self.settings = settings
+        self._devid = self.settings.getattrORdef("deviceid", 0)
 
         # start the connection with the board. If the board is not connected instance a dummy device
         try:
@@ -113,7 +114,7 @@ class RaspberryDevConnAPI(RESTBase):
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
 
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", self.humidity, "%"))
+                "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", self.humidity, "%")), self._devid
             )
             self._th.wait(self.wait_air_hum)
 
@@ -127,7 +128,7 @@ class RaspberryDevConnAPI(RESTBase):
                 self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
             
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", self.temperature, "°C"))
+                "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", self.temperature, "°C")), self._devid
             )
             self._th1.wait(self.wait_air_temp)
 
@@ -145,7 +146,7 @@ class RaspberryDevConnAPI(RESTBase):
                 data = data & mask
 
             self._catreq.publishMQTT(
-                "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", data, "%"))
+                "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", data, "%")), self._devid
             )
 
             self._th2.wait(self.wait_soil_hum)
@@ -210,7 +211,8 @@ class RaspberryDevConnAPI(RESTBase):
             "n": name,
             "u": unit,
             "v": value,
-            "t": time.time()
+            "t": time.time(),
+            "i": self._devid
         }
 
 
@@ -230,6 +232,7 @@ class App(WIOTRestApp):
                 "RaspberryDevConn",
                 ServiceType.DEVICE,
                 ServiceSubType.RASPBERRY,
+                devid=self._settings.getattrORdef("deviceid", 0)
             )
 
             # Add all the necessary endpoints both for REST and MQTT
