@@ -20,47 +20,14 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 170,
-        "y": 140,
+        "x": 230,
+        "y": 780,
         "wires": [
             [
-                "1b961cc9fa7fac5b",
-                "e275e663d784c501"
+                "23831f35c978ce7c",
+                "78b616fd459ef226"
             ]
         ]
-    },
-    {
-        "id": "1b961cc9fa7fac5b",
-        "type": "python3-function",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"AirTemperature\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
-        "outputs": 1,
-        "x": 390,
-        "y": 80,
-        "wires": [
-            [
-                "8f522d24a672c68a",
-                "e8290b67a4197e91"
-            ]
-        ]
-    },
-    {
-        "id": "8f522d24a672c68a",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "debug",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 610,
-        "y": 140,
-        "wires": []
     },
     {
         "id": "e8290b67a4197e91",
@@ -73,16 +40,16 @@
         "height": 0,
         "label": "Air Temperature chart",
         "chartType": "line",
-        "legend": "true",
+        "legend": "false",
         "xformat": "HH:mm:ss",
         "interpolate": "linear",
-        "nodata": "",
+        "nodata": " ",
         "dot": false,
         "ymin": "",
         "ymax": "",
         "removeOlder": "20",
         "removeOlderPoints": "1000",
-        "removeOlderUnit": "1",
+        "removeOlderUnit": "3600",
         "cutout": 0,
         "useOneColor": false,
         "useUTC": false,
@@ -100,8 +67,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 660,
-        "y": 80,
+        "x": 1200,
+        "y": 780,
         "wires": [
             []
         ]
@@ -119,46 +86,14 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 170,
-        "y": 240,
+        "x": 230,
+        "y": 1220,
         "wires": [
             [
-                "ac89bfb8b4a1f54d"
+                "bc177b446e667e02",
+                "a3e602bd16b29889"
             ]
         ]
-    },
-    {
-        "id": "ac89bfb8b4a1f54d",
-        "type": "python3-function",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"SoilHumidity\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
-        "outputs": 1,
-        "x": 390,
-        "y": 240,
-        "wires": [
-            [
-                "029cb5f77be45a57",
-                "61125d8d1a4ec9b6"
-            ]
-        ]
-    },
-    {
-        "id": "029cb5f77be45a57",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "debug",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 610,
-        "y": 300,
-        "wires": []
     },
     {
         "id": "61125d8d1a4ec9b6",
@@ -198,8 +133,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 650,
-        "y": 240,
+        "x": 1210,
+        "y": 1220,
         "wires": [
             []
         ]
@@ -217,46 +152,14 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 170,
-        "y": 380,
+        "x": 270,
+        "y": 1540,
         "wires": [
             [
-                "a06bdc94c73c2139"
+                "1be8d10c5b46345f",
+                "413d9fef1d873adc"
             ]
         ]
-    },
-    {
-        "id": "a06bdc94c73c2139",
-        "type": "python3-function",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"topic\"]=\"AirHumidity\"\nmsg[\"payload\"]=payload[\"value\"]\nreturn msg",
-        "outputs": 1,
-        "x": 390,
-        "y": 380,
-        "wires": [
-            [
-                "1f809cf30d5597ba",
-                "75b473799f49a9d8"
-            ]
-        ]
-    },
-    {
-        "id": "1f809cf30d5597ba",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "debug",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 610,
-        "y": 440,
-        "wires": []
     },
     {
         "id": "75b473799f49a9d8",
@@ -296,8 +199,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 650,
-        "y": 380,
+        "x": 1250,
+        "y": 1540,
         "wires": [
             []
         ]
@@ -306,7 +209,7 @@
         "id": "5a01521c0c95157b",
         "type": "http request",
         "z": "6644ea9bf3513060",
-        "name": "",
+        "name": "Request wether",
         "method": "GET",
         "ret": "obj",
         "paytoqs": "query",
@@ -316,8 +219,8 @@
         "proxy": "",
         "authType": "",
         "senderr": false,
-        "x": 830,
-        "y": 560,
+        "x": 880,
+        "y": 240,
         "wires": [
             [
                 "ea227e2980de4d35"
@@ -333,12 +236,12 @@
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
+        "complete": "true",
+        "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 410,
-        "y": 160,
+        "x": 830,
+        "y": 860,
         "wires": []
     },
     {
@@ -346,7 +249,7 @@
         "type": "ui_template",
         "z": "6644ea9bf3513060",
         "group": "797b907f8cd74d9f",
-        "name": "",
+        "name": "Deploy Wether/City",
         "order": 1,
         "width": "0",
         "height": "0",
@@ -356,8 +259,8 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1280,
-        "y": 560,
+        "x": 1410,
+        "y": 240,
         "wires": [
             []
         ]
@@ -366,14 +269,15 @@
         "id": "ea227e2980de4d35",
         "type": "python3-function",
         "z": "6644ea9bf3513060",
-        "name": "",
+        "name": "Set API with variables",
         "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"payload\"]=payload[\"weather\"][0][\"icon\"]\nmsg[\"payload\"]=\"http://openweathermap.org/img/wn/\"+msg[\"payload\"]+\"@2x.png\"\nmsg[\"name\"]=payload[\"name\"]\nreturn msg",
         "outputs": 1,
-        "x": 1070,
-        "y": 560,
+        "x": 1130,
+        "y": 240,
         "wires": [
             [
-                "72e7b7e596d04321"
+                "72e7b7e596d04321",
+                "71355c581bd6e6c2"
             ]
         ]
     },
@@ -394,12 +298,12 @@
         "repeat": "",
         "crontab": "",
         "once": false,
-        "onceDelay": 0.1,
+        "onceDelay": "1",
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 140,
-        "y": 620,
+        "x": 180,
+        "y": 300,
         "wires": [
             [
                 "b63c5b867f4ae8cb"
@@ -410,7 +314,7 @@
         "id": "b63c5b867f4ae8cb",
         "type": "http request",
         "z": "6644ea9bf3513060",
-        "name": "Position",
+        "name": "Request position",
         "method": "GET",
         "ret": "obj",
         "paytoqs": "ignore",
@@ -420,11 +324,12 @@
         "proxy": "",
         "authType": "",
         "senderr": false,
-        "x": 320,
-        "y": 620,
+        "x": 390,
+        "y": 300,
         "wires": [
             [
-                "79d0aabe19f2e075"
+                "79d0aabe19f2e075",
+                "e572287c6b405919"
             ]
         ]
     },
@@ -441,25 +346,697 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 830,
-        "y": 720,
+        "x": 870,
+        "y": 400,
         "wires": []
     },
     {
         "id": "79d0aabe19f2e075",
         "type": "python3-function",
         "z": "6644ea9bf3513060",
-        "name": "",
+        "name": "Set longitude/latitude",
         "func": "payload=msg[\"payload\"]\nmsg={}\nmsg[\"latitude\"]=payload[\"lat\"]\nmsg[\"longitude\"]=payload[\"lon\"]\nreturn msg",
         "outputs": 1,
-        "x": 600,
-        "y": 620,
+        "x": 660,
+        "y": 300,
         "wires": [
             [
                 "5a01521c0c95157b",
                 "e08b4b1d404b534a"
             ]
         ]
+    },
+    {
+        "id": "835751f5847b8367",
+        "type": "ui_dropdown",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "9c715f7262b589f7",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "",
+                "value": "",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "choiceID",
+        "topicType": "str",
+        "className": "",
+        "x": 680,
+        "y": 680,
+        "wires": [
+            [
+                "43722b6d55f913b3",
+                "f98bb02ccf3e2dfa"
+            ]
+        ]
+    },
+    {
+        "id": "43722b6d55f913b3",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 910,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "e572287c6b405919",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 590,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "71355c581bd6e6c2",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1350,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "23831f35c978ce7c",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "Global Variable",
+        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"GlobalDevice\",[]);\nglobal.set(\"Globalength\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 680,
+        "wires": [
+            [
+                "835751f5847b8367"
+            ]
+        ]
+    },
+    {
+        "id": "d9d8af5865c37f34",
+        "type": "switch",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "none",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "airTemp",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1010,
+        "y": 740,
+        "wires": [
+            [
+                "f8f491d3c3e366c8"
+            ],
+            [
+                "e8290b67a4197e91"
+            ]
+        ]
+    },
+    {
+        "id": "78b616fd459ef226",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "msg[\"topic\"]=\"airTemp\"\nreturn msg",
+        "outputs": 1,
+        "x": 620,
+        "y": 780,
+        "wires": [
+            [
+                "e275e663d784c501",
+                "f98bb02ccf3e2dfa"
+            ]
+        ]
+    },
+    {
+        "id": "05ca7652c28e68b6",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "f98bb02ccf3e2dfa",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "switch(msg.topic){\n    case \"airTemp\":\n        if(msg.payload.i==global.get(\"deviceID\")){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airTemp\";\n            return msg;\n        }\n        else{\n            msg.topic=\"none\";\n            return msg;\n        }\n        break;\n    case \"choiceID\":\n        if(msg.payload!= global.get(\"deviceID\")){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"airTemp\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        break;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 760,
+        "wires": [
+            [
+                "d9d8af5865c37f34",
+                "05ca7652c28e68b6"
+            ]
+        ]
+    },
+    {
+        "id": "f8f491d3c3e366c8",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1190,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "c17db91e1de015ab",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "choose the id",
+        "info": "",
+        "x": 690,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "a0d70e9a55f7abda",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "ritorna id e valore",
+        "info": "",
+        "x": 620,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "8732a86fc19479d2",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "join di id e decide se mandare il valore",
+        "info": "",
+        "x": 890,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "085a1ed7ca46f984",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "4cb3cec8feb73f5e",
+        "type": "ui_dropdown",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "6d55652b11d1503d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "",
+                "value": "",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "choiceID",
+        "topicType": "str",
+        "className": "",
+        "x": 680,
+        "y": 1120,
+        "wires": [
+            [
+                "bfb55e34366ca957",
+                "f017c1af1c71c0a6"
+            ]
+        ]
+    },
+    {
+        "id": "bfb55e34366ca957",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 910,
+        "y": 1080,
+        "wires": []
+    },
+    {
+        "id": "bc177b446e667e02",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "Global Variable",
+        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"GlobalDevice\",[]);\nglobal.set(\"Globalength\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 1120,
+        "wires": [
+            [
+                "4cb3cec8feb73f5e"
+            ]
+        ]
+    },
+    {
+        "id": "e752121341039b92",
+        "type": "switch",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "none",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SoilHum",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1010,
+        "y": 1180,
+        "wires": [
+            [
+                "7c0c7188f037a025"
+            ],
+            [
+                "61125d8d1a4ec9b6"
+            ]
+        ]
+    },
+    {
+        "id": "a3e602bd16b29889",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "msg[\"topic\"]=\"SoilHum\"\nreturn msg",
+        "outputs": 1,
+        "x": 560,
+        "y": 1220,
+        "wires": [
+            [
+                "085a1ed7ca46f984",
+                "f017c1af1c71c0a6"
+            ]
+        ]
+    },
+    {
+        "id": "72557f1490fdf7b4",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "f017c1af1c71c0a6",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "switch(msg.topic){\n    case \"SoilHum\":\n        if(msg.payload.i==global.get(\"deviceID\")){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"SoilHum\";\n            return msg;\n        }\n        else{\n            msg.topic=\"none\";\n            return msg;\n        }\n        break;\n    case \"choiceID\":\n        if(msg.payload!= global.get(\"deviceID\")){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"SoilHum\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        break;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 1200,
+        "wires": [
+            [
+                "e752121341039b92",
+                "72557f1490fdf7b4"
+            ]
+        ]
+    },
+    {
+        "id": "7c0c7188f037a025",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1190,
+        "y": 1160,
+        "wires": []
+    },
+    {
+        "id": "25101216f0a452a1",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "choose the id",
+        "info": "",
+        "x": 690,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "e535951ae9a0095e",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "ritorna id e valore",
+        "info": "",
+        "x": 560,
+        "y": 1280,
+        "wires": []
+    },
+    {
+        "id": "b58a0f24813f6b9b",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "join di id e decide se mandare il valore",
+        "info": "",
+        "x": 890,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "8ab56fef0e5eed30",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 1620,
+        "wires": []
+    },
+    {
+        "id": "ca18f0420972fb90",
+        "type": "ui_dropdown",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "39d17713b68b1b67",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "",
+                "value": "",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "choiceID",
+        "topicType": "str",
+        "className": "",
+        "x": 720,
+        "y": 1440,
+        "wires": [
+            [
+                "cc120e5b98b41127",
+                "527730717e1a2c16"
+            ]
+        ]
+    },
+    {
+        "id": "cc120e5b98b41127",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 1400,
+        "wires": []
+    },
+    {
+        "id": "1be8d10c5b46345f",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "Global Variable",
+        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"GlobalDevice\",[]);\nglobal.set(\"Globalength\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 1440,
+        "wires": [
+            [
+                "ca18f0420972fb90"
+            ]
+        ]
+    },
+    {
+        "id": "75cca8d8f7628188",
+        "type": "switch",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "none",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "airHum",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1050,
+        "y": 1500,
+        "wires": [
+            [
+                "1737948493f697b0"
+            ],
+            [
+                "75b473799f49a9d8"
+            ]
+        ]
+    },
+    {
+        "id": "413d9fef1d873adc",
+        "type": "python3-function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "msg[\"topic\"]=\"airHum\"\nreturn msg",
+        "outputs": 1,
+        "x": 660,
+        "y": 1540,
+        "wires": [
+            [
+                "8ab56fef0e5eed30",
+                "527730717e1a2c16"
+            ]
+        ]
+    },
+    {
+        "id": "0f3ace8b8e40cbc0",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1170,
+        "y": 1620,
+        "wires": []
+    },
+    {
+        "id": "527730717e1a2c16",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "switch(msg.topic){\n    case \"airHum\":\n        if(msg.payload.i==global.get(\"deviceID\")){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airHum\";\n            return msg;\n        }\n        else{\n            msg.topic=\"none\";\n            return msg;\n        }\n        break;\n    case \"choiceID\":\n        if(msg.payload!= global.get(\"deviceID\")){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"airHum\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        break;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",0);",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 1520,
+        "wires": [
+            [
+                "75cca8d8f7628188",
+                "0f3ace8b8e40cbc0"
+            ]
+        ]
+    },
+    {
+        "id": "1737948493f697b0",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1230,
+        "y": 1480,
+        "wires": []
+    },
+    {
+        "id": "ac3167a114df60e2",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "choose the id",
+        "info": "",
+        "x": 730,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "a914d71f9e16e391",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "ritorna id e valore",
+        "info": "",
+        "x": 660,
+        "y": 1600,
+        "wires": []
+    },
+    {
+        "id": "7b7a24354f1776df",
+        "type": "comment",
+        "z": "6644ea9bf3513060",
+        "name": "join di id e decide se mandare il valore",
+        "info": "",
+        "x": 930,
+        "y": 1560,
+        "wires": []
     },
     {
         "id": "73dd0102c2465c32",

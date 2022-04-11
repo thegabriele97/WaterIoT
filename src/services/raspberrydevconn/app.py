@@ -2,7 +2,7 @@ import logging
 import cherrypy
 import paho.mqtt.client as mqtt
 import smbus
-
+#import random
 from common.WIOTRestApp import *
 from common.SettingsManager import *
 from common.SettingsNode import *
@@ -121,6 +121,7 @@ class RaspberryDevConnAPI(RESTBase):
     # function of the threads
     def _airtemperature(self):
         while not self._th1.is_stop_requested:
+            #self.temperature=random.random()
             self.temperature = self.settings.default.temperature
             
             if self._onrpi:
