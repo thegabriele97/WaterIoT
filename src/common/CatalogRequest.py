@@ -41,7 +41,15 @@ class CatalogRequest:
         self._mqttclient.on_connect = self._cb_on_connect
         self._mqttclient.on_message = self._cb_on_msg_recv
 
-        self._mqttclient.connect(broker["host"], broker["port"])
+        while 1:
+            try:
+                self._mqttclient.connect(broker["host"], broker["port"])
+                break
+            except Exception as e:
+                self._logger.warning(f"MQTT connection failed to {broker['host']}:{broker['port']}: {e}. Trying again...")
+                time.sleep(0.5)
+                continue
+
         self._mqttclient.loop_start()
 
 
