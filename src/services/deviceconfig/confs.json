@@ -15,5 +15,22 @@
             "lat": 2,
             "lon": 1
         }
+    },
+    "watering": {
+        "enable": false,
+        "thresholds": {
+            "temp": {
+                "min": 15,
+                "max": 30
+            },
+            "airhum": {
+                "min": 20,
+                "max": 60
+            },
+            "soilhum": {
+                "min": 20,
+                "max": 60
+            }
+        }
     }
 }

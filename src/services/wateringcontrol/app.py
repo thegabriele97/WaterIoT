@@ -14,26 +14,76 @@ class OpenWeatherAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/airhumidity")
-        self._catreq.callbackOnTopic("/airhumidity", self.onAirHumidity)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/airtemperature")
-        self._catreq.callbackOnTopic("/airtemperature", self.onAirTemperature)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/terrainhumidity")
-        self._catreq.callbackOnTopic("/terrainhumidity", self.onTerrainHumidity)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
+
+        self._lastAirTemp = -1
+        self._lastAirHum = -1
+        self._lastTerrainHum = -1
+        self._terrainhum_threshold = 30 # taken from deviceconfig
+
 
     def onAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.info("Air humidity: " + str(msg.payload))
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Air humidity: {payl}")
+        self._lastAirHum = float(payl["v"])
+        self._asdrubale()
     
     def onAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.info("Air temperature: " + str(msg.payload))
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Air temperature: {payl}")
+        r = self._catreq.reqREST("ThingSpeakAdaptor", "/temperature?results=10")
+        # TODO: r[-1]["t"] = float(msg.payload["t"])
+        # TODO: self._lastAirTemp = avg([*r.response, float(msg.payload["v"])])
+        self._asdrubale()
 
     def onTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self.logger.info("Terrain humidity: " + str(msg.payload))
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Terrain humidity: {payl}")
+        self._lastAirTemp = float(payl["v"])
+        self._asdrubale()
+
+    def _asdrubale(self):
+
+        if self._lastAirTemp == -1 or self._lastAirHum == -1 or self._lastTerrainHum == -1:
+            return
+
+        # if terrainhum > threshold:
+            # stop watering (if activated)
+
+        if self._lastTerrainHum < self._terrainhum_threshold:
+            # check current weather
+            # if (it's raining) and humidity of the air is high:
+            #   Stop Watering (if activated) 
+            # else:
+            #   # get forecast (4h)
+            #   # if it will rain:
+            #   #   Stop Watering (if activated) 
+            #   # else:
+            #   #   # get actual temperature
+            #   #   # if temperature is greater then the threshold and temperature humidity is lower then the threshold:
+            #           Trigger Watering (all ARDUINOs)
+                        # get ids
+                        # reqrest("arduinodevconn", "/switch?state=on", devid=id)
+            #   #   # else:
+            #           Ask him what to do
+
+            pass
+
+        # if nothing is done in previous if:
+            # if terrainhum less then (20+60)/2 (average thresholds):
+                # send a message to the user (telegram) asking what he wants to do
+    
+        pass
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.INFO)
+        super().__init__(log_stdout_level=logging.DEBUG)
 
         try:
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
