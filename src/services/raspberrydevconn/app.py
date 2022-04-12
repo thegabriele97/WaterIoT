@@ -144,7 +144,7 @@ class RaspberryDevConnAPI(RESTBase):
                 data = self._bus.read_word_data(self._ard_i2c_addr, 5)
                 mask = 0x3FF
                 data = data & mask
-                # TODO: percentage
+                data = (data/1024)*100  # convert the value into a percentage
 
             self._catreq.publishMQTT(
                 "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", data, "%")), self._devid
@@ -178,6 +178,7 @@ class RaspberryDevConnAPI(RESTBase):
                 data = self._bus.read_word_data(self._ard_i2c_addr, 5)
                 mask = 0x3FF
                 data = data & mask
+                data = (data/1024)*100 # convert the value into a percentage
 
             return self.asjson(self._to_json_sensor(f"soilhum", data, "%"))
 
