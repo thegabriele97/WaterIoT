@@ -29,11 +29,11 @@ class CatalogRequest:
         self._mqttclient = mqtt.Client()
         self._mqttclient.enable_logger(self._logger)
 
-        s = requests.Session()
+        self._s = requests.Session()
         retries = Retry(total=5, backoff_factor=0.5, status_forcelist=[ 500, 502, 503, 504 ])
-        s.mount('http://', HTTPAdapter(max_retries=retries))
+        self._s.mount('http://', HTTPAdapter(max_retries=retries))
 
-        r = s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
+        r = self._s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
         if not r.json()["connected"]:
             raise Exception("Catalog's MQTT Broker is not connected!")
 
@@ -208,14 +208,15 @@ class CatalogRequest:
             self._logger.debug(f"Requesting service endpoint: {reqt.name} http://{host}:{str(port)}{path}")
 
             url = f"http://{host}:{str(port)}{path}"
-            if reqt == RequestType.GET:
-                r = requests.get(url=url, json=datarequest)
-            elif reqt == RequestType.POST:
-                r = requests.post(url=url, json=datarequest)
-            elif reqt == RequestType.PUT:
-                r = requests.put(url=url, json=datarequest)
-            elif reqt == RequestType.DELETE:
-                r = requests.delete(url=url, json=datarequest)
+            r = self._do_req(reqt, url, datarequest)
+            # if reqt == RequestType.GET:
+            #     r = requests.get(url=url, json=datarequest)
+            # elif reqt == RequestType.POST:
+            #     r = requests.post(url=url, json=datarequest)
+            # elif reqt == RequestType.PUT:
+            #     r = requests.put(url=url, json=datarequest)
+            # elif reqt == RequestType.DELETE:
+            #     r = requests.delete(url=url, json=datarequest)
 
             b4 = True
 
@@ -281,6 +282,23 @@ class CatalogRequest:
             r2.raise_for_status()
 
         return {"online": r1.json()["services"], "offline": r2.json()["services"]}
+
+    def _do_req(self, meth: RequestType, path: str, data = None):
+        """
+        Internal method to perform a request to a service
+        """
+
+        r = None
+        for _ in range(0, 10):
+            r = self._s.request(meth.name, path, json=data)
+            if r.status_code == 404:
+                time.sleep(0.5)
+            elif r.status_code != 200:
+                r.raise_for_status()
+            else:
+                break
+
+        return r
 
     def _cb_on_connect(self, mqtt: mqtt.Client, userdata, flags, rc):
         self._logger.info(f"Connected to MQTT broker {mqtt._host}:{mqtt._port}")

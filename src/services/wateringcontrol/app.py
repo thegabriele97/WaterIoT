@@ -1,4 +1,6 @@
 import logging
+from signal import raise_signal
+from statistics import mean
 import cherrypy
 import paho.mqtt.client as mqtt
 import requests
@@ -9,7 +11,7 @@ from common.SettingsNode import *
 from common.RESTBase import RESTBase
 from common.CatalogRequest import *
 
-class OpenWeatherAPI(RESTBase):
+class WateringControlAPI(RESTBase):
 
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
@@ -21,95 +23,95 @@ class OpenWeatherAPI(RESTBase):
         self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
         self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
 
-        self._lastAirTemp = -1
-        self._lastAirHum = -1
-        self._lastTerrainHum = -1
-        self._terrainhum_threshold = 30 # taken from deviceconfig
+        self._avgAirHum = -1
+        self._avgAirTemp = -1
+        self._avgSoilHum = -1
 
+        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds")
+        if r.status and r.code_response == 200:
+            self._airtemp_threshold_max = r.json_response["temp"]["max"]
+            self._airtemp_threshold_min = r.json_response["temp"]["min"]
+            self._airhum_threshold_max = r.json_response["airhum"]["max"]
+            self._airhum_threshold_min = r.json_response["airhum"]["min"]
+            self._soilhum_threshold_max = r.json_response["soilhum"]["max"]
+            self._soilhum_threshold_min = r.json_response["soilhum"]["min"]
+        else:
+            raise Exception(f"Error getting the thresholds from the DeviceConfig ({r.code_response}): {r.json_response}")
 
     def onAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(f"Air humidity: {payl}")
+
         status, json_response, code_response = self._catreq.reqREST("ThingSpeakAdaptor", "/humidity?results=10")
         if status == True and code_response == 200:
             self.logger.debug(f"ThingSpeakAdaptor response: {json_response}")
-            self._lastTimestamp = float(json_response["feeds"][-1]["field3"])
 
-            # check if the two timestamps are different, that means that you need to push the value to thingspeak
-            if self._lastTimestamp != float(msg.payload["t"]):
-                r = requests.get(
-                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeyhumiditywrite}&field1={msg.payload['v']}&field2={msg.payload['i']}&field3={msg.payload['t']}"
-                )
+            elements = [{"field1": element["field1"], "field2": element["field2"], "field3": element["field3"]} for element in json_response]
+            lastTimestamp = float(elements[-1]["field3"])
+
+            # check if the two timestamps are different, that means that the
+            # received value has not been pushed to thingspeak yet
+            if float(payl["t"]) > lastTimestamp:
+                elements = [*elements, {"field1": payl["v"], "field2": payl["i"], "field3": payl["t"]}]
+
+            self._avgAirHum = mean([float(element["field1"]) for element in elements])
+
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        status, json_response, code_response = self._catreq.reqREST("ThingSpeakAdaptor", "/humidity?results=10")
-        if status == True and code_response == 200:
-            for element in json_response["feeds"]:
-                sum += element["field1"]
-            self._avgAirHum = sum / len(json_response["feeds"])
-            self._asdrubale()
+        self._asdrubale()
     
     def onAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(f"Air temperature: {payl}")
+
         status, json_response, code_response = self._catreq.reqREST("ThingSpeakAdaptor", "/temperature?results=10")
         if status == True and code_response == 200:
             self.logger.debug(f"ThingSpeakAdaptor response: {json_response}")
-            self._lastTimestamp = float(json_response["feeds"][-1]["field3"])
 
-            # check if the two timestamps are different, that means that you need to push the value to thingspeak
-            if self._lastTimestamp != float(msg.payload["t"]):
-                r = requests.get(
-                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeytemperaturewrite}&field1={msg.payload['v']}&field2={msg.payload['i']}&field3={msg.payload['t']}"
-                )
+            elements = [{"field1": element["field1"], "field2": element["field2"], "field3": element["field3"]} for element in json_response]
+            lastTimestamp = float(elements[-1]["field3"])
+
+            # check if the two timestamps are different, that means that the
+            # received value has not been pushed to thingspeak yet
+            if float(payl["t"]) > lastTimestamp:
+                elements = [*elements, {"field1": payl["v"], "field2": payl["i"], "field3": payl["t"]}]
+
+            self._avgAirTemp = mean([float(element["field1"]) for element in elements])
+        
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        status, json_response, code_response = self._catreq.reqREST("ThingSpeakAdaptor", "/temperature?results=10")
-        if status == True and code_response == 200:
-            for element in json_response["feeds"]:
-                sum += element["field1"]
-            self._avgAirTemp = sum / len(json_response["feeds"])
-            self._asdrubale()
+        self._asdrubale()
 
     def onTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(f"Terrain humidity: {payl}")
+
         status, json_response, code_response = self._catreq.reqREST("ThingSpeakAdaptor", "/soil?results=10")
         if status == True and code_response == 200:
             self.logger.debug(f"ThingSpeakAdaptor response: {json_response}")
-            self._lastTimestamp = float(json_response["feeds"][-1]["field3"])
 
-            # check if the two timestamps are different, that means that you need to push the value to thingspeak
-            if self._lastTimestamp != float(msg.payload["t"]):
-                r = requests.get(
-                    f"https://api.thingspeak.com/update?api_key={self._thingspeakapikeysoilwrite}&field1={msg.payload['v']}&field2={msg.payload['i']}&field3={msg.payload['t']}"
-                )
+            elements = [{"field1": element["field1"], "field2": element["field2"], "field3": element["field3"]} for element in json_response]
+            lastTimestamp = float(elements[-1]["field3"])
+
+            # check if the two timestamps are different, that means that the
+            # received value has not been pushed to thingspeak yet
+            if float(payl["t"]) > lastTimestamp:
+                elements = [*elements, {"field1": payl["v"], "field2": payl["i"], "field3": payl["t"]}]
+
+            self._avgSoilHum = mean([float(element["field1"]) for element in elements])
+        
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
-
-        status, json_response, code_response = self._catreq.reqREST("ThingSpeakAdaptor", "/soil?results=10")
-        if status == True and code_response == 200:
-            for element in json_response["feeds"]:
-                sum += element["field1"]
-            self._avgSoilHum = sum / len(json_response["feeds"])
-            self._asdrubale()
+        
+        self._asdrubale()
 
     def _asdrubale(self):
 
-
-        # get all important thresholds
-
-        self._airtemp_threshold_max = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds/temp").json_response["max"]
-        self._airtemp_threshold_min = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds/temp").json_response["min"]
-        self._airhum_threshold_max = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds/hum").json_response["max"]
-        self._airhum_threshold_min = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds/hum").json_response["min"]
-        self._soilhum_threshold_max = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds/soil").json_response["max"]
-        self._soilhum_threshold_min = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds/soil").json_response["min"]
+        self.logger.debug(f"Executing the ASDRUBALE algorithm with: avgAirTemp: {self._avgAirTemp}, avgAirHum: {self._avgAirHum}, avgSoilHum: {self._avgSoilHum}")
 
         # logic for the watering control
-
         if self._avgAirTemp == -1 or self._avgAirHum == -1 or self._avgSoilHum == -1:
             return
 
@@ -161,7 +163,7 @@ class App(WIOTRestApp):
             self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
             self.create(self._settings, "WateringControl", ServiceType.SERVICE)
             # TODO: pass the api keys to write to the channels
-            self.mount(OpenWeatherAPI(self, self._settings), self.conf)
+            self.mount(WateringControlAPI(self, self._settings), self.conf)
             self.loop()
 
         except Exception as e:
