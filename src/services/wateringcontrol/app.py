@@ -207,14 +207,3 @@ class App(WIOTRestApp):
 
 if __name__ == "__main__":
     App()
-
-
-# Useful LOC:
-'''
-    self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r), devid=self._devid)
-    self._catreq.reqREST("OpenWeatherAdaptor", "/currentweather", {"lat": "52.5", "lon": "13.4"})
-    self._catreq.reqREST("OpenWeatherAdaptor", "/forecastweather", {"lat": "52.5", "lon": "13.4"})
-    self._catreq.reqREST("ThingSpeakAdaptor", "/temperature")
-    self._catreq.reqREST("ThingSpeakAdaptor", "/humidity")
-    self._catreq.reqREST("ThingSpeakAdaptor", "/soil")
-'''
