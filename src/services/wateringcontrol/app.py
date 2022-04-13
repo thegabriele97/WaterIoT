@@ -1,3 +1,4 @@
+from audioop import avg
 import logging
 from signal import raise_signal
 from statistics import mean
@@ -27,6 +28,9 @@ class WateringControlAPI(RESTBase):
         self._avgAirTemp = -1
         self._avgSoilHum = -1
 
+        self._lat = 0
+        self._lon = 0
+
         r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds")
         if r.status and r.code_response == 200:
             self._airtemp_threshold_max = r.json_response["temp"]["max"]
@@ -37,6 +41,13 @@ class WateringControlAPI(RESTBase):
             self._soilhum_threshold_min = r.json_response["soilhum"]["min"]
         else:
             raise Exception(f"Error getting the thresholds from the DeviceConfig ({r.code_response}): {r.json_response}")
+        
+        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/system/location")
+        if r.status and r.code_response == 200:
+            self._lat = r.json_response["lat"]
+            self._lon = r.json_response["lon"]
+        else:
+            raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
 
     def onAirHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -112,47 +123,71 @@ class WateringControlAPI(RESTBase):
         self.logger.debug(f"Executing the ASDRUBALE algorithm with: avgAirTemp: {self._avgAirTemp}, avgAirHum: {self._avgAirHum}, avgSoilHum: {self._avgSoilHum}")
 
         # logic for the watering control
+        self._entered = False
         if self._avgAirTemp == -1 or self._avgAirHum == -1 or self._avgSoilHum == -1:
             return
 
         if self._avgSoilHum > self._soilhum_threshold_max:
+            self._entered = True
             self.logger.debug("Soil humidity is too high, watering is not needed")
             r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=off")
             if r.status == True and r.code_response == 200:
                 self.logger.debug("Switched off the watering")
-            return
+            else:
+                raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+
 
         if self._avgSoilHum < self._soilhum_threshold_min:
+            self._entered = True
             self.logger.debug("Soil humidity is too low, watering is needed")
-            # TODO: check the current weather
-            r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=on")
+            r = self._catreq.reqREST("OpenWeatherAdaptor", f"/currentweather?lat={self._lat}&lon={self._lon}")
             if r.status == True and r.code_response == 200:
-                self.logger.debug("Switched on the watering")
-            return
-        # if self._lastTerrainHum < self._terrainhum_threshold:
-            # check current weather
-            # if (it's raining) and humidity of the air is high:
-            #   Stop Watering (if activated) 
-            # else:
-            #   # get forecast (4h)
-            #   # if it will rain:
-            #   #   Stop Watering (if activated) 
-            #   # else:
-            #   #   # get actual temperature
-            #   #   # if temperature is greater then the threshold and temperature humidity is lower then the threshold:
-            #           Trigger Watering (all ARDUINOs)
-                        # get ids
-                        # reqrest("arduinodevconn", "/switch?state=on", devid=id)
-            #   #   # else:
-            #           Ask him what to do
+                if r.json_response["weather"][0]["main"] in {"Rain", "Snow", "Thunderstorm", "Drizzle"} and self._avgSoilHum > self._soilhum_threshold_max:
+                    self.logger.debug("It is raining, watering is not needed")
+                    r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=off")
+                    if r.status == True and r.code_response == 200:
+                        self.logger.debug("Switched off the watering")
+                    else:
+                        raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+                else:
+                    r = self._catreq.reqREST("OpenWeatherAdaptor", f"/forecastweather?lat={self._lat}&lon={self._lon}")
+                    if r.status == True and r.code_response == 200:
+                        if r.json_response["hourly"][5]["weather"][0]["main"] in {"Rain", "Snow", "Thunderstorm", "Drizzle"}:
+                            self.logger.debug("It will raining, watering is not needed")
+                            r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=off")
+                            if r.status == True and r.code_response == 200:
+                                self.logger.debug("Switched off the watering")
+                            else:
+                                raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+                        else:
+                            if self._avgAirTemp > self._airtemp_threshold_max and self._avgAirHum < self._airhum_threshold_min:
+                                self.logger.debug("It is too hot, watering is needed")
+                                r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=on")
+                                if r.status == True and r.code_response == 200:
+                                    self.logger.debug("Switched off the watering")
+                                else:
+                                    raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+                            else:
+                                r = self._catreq.reqREST("TelegramAdaptor", "/sendMessage?text?='Hey, the situation is critical. Do you want to /switch on the irrigation?'")
+                                if r.status == True and r.code_response == 200:
+                                    self.logger.debug("Sent the message to Telegram")
+                                else:
+                                    raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+                    else:
+                        raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+            else:
+                raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
 
-            pass
 
-        # if nothing is done in previous if:
-            # if terrainhum less then (20+60)/2 (average thresholds):
-                # send a message to the user (telegram) asking what he wants to do
-    
-        pass
+        
+        if self._entered == False:
+            if self._avgSoilHum < avg(self._soilhum_threshold_min, self._soilhum_threshold_max):
+                self.logger.debug("Soil humidity is in the range, ask the user what to do")
+                r = self._catreq.reqREST("TelegramAdaptor", "/sendMessage?text?='Hey, the situation is critical. Do you want to /switch on the irrigation?'")
+                if r.status == True and r.code_response == 200:
+                    self.logger.debug("Sent the message to Telegram")
+                else:
+                    raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
 
 class App(WIOTRestApp):
     def __init__(self) -> None:
