@@ -74,7 +74,7 @@ class MyBot:
                 self.bot.sendMessage(chat_ID, "Unsubscribed user. Please insert the password using /psw <password> command", reply_markup=ReplyKeyboardRemove())
             else:
                 if message.split()[0] == "/config":
-                    if len(message.split()) != 3:
+                    if not(len(message.split()) == 4 or len(message.split()) == 3):
                         self.bot.sendMessage(chat_ID, "No parameter. Please select one sensor (<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
                     elif message.split()[1] not in ["temp", "airhum","soilhum"]:
                         self.bot.sendMessage(chat_ID, "Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
@@ -86,7 +86,17 @@ class MyBot:
                             else:
                                 self.bot.sendMessage(chat_ID, "An error occour. ", reply_markup=ReplyKeyboardRemove())
                         except ValueError:
-                            self.bot.sendMessage(chat_ID,"Please insert an integer value", reply_markup=ReplyKeyboardRemove())
+                            if message.split()[2] not in ["min","max"]:
+                                self.bot.sendMessage(chat_ID,"Please insert an integer value or min/max to set the watering range", reply_markup=ReplyKeyboardRemove())
+                            else:
+                                try: #verify number insertion
+                                    status,json_response,code_response = self.catreq.reqREST("DeviceConfig",f"/configs?path=/watering/thresholds/{message.split()[1]}/{message.split()[2]}",RequestType.PUT,{"v": float(message.split()[3])})
+                                    if code_response == 200 :
+                                        self.bot.sendMessage(chat_ID, "Bound set properly.", reply_markup=ReplyKeyboardRemove())
+                                    else:
+                                        self.bot.sendMessage(chat_ID, "An error occour. ", reply_markup=ReplyKeyboardRemove())
+                                except ValueError:
+                                    self.bot.sendMessage(chat_ID,"Please insert an numerical", reply_markup=ReplyKeyboardRemove())
                 elif message.split()[0] == "/pos" :
                     if len(message.split()) != 3:
                         self.bot.sendMessage(chat_ID, "Please, send your location...", reply_markup=ReplyKeyboardRemove())
@@ -108,7 +118,9 @@ class MyBot:
                 "*/getairu*  \\- Retrive umidity of the air\n"
                 "*/getsoilu* \\- Retrive umidity of the soil\n"
                 "*/pos* \\- Sets latitude and longitude where retrive weather forecasting\n"
-                "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) <value\\> \\- Config the sensors: sets the period of sampling of the sensors\n"))
+                "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) <value\\> \\- Config the sensors: sets the period of sampling of the sensors\n"
+                "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) \\(<min\\>\\|<max\\>\\) <value\\> \\- Config the watering: sets the temperature and moisture bounds in which turn on\off the watering system\n"))
+
                 elif message.split()[0] == "/getairt" or message.split()[0] == "/getairu" or message.split()[0] == "/getsoilu":
 
                     devid = None
@@ -175,7 +187,7 @@ class MyBot:
                         else:
                             self.bot.sendMessage(chat_ID, "You stopped irrigation", reply_markup=ReplyKeyboardRemove())
                     else:
-                        self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())               
                 elif message.split()[0]=="/status":
                     
                     msg = ""
