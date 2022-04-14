@@ -24,6 +24,30 @@ class WateringControlAPI(RESTBase):
         self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
         self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
 
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lon")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lon", self.onLongitude)
+
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/temp/min")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/temp/min", self.onMinTemp)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/temp/max")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/temp/max", self.onMaxTemp)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/airhum/min")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/airhum/min", self.onMinAirHum)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/airhum/max")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/airhum/max", self.onMaxAirHum)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/soilhum/min")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/soilhum/min", self.onMinSoilHum)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/soilhum/max")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/soilhum/max", self.onMaxSoilHum)
+
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/crit")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/crit", self.onMinTimeBetweenMessagesSecCrit)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/norm")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/norm", self.onMinTimeBetweenMessagesSecNorm)
+
+
         self._avgAirHum = -1
         self._avgAirTemp = -1
         self._avgSoilHum = -1
@@ -171,6 +195,56 @@ class WateringControlAPI(RESTBase):
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
         self._asdrubale()
+
+    def onLatitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Latitude: {payl}")
+        self._lat = payl["v"]
+    
+    def onLongitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Longitude: {payl}")
+        self._lon = payl["v"]
+
+    def onMinTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Min temp: {payl}")
+        self._airtemp_threshold_min = payl["v"]
+    
+    def onMaxTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Max temp: {payl}")
+        self._airtemp_threshold_max = payl["v"]
+
+    def onMinAirHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Min hum: {payl}")
+        self._airhum_threshold_min = payl["v"]
+
+    def onMaxAirHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Max hum: {payl}")
+        self._airhum_threshold_max = payl["v"]
+
+    def onMinSoilHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Min soil hum: {payl}")
+        self._soilhum_threshold_min = payl["v"]
+
+    def onMaxSoilHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Max soil hum: {payl}")
+        self._soilhum_threshold_max = payl["v"]
+
+    def onMinTimeBetweenMessagesSecCrit(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Min time between messages sec crit: {payl}")
+        self._min_time_between_messages_crit = payl["v"]
+
+    def onMinTimeBetweenMessagesSecNorm(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Min time between messages sec norm: {payl}")
+        self._min_time_between_messages = payl["v"]        
 
     def _asdrubale(self):
 
