@@ -18,7 +18,10 @@
     },
     "watering": {
         "enable": false,
-        "min_time_between_messages_sec": 43200,
+        "min_time_between_messages_sec": { 
+            "crit": 43200,
+            "norm": 43200
+        },
         "thresholds": {
             "temp": {
                 "min": 15,

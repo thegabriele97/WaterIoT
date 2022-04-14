@@ -32,9 +32,11 @@ class WateringControlAPI(RESTBase):
         self._lon = 0
 
         self._last_sent_msg_timestamp = -1
+        self._last_sent_msgcrit_timestamp = -1
         r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/min_time_between_messages_sec")
         if r.status and r.code_response == 200:
-            self._min_time_between_messages = int(r.json_response["v"])
+            self._min_time_between_messages = int(r.json_response["norm"])
+            self._min_time_between_messages_crit = int(r.json_response["crit"])
         else:
             raise Exception(f"Error getting the min time between messages from the DeviceConfig ({r.code_response}): {r.json_response}")
 
@@ -92,7 +94,9 @@ class WateringControlAPI(RESTBase):
                     },
                     "telegram": {
                         "last_sent_msg_timestamp": self._last_sent_msg_timestamp,
-                        "min_time_between_messages": self._min_time_between_messages
+                        "last_sent_msgcrit_timestamp": self._last_sent_msgcrit_timestamp,
+                        "min_time_between_messages": self._min_time_between_messages,
+                        "min_time_between_messages_crit": self._min_time_between_messages_crit
                     },
                 })
 
@@ -219,11 +223,11 @@ class WateringControlAPI(RESTBase):
                                     else:
                                         raise Exception(f"Error contacting the Arduino Device Connector ({r.code_response}): {r.json_response}")
                                 else:
-                                    if self._last_sent_msg_timestamp == -1 or time.time() - self._last_sent_msg_timestamp > self._min_time_between_messages:
+                                    if self._last_sent_msgcrit_timestamp_timestamp == -1 or time.time() - self._last_sent_msgcrit_timestamp_timestamp > self._min_time_between_messages_crit:
                                         r = self._catreq.reqREST("TelegramAdaptor", "/sendMessage?text=Hey, the situation is critical. Do you want to /switch on the irrigation?")
                                         if r.status == True and r.code_response == 200:
                                             self.logger.debug("Sent the message to Telegram")
-                                            self._last_sent_msg_timestamp = time.time()
+                                            self._last_sent_msgcrit_timestamp_timestamp = time.time()
                                         else:
                                             raise Exception(f"Error contacting the Telegram Adaptor to send a message ({r.code_response}): {r.json_response}")
                         else:
