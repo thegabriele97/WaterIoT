@@ -174,18 +174,39 @@ class MyBot:
                             reply_markup=ReplyKeyboardMarkup(
                                 keyboard=[[KeyboardButton(text="/switch on"), KeyboardButton(text="/switch off")]],
                                 resize_keyboard=True))
-                    elif message.split()[1].lower() == "on":
-                        r = self.catreq.reqREST("ArduinoDevConn","/switch?state=on")
-                        if not r.status or r.code_response != 200:
-                            self.bot.sendMessage(chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
-                        else:
-                            self.bot.sendMessage(chat_ID, "You started irrigation", reply_markup=ReplyKeyboardRemove())
-                    elif message.split()[1].lower() == "off":
-                        r = self.catreq.reqREST("ArduinoDevConn","/switch?state=off")
-                        if not r.status or r.code_response != 200:
-                            self.bot.sendMessage(chat_ID, f"Error: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
-                        else:
-                            self.bot.sendMessage(chat_ID, "You stopped irrigation", reply_markup=ReplyKeyboardRemove())
+                    elif message.split()[1].lower() == "on" or message.split()[1].lower() == "off":
+
+                        ids = self.catreq.reqDeviceIdsList("ArduinoDevConn")
+                        self.logger.debug("ids: %s", ids)
+                        devids = [None]
+
+                        if len(ids) > 1:
+                            # there are more then one device connected
+                            if len(message.split()) < 3:
+                                kboard = [[KeyboardButton(text=f"/switch {message.split()[1].lower()} all")], []]
+                                row = 1
+                                for i in range(0, len(ids)):
+
+                                    kboard[row].append(KeyboardButton(text=f"/switch {message.split()[1].lower()} {ids[i]}"))
+                                    if (i + 1) % 3 == 0:
+                                        kboard.append([])
+                                        row += 1
+
+                                self.bot.sendMessage(chat_ID, "No device id selected. Please use the right one", reply_markup=ReplyKeyboardMarkup(keyboard=kboard, resize_keyboard=True))
+                                return
+                            else:
+                                try:
+                                    devids = [int(message.split()[2])]
+                                except ValueError:
+                                    devids = ids
+
+                        for devid in devids:
+                            r = self.catreq.reqREST("ArduinoDevConn", f"/switch?state={message.split()[1].lower()}", devid=devid)
+                            if not r.status or r.code_response != 200:
+                                self.bot.sendMessage(chat_ID, f"Error on dev #{devid}: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
+                            else:
+                                self.bot.sendMessage(chat_ID, f"You {'started' if message.split()[1].lower() == 'on' else 'stopped'} irrigation on dev #{devid}", reply_markup=ReplyKeyboardRemove())
+
                     else:
                         self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())               
                 elif message.split()[0]=="/status":
