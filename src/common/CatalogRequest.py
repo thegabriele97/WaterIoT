@@ -33,24 +33,7 @@ class CatalogRequest:
         retries = Retry(total=5, backoff_factor=0.5, status_forcelist=[ 500, 502, 503, 504 ])
         self._s.mount('http://', HTTPAdapter(max_retries=retries))
 
-        r = self._s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
-        if not r.json()["connected"]:
-            raise Exception("Catalog's MQTT Broker is not connected!")
-
-        broker = r.json()["broker"]
-        self._mqttclient.on_connect = self._cb_on_connect
-        self._mqttclient.on_message = self._cb_on_msg_recv
-
-        while 1:
-            try:
-                self._mqttclient.connect(broker["host"], broker["port"])
-                break
-            except Exception as e:
-                self._logger.warning(f"MQTT connection failed to {broker['host']}:{broker['port']}: {e}. Trying again...")
-                time.sleep(0.5)
-                continue
-
-        self._mqttclient.loop_start()
+        self._mqttclient_connected = False
 
 
     def publishMQTT(self, service: str, path:str, payload, devid: int = None):
@@ -88,6 +71,10 @@ class CatalogRequest:
         self._mqttclient.message_callback_add(f"/{service}{ap}{path}", callback)
 
     def _check_mqtt_endpoint(self, service: str, path: str, devid: int = None):
+
+
+        if not self._mqttclient_connected:
+            self._mqttclient_connect()
 
         service = service.lower()
         rpath = f"{self._catalogURL}/catalog/services/{service}"
@@ -309,3 +296,25 @@ class CatalogRequest:
         self._logger.debug(f"Received MQTT message on {msg.topic}: {msg.payload}")
         if self._on_msg_recv is not None:
             self._on_msg_recv(mqtt, udata, msg)
+
+    def _mqttclient_connect(self):
+        r = self._s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
+        if not r.json()["connected"]:
+            raise Exception("Catalog's MQTT Broker is not connected!")
+
+        broker = r.json()["broker"]
+        self._mqttclient.on_connect = self._cb_on_connect
+        self._mqttclient.on_message = self._cb_on_msg_recv
+
+        while 1:
+            try:
+                self._mqttclient.connect(broker["host"], broker["port"])
+                break
+            except Exception as e:
+                self._logger.warning(f"MQTT connection failed to {broker['host']}:{broker['port']}: {e}. Trying again...")
+                time.sleep(0.5)
+                continue
+
+        self._mqttclient.loop_start()
+        self._mqttclient_connected = True
+

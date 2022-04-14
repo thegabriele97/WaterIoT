@@ -108,6 +108,7 @@ class ThingSpeakAPI(RESTBase):
 
         return self.asjson_error("Not found", 404)
 
+    @cherrypy.tools.json_out()
     def POST(self, *path, **args):
 
         if len(path) > 0:

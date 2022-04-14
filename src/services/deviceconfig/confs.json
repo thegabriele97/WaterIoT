@@ -18,6 +18,7 @@
     },
     "watering": {
         "enable": false,
+        "min_time_between_messages_sec": 43200,
         "thresholds": {
             "temp": {
                 "min": 15,
