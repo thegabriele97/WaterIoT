@@ -27,6 +27,7 @@ class WateringControlAPI(RESTBase):
         self._lat = 0
         self._lon = 0
 
+        self._enable = None
         self._last_sent_msg_timestamp = -1
         self._last_sent_msgcrit_timestamp = -1
         r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/min_time_between_messages_sec")
@@ -83,6 +84,9 @@ class WateringControlAPI(RESTBase):
         self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit", self.onMinTimeBetweenMessagesSecCrit)
         self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm")
         self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm", self.onMinTimeBetweenMessagesSecNorm)
+
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/enable")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/enable", self.onEnable)
 
     
     @cherrypy.tools.json_out()
@@ -150,7 +154,8 @@ class WateringControlAPI(RESTBase):
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        self._asdrubale()
+        if self._enable != None and self._enable == True:
+            self._asdrubale()
     
     def onAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -173,7 +178,8 @@ class WateringControlAPI(RESTBase):
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        self._asdrubale()
+        if self._enable != None and self._enable == True:
+            self._asdrubale()
 
     def onTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -196,7 +202,8 @@ class WateringControlAPI(RESTBase):
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        self._asdrubale()
+        if self._enable != None and self._enable == True:
+            self._asdrubale()
 
     def onLatitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -246,7 +253,12 @@ class WateringControlAPI(RESTBase):
     def onMinTimeBetweenMessagesSecNorm(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(f"Min time between messages sec norm: {payl}")
-        self._min_time_between_messages = payl["v"]        
+        self._min_time_between_messages = payl["v"]      
+
+    def onEnable(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        payl = json.loads(msg.payload.decode("utf-8"))
+        self.logger.debug(f"Enable: {payl}")
+        self._enable = payl["v"]
 
     def _asdrubale(self):
 
