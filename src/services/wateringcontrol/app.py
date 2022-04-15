@@ -18,28 +18,6 @@ class WateringControlAPI(RESTBase):
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
 
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lon")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lon", self.onLongitude)
-
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/temp/min")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/temp/min", self.onMinTemp)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/temp/max")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/temp/max", self.onMaxTemp)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/airhum/min")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/airhum/min", self.onMinAirHum)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/airhum/max")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/airhum/max", self.onMaxAirHum)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/soilhum/min")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/soilhum/min", self.onMinSoilHum)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/thesholds/soilhum/max")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/thesholds/soilhum/max", self.onMaxSoilHum)
-
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/crit")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/crit", self.onMinTimeBetweenMessagesSecCrit)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/norm")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/watering/min_time_between_messages_sec/norm", self.onMinTimeBetweenMessagesSecNorm)
 
 
         self._avgAirHum = -1
@@ -82,6 +60,29 @@ class WateringControlAPI(RESTBase):
         self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
         self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
         self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
+
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lon")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lon", self.onLongitude)
+
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/temp/min")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/temp/min", self.onMinTemp)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/temp/max")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/temp/max", self.onMaxTemp)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/airhum/min")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/airhum/min", self.onMinAirHum)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/airhum/max")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/airhum/max", self.onMaxAirHum)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/soilhum/min")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/soilhum/min", self.onMinSoilHum)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/soilhum/max")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/soilhum/max", self.onMaxSoilHum)
+
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit", self.onMinTimeBetweenMessagesSecCrit)
+        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm")
+        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm", self.onMinTimeBetweenMessagesSecNorm)
 
     
     @cherrypy.tools.json_out()
@@ -251,15 +252,13 @@ class WateringControlAPI(RESTBase):
 
         self.logger.debug(f"Executing the ASDRUBALE algorithm with: avgAirTemp: {self._avgAirTemp}, avgAirHum: {self._avgAirHum}, avgSoilHum: {self._avgSoilHum}")
 
-        ids = self._catreq.reqREST("CatalogRequest", "/catalog/services/arduinodevconn/ids")
-        if ids.status != True or ids.code_response != 200:
-            raise Exception(f"Error contacting the Catalog Request ({ids.code_response}): {ids.json_response}")
         try:
             # logic for the watering control
             entered = False
             if self._avgAirTemp == -1 or self._avgAirHum == -1 or self._avgSoilHum == -1:
                 return
 
+            ids = self._catreq.reqDeviceIdsList("ArduinoDevConn")
             if self._avgSoilHum > self._soilhum_threshold_max:
                 entered = True
                 self.logger.debug("Soil humidity is too high, watering is not needed")
