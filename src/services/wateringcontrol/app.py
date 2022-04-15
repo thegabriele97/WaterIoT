@@ -250,7 +250,7 @@ class WateringControlAPI(RESTBase):
 
         self.logger.debug(f"Executing the ASDRUBALE algorithm with: avgAirTemp: {self._avgAirTemp}, avgAirHum: {self._avgAirHum}, avgSoilHum: {self._avgSoilHum}")
 
-        ids = self._catreq.reqREST("CatalogRequest", "/catalog/services/arduinodevconn/ids")
+        ids = self._catreq.reqDeviceIdsList("ArduinoDevConn")
         if ids.status != True or ids.code_response != 200:
             raise Exception(f"Error contacting the Catalog Request ({ids.code_response}): {ids.json_response}")
         try:
@@ -262,7 +262,7 @@ class WateringControlAPI(RESTBase):
             if self._avgSoilHum > self._soilhum_threshold_max:
                 entered = True
                 self.logger.debug("Soil humidity is too high, watering is not needed")
-                for dev_id in ids.json_response["ids"]:
+                for dev_id in ids.json_response:
                     r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=off", devid=dev_id)
                     if r.status == True and r.code_response == 200:
                         self.logger.debug("Switched off the watering")
@@ -277,7 +277,7 @@ class WateringControlAPI(RESTBase):
                 if r.status == True and r.code_response == 200:
                     if r.json_response["weather"][0]["main"] in {"Rain", "Snow", "Thunderstorm", "Drizzle"} and self._avgSoilHum > self._soilhum_threshold_max:
                         self.logger.debug("It is raining, watering is not needed")
-                        for dev_id in ids.json_response["ids"]:
+                        for dev_id in ids.json_response:
                             r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=off", devid=dev_id)
                             if r.status == True and r.code_response == 200:
                                 self.logger.debug("Switched off the watering")
@@ -288,7 +288,7 @@ class WateringControlAPI(RESTBase):
                         if r.status == True and r.code_response == 200:
                             if r.json_response["hourly"][5]["weather"][0]["main"] in {"Rain", "Snow", "Thunderstorm", "Drizzle"}:
                                 self.logger.debug("It will rain, watering is not needed")
-                                for dev_id in ids.json_response["ids"]:
+                                for dev_id in ids.json_response:
                                     r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=off", devid=dev_id)
                                     if r.status == True and r.code_response == 200:
                                         self.logger.debug("Switched off the watering")
@@ -297,7 +297,7 @@ class WateringControlAPI(RESTBase):
                             else:
                                 if self._avgAirTemp > self._airtemp_threshold_max and self._avgAirHum < self._airhum_threshold_min:
                                     self.logger.debug("It is too hot, watering is needed")
-                                    for dev_id in ids.json_response["ids"]:
+                                    for dev_id in ids.json_response:
                                         r = self._catreq.reqREST("ArduinoDevConn", "/switch?state=on", devid=dev_id)
                                         if r.status == True and r.code_response == 200:
                                             self.logger.debug("Switched on the watering")
