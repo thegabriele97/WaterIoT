@@ -39,7 +39,7 @@
                 },
                 {
                     "command": "config",
-                    "description": "Sets the sampling period of the sensors"
+                    "description": "Sets the sampling period of the sensors or the thresholds for watering"
                 },
                 {
                     "command": "pos",

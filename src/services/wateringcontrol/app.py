@@ -17,12 +17,6 @@ class WateringControlAPI(RESTBase):
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
 
         self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
         self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
@@ -81,6 +75,13 @@ class WateringControlAPI(RESTBase):
             self._lon = r.json_response["lon"]
         else:
             raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
+        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
+        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
 
     
     @cherrypy.tools.json_out()
