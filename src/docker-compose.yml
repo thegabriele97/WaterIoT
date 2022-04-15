@@ -213,6 +213,9 @@ services:
       dockerfile: ./services/wateringcontrol/Dockerfile
     ports:
       - "8091:8091"
+    depends_on:
+      catalog:
+          condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/wateringcontrol | grep online | grep -c true"]
       interval: 15s

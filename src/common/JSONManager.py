@@ -39,7 +39,7 @@ class JSONManager:
             path = str(path + "/")
         
         tomod = JSONManager._intget(path, self._d)
-        if (isinstance(tomod, dict) or isinstance(value, dict)) and not self._structure_mod_allowed:
+        if (isinstance(tomod, dict) or isinstance(value, dict) or type(tomod) is not type(value)) and not self._structure_mod_allowed:
             raise ValueError("Modifiyng the structure of a JSON is not allowed!")
 
         JSONManager._intset(path, self._d, value)

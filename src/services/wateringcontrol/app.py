@@ -18,7 +18,7 @@ class WateringControlAPI(RESTBase):
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
 
-
+        self._enable = True
 
         self._avgAirHum = -1
         self._avgAirTemp = -1
@@ -27,9 +27,15 @@ class WateringControlAPI(RESTBase):
         self._lat = 0
         self._lon = 0
 
-        self._enable = None
         self._last_sent_msg_timestamp = -1
         self._last_sent_msgcrit_timestamp = -1
+
+        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/enable")
+        if r.status and r.code_response == 200:
+            self._enable = bool(r.json_response["v"])
+        else:
+            self.logger.error(f"Error getting the enable status from the DeviceConfig ({r.code_response}): {r.json_response}")
+
         r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/min_time_between_messages_sec")
         if r.status and r.code_response == 200:
             self._min_time_between_messages = int(r.json_response["norm"])
@@ -128,6 +134,7 @@ class WateringControlAPI(RESTBase):
                         "min_time_between_messages": self._min_time_between_messages,
                         "min_time_between_messages_crit": self._min_time_between_messages_crit
                     },
+                    "enabled": self._enable
                 })
 
         return self.asjson_error("Not found", 404)
@@ -154,8 +161,7 @@ class WateringControlAPI(RESTBase):
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        if self._enable != None and self._enable == True:
-            self._asdrubale()
+        self._asdrubale()
     
     def onAirTemperature(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -178,8 +184,7 @@ class WateringControlAPI(RESTBase):
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        if self._enable != None and self._enable == True:
-            self._asdrubale()
+        self._asdrubale()
 
     def onTerrainHumidity(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -202,8 +207,7 @@ class WateringControlAPI(RESTBase):
         else:
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
-        if self._enable != None and self._enable == True:
-            self._asdrubale()
+        self._asdrubale()
 
     def onLatitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
@@ -258,9 +262,12 @@ class WateringControlAPI(RESTBase):
     def onEnable(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
         self.logger.debug(f"Enable: {payl}")
-        self._enable = payl["v"]
+        self._enable = bool(payl["v"])
 
     def _asdrubale(self):
+
+        if not self._enable:
+            return
 
         self.logger.debug(f"Executing the ASDRUBALE algorithm with: avgAirTemp: {self._avgAirTemp}, avgAirHum: {self._avgAirHum}, avgSoilHum: {self._avgSoilHum}")
 
@@ -328,13 +335,11 @@ class WateringControlAPI(RESTBase):
                 else:
                     raise Exception(f"Error while getting the forecast from the OpenWeatherAdaptor ({r.code_response}): {r.json_response}")
 
-
-            
             if not entered:
                 if self._avgSoilHum < mean([self._soilhum_threshold_min, self._soilhum_threshold_max]):
                     self.logger.debug("Soil humidity is in the range, ask the user what to do")
                     if self._last_sent_msg_timestamp == -1 or time.time() - self._last_sent_msg_timestamp > self._min_time_between_messages:
-                        r = self._catreq.reqREST("TelegramAdaptor", "/sendMessage?text=Hey, the situation is pretty normal. Do you want to /switch on the irrigation?")
+                        r = self._catreq.reqREST("TelegramAdaptor", "/sendMessage?text=Hey, the situation is pretty normal (see /status for more details). Do you want to /switch on the irrigation?")
                         if r.status == True and r.code_response == 200:
                             self.logger.debug("Sent the message to Telegram")
                             self._last_sent_msg_timestamp = time.time()

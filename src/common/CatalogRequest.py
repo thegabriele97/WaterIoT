@@ -108,7 +108,7 @@ class CatalogRequest:
 
         return len(epoint) > 0
 
-    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None):
+    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None, retry_on_fail_count: int = 3):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
@@ -197,6 +197,12 @@ class CatalogRequest:
         
         finally:
             self._logger.debug(f"Service {b1}. Endpoint {b2}. Params {b3}. Reachable {b4}")
+
+            if (not b1 or not b2 or not b3 or not b4) and retry_on_fail_count > 0:
+                self._logger.warning(f"Retrying request to service {service}:{path} ...")
+                time.sleep(1)
+                return self.reqREST(service, path, reqt, datarequest, devid, retry_on_fail_count - 1)
+
             return RetType(b1 and b2 and b3 and b4, jsonresp, coderesp)
 
     def reqDeviceIdsList(self, service: str) -> list[int]:
@@ -262,7 +268,7 @@ class CatalogRequest:
 
             if i > 0:
                 time.sleep(0.5)
-                self._logger.warning(f"Retrying request to {path}...")
+                self._logger.warning(f"Retrying request to {path}, #{i+1}...")
 
             try:
                 r = self._s.request(meth.name, path, json=data)
@@ -274,10 +280,12 @@ class CatalogRequest:
             elif r.status_code not in [200, 201]:
                 r.raise_for_status()
             else:
-                break
+                return r
 
         if r is not None:
             r.raise_for_status()
+        else:
+            raise Exception(f"Request to {path} failed. Maybe timeout?")
 
         return r
 

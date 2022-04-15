@@ -17,7 +17,7 @@
         }
     },
     "watering": {
-        "enable": false,
+        "enable": true,
         "min_time_between_messages_sec": {
             "crit": 43200,
             "norm": 43200
