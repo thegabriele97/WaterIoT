@@ -28,6 +28,6 @@
     ],
     "watchdog": {
         "timeout_ms": 500,
-        "expire_sec": 10
+        "expire_sec": 4
     }
 }

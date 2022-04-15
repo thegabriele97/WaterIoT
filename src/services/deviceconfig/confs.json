@@ -1,7 +1,7 @@
 {
     "sensors": {
         "temp": {
-            "sampleperiod": 10
+            "sampleperiod": 20000
         },
         "airhum": {
             "sampleperiod": 20000
@@ -12,20 +12,20 @@
     },
     "system": {
         "location": {
-            "lat": 2,
-            "lon": 1
+            "lat": 50.1145,
+            "lon": 8.681675
         }
     },
     "watering": {
         "enable": false,
-        "min_time_between_messages_sec": { 
+        "min_time_between_messages_sec": {
             "crit": 43200,
             "norm": 43200
         },
         "thresholds": {
             "temp": {
                 "min": 10.0,
-                "max": 30
+                "max": 31.0
             },
             "airhum": {
                 "min": 20,

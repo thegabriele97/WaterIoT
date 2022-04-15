@@ -15,6 +15,7 @@ class RequestType(Enum):
     POST   = 2
     PUT    = 3
     DELETE = 4
+    HEAD   = 5
 
 class CatalogRequest:
 
@@ -72,7 +73,6 @@ class CatalogRequest:
 
     def _check_mqtt_endpoint(self, service: str, path: str, devid: int = None):
 
-
         if not self._mqttclient_connected:
             self._mqttclient_connect()
 
@@ -127,7 +127,7 @@ class CatalogRequest:
             self._logger.debug(f"Requesting REST service info @ {self._catalogURL}/catalog/services/{service}")
 
             if rpath in self._reqcache.keys():
-                r = requests.head(url=rpath)
+                r = self._do_req(RequestType.HEAD, rpath)
                 coderesp = r.status_code
 
                 if r.status_code != 200:
@@ -143,16 +143,7 @@ class CatalogRequest:
 
             if jsonresp is None:
 
-                r = None
-                for _ in range(0, 10):
-                    r = requests.get(url=rpath)
-                    if r.status_code == 404:
-                        time.sleep(0.5)
-                    elif r.status_code != 200:
-                        r.raise_for_status()
-                    else:
-                        break
-
+                r = self._do_req(RequestType.GET, rpath)
                 jsonresp = r.json()
                 coderesp = r.status_code
 
@@ -196,15 +187,6 @@ class CatalogRequest:
 
             url = f"http://{host}:{str(port)}{path}"
             r = self._do_req(reqt, url, datarequest)
-            # if reqt == RequestType.GET:
-            #     r = requests.get(url=url, json=datarequest)
-            # elif reqt == RequestType.POST:
-            #     r = requests.post(url=url, json=datarequest)
-            # elif reqt == RequestType.PUT:
-            #     r = requests.put(url=url, json=datarequest)
-            # elif reqt == RequestType.DELETE:
-            #     r = requests.delete(url=url, json=datarequest)
-
             b4 = True
 
             jsonresp = r.json()
@@ -270,20 +252,32 @@ class CatalogRequest:
 
         return {"online": r1.json()["services"], "offline": r2.json()["services"]}
 
-    def _do_req(self, meth: RequestType, path: str, data = None):
+    def _do_req(self, meth: RequestType, path: str, data = None, max : int = 10):
         """
         Internal method to perform a request to a service
         """
 
         r = None
-        for _ in range(0, 10):
-            r = self._s.request(meth.name, path, json=data)
-            if r.status_code == 404:
+        for i in range(0, max):
+
+            if i > 0:
                 time.sleep(0.5)
-            elif r.status_code != 200:
+                self._logger.warning(f"Retrying request to {path}...")
+
+            try:
+                r = self._s.request(meth.name, path, json=data)
+            except:
+                continue
+
+            if r.status_code == 404:
+                continue
+            elif r.status_code not in [200, 201]:
                 r.raise_for_status()
             else:
                 break
+
+        if r is not None:
+            r.raise_for_status()
 
         return r
 

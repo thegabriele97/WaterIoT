@@ -31,7 +31,7 @@ class TelegramAdaptorAPI(RESTBase):
                         self._bot.bot.sendMessage(id,args["text"])
                         cnt += 1
                     except Exception as e:
-                        self.logger.warn("Error sending message to user %s: %s" % (id, e))
+                        self.logger.warning("Error sending message to user %s: %s" % (id, e))
 
                 return self.asjson({"n": cnt})
 
