@@ -240,11 +240,9 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Links: {payl}")
-
             self._links = Links(payl["v"])
             self._asdrubale()
         except Exception as e:
-
             sent = True
             try:
                 r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onLinks (system /status could be compromised): {str(e)}")
@@ -256,59 +254,207 @@ class WateringControlAPI(RESTBase):
             self.logger.critical(f"Exception in onLinks (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
 
     def onLatitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Latitude: {payl}")
-        self._lat = payl["v"]
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Latitude: {payl}")
+            self._lat = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onLatitude (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onLatitude (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
     
     def onLongitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Longitude: {payl}")
-        self._lon = payl["v"]
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Longitude: {payl}")
+            self._lon = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onLongitude (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onLongitude (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
 
     def onMinTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Min temp: {payl}")
-        self._airtemp_threshold_min = payl["v"]
+            
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Min temperature: {payl}")
+            self._minTemp = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMinTemp (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMinTemp (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
     
     def onMaxTemp(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Max temp: {payl}")
-        self._airtemp_threshold_max = payl["v"]
+                
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Max temperature: {payl}")
+            self._maxTemp = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMaxTemp (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMaxTemp (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
 
     def onMinAirHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Min hum: {payl}")
-        self._airhum_threshold_min = payl["v"]
+                    
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Min air humidity: {payl}")
+            self._minAirHum = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMinAirHum (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMinAirHum (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
 
     def onMaxAirHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Max hum: {payl}")
-        self._airhum_threshold_max = payl["v"]
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Max air humidity: {payl}")
+            self._maxAirHum = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMaxAirHum (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMaxAirHum (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
 
     def onMinSoilHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Min soil hum: {payl}")
-        self._soilhum_threshold_min = payl["v"]
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Min soil humidity: {payl}")
+            self._minSoilHum = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMinSoilHum (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMinSoilHum (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
+
 
     def onMaxSoilHum(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Max soil hum: {payl}")
-        self._soilhum_threshold_max = payl["v"]
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Max soil humidity: {payl}")
+            self._maxSoilHum = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMaxSoilHum (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMaxSoilHum (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
+
 
     def onMinTimeBetweenMessagesSecCrit(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Min time between messages sec crit: {payl}")
-        self._min_time_between_messages_crit = payl["v"]
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Min time between messages (critical): {payl}")
+            self._minTimeBetweenMessagesSecCrit = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMinTimeBetweenMessagesSecCrit (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMinTimeBetweenMessagesSecCrit (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
+
 
     def onMinTimeBetweenMessagesSecNorm(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Min time between messages sec norm: {payl}")
-        self._min_time_between_messages = payl["v"]      
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Min time between messages (normal): {payl}")
+            self._minTimeBetweenMessagesSecNorm = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onMinTimeBetweenMessagesSecNorm (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onMinTimeBetweenMessagesSecNorm (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
+ 
 
     def onEnable(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        payl = json.loads(msg.payload.decode("utf-8"))
-        self.logger.debug(f"Enable: {payl}")
-        self._enable = bool(payl["v"])
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Enable: {payl}")
+            self._enable = payl["v"]
+            self._asdrubale()
+        except Exception as e:
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onEnable (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+    
+            self.logger.critical(f"Exception in onEnable (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
+
 
     def _asdrubale(self):
 
