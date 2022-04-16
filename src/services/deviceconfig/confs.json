@@ -35,6 +35,31 @@
                 "min": 20,
                 "max": 60
             }
+        },
+        "links": {
+            "list": [
+                {
+                    "name": "default",
+                    "arduinos": [
+                        0,
+                        1
+                    ],
+                    "raspberrys": [
+                        0,
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "name": "arrie",
+                    "arduinos": [
+                        3
+                    ],
+                    "raspberrys": [
+                        2
+                    ]
+                }
+            ]
         }
     }
 }

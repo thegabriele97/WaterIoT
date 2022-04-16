@@ -11,6 +11,7 @@ from common.SettingsManager import *
 from common.SettingsNode import *
 from common.RESTBase import RESTBase
 from common.CatalogRequest import *
+from common.Links import *
 
 class WateringControlAPI(RESTBase):
 
@@ -18,81 +19,106 @@ class WateringControlAPI(RESTBase):
         super().__init__(upperRESTSrvcApp, 0)
         self._catreq = CatalogRequest(self.logger, settings)
 
-        self._enable = True
+        try:
+            self._enable = True
 
-        self._avgAirHum = -1
-        self._avgAirTemp = -1
-        self._avgSoilHum = -1
+            self._avgAirHum = -1
+            self._avgAirTemp = -1
+            self._avgSoilHum = -1
 
-        self._lat = 0
-        self._lon = 0
+            self._lat = 0
+            self._lon = 0
 
-        self._last_sent_msg_timestamp = -1
-        self._last_sent_msgcrit_timestamp = -1
+            self._last_sent_msg_timestamp = -1
+            self._last_sent_msgcrit_timestamp = -1
 
-        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/enable")
-        if r.status and r.code_response == 200:
-            self._enable = bool(r.json_response["v"])
-        else:
-            self.logger.error(f"Error getting the enable status from the DeviceConfig ({r.code_response}): {r.json_response}")
+            r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/enable")
+            if r.status and r.code_response == 200:
+                self._enable = bool(r.json_response["v"])
+            else:
+                self.logger.error(f"Error getting the enable status from the DeviceConfig ({r.code_response}): {r.json_response}")
 
-        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/min_time_between_messages_sec")
-        if r.status and r.code_response == 200:
-            self._min_time_between_messages = int(r.json_response["norm"])
-            self._min_time_between_messages_crit = int(r.json_response["crit"])
-        else:
-            raise Exception(f"Error getting the min time between messages from the DeviceConfig ({r.code_response}): {r.json_response}")
+            r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/min_time_between_messages_sec")
+            if r.status and r.code_response == 200:
+                self._min_time_between_messages = int(r.json_response["norm"])
+                self._min_time_between_messages_crit = int(r.json_response["crit"])
+            else:
+                raise Exception(f"Error getting the min time between messages from the DeviceConfig ({r.code_response}): {r.json_response}")
 
-        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds")
-        if r.status and r.code_response == 200:
-            self._airtemp_threshold_max = r.json_response["temp"]["max"]
-            self._airtemp_threshold_min = r.json_response["temp"]["min"]
-            self._airhum_threshold_max = r.json_response["airhum"]["max"]
-            self._airhum_threshold_min = r.json_response["airhum"]["min"]
-            self._soilhum_threshold_max = r.json_response["soilhum"]["max"]
-            self._soilhum_threshold_min = r.json_response["soilhum"]["min"]
-        else:
-            raise Exception(f"Error getting the thresholds from the DeviceConfig ({r.code_response}): {r.json_response}")
-        
-        r = self._catreq.reqREST("DeviceConfig", "/configs?path=/system/location")
-        if r.status and r.code_response == 200:
-            self._lat = r.json_response["lat"]
-            self._lon = r.json_response["lon"]
-        else:
-            raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
+            r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds")
+            if r.status and r.code_response == 200:
+                self._airtemp_threshold_max = r.json_response["temp"]["max"]
+                self._airtemp_threshold_min = r.json_response["temp"]["min"]
+                self._airhum_threshold_max = r.json_response["airhum"]["max"]
+                self._airhum_threshold_min = r.json_response["airhum"]["min"]
+                self._soilhum_threshold_max = r.json_response["soilhum"]["max"]
+                self._soilhum_threshold_min = r.json_response["soilhum"]["min"]
+            else:
+                raise Exception(f"Error getting the thresholds from the DeviceConfig ({r.code_response}): {r.json_response}")
+            
+            r = self._catreq.reqREST("DeviceConfig", "/configs?path=/system/location")
+            if r.status and r.code_response == 200:
+                self._lat = r.json_response["lat"]
+                self._lon = r.json_response["lon"]
+            else:
+                raise Exception(f"Error getting the location from the DeviceConfig ({r.code_response}): {r.json_response}")
 
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
-        self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
-        self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
+            r = self._catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
+            if r.status and r.code_response == 200:
+                self.logger.debug(f"Links: {r.json_response['v']}")
+                self._links = Links(r.json_response["v"])
+            else:
+                raise Exception(f"Error getting the links from the DeviceConfig ({r.code_response}): {r.json_response}")
 
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lon")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lon", self.onLongitude)
+            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
+            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
+            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
+            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
+            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
+            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
 
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/temp/min")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/temp/min", self.onMinTemp)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/temp/max")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/temp/max", self.onMaxTemp)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/airhum/min")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/airhum/min", self.onMinAirHum)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/airhum/max")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/airhum/max", self.onMaxAirHum)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/soilhum/min")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/soilhum/min", self.onMinSoilHum)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/soilhum/max")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/soilhum/max", self.onMaxSoilHum)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lon")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lon", self.onLongitude)
 
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit", self.onMinTimeBetweenMessagesSecCrit)
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm", self.onMinTimeBetweenMessagesSecNorm)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/temp/min")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/temp/min", self.onMinTemp)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/temp/max")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/temp/max", self.onMaxTemp)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/airhum/min")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/airhum/min", self.onMinAirHum)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/airhum/max")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/airhum/max", self.onMaxAirHum)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/soilhum/min")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/soilhum/min", self.onMinSoilHum)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/thresholds/soilhum/max")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/thresholds/soilhum/max", self.onMaxSoilHum)
 
-        self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/enable")
-        self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/enable", self.onEnable)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/crit", self.onMinTimeBetweenMessagesSecCrit)
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/min_time_between_messages_sec/norm", self.onMinTimeBetweenMessagesSecNorm)
+
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/enable")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/enable", self.onEnable)
+
+            self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/links/list")
+            self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/links/list", self.onLinks)
+
+        except Exception as e:
+
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in Watering Initialization (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+
+            self.logger.critical(f"Exception in Watering Initialization (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
+
+            raise e
 
     
     @cherrypy.tools.json_out()
@@ -208,6 +234,26 @@ class WateringControlAPI(RESTBase):
             self.logger.debug("Error making the request to ThingSpeakAdaptor")
         
         self._asdrubale()
+
+    def onLinks(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self.logger.debug(f"Links: {payl}")
+
+            self._links = Links(payl["v"])
+            self._asdrubale()
+        except Exception as e:
+
+            sent = True
+            try:
+                r = self._catreq.reqREST("TelegramAdaptor", f"/sendMessage?text=Critical error in onLinks (system /status could be compromised): {str(e)}")
+                if not r.status or r.code_response != 200:
+                    raise Exception()
+            except:
+                sent = False
+
+            self.logger.critical(f"Exception in onLinks (sent on telegram: {'yes' if sent else 'no'}): {str(e)}")
 
     def onLatitude(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
         payl = json.loads(msg.payload.decode("utf-8"))
