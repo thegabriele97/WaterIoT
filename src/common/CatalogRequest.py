@@ -186,7 +186,7 @@ class CatalogRequest:
             self._logger.debug(f"Requesting service endpoint: {reqt.name} http://{host}:{str(port)}{path}")
 
             url = f"http://{host}:{str(port)}{path}"
-            r = self._do_req(reqt, url, datarequest)
+            r = self._do_req(reqt, url, datarequest, max=4)
             b4 = True
 
             jsonresp = r.json()

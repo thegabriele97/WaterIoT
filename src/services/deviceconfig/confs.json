@@ -1,13 +1,13 @@
 {
     "sensors": {
         "temp": {
-            "sampleperiod": 20000
+            "sampleperiod": 120000
         },
         "airhum": {
-            "sampleperiod": 20000
+            "sampleperiod": 120000
         },
         "soilhum": {
-            "sampleperiod": 20000
+            "sampleperiod": 120000
         }
     },
     "system": {
@@ -41,22 +41,20 @@
                 {
                     "name": "default",
                     "arduinos": [
-                        0,
-                        1
+                        0
                     ],
                     "raspberrys": [
                         0,
-                        1,
-                        2
+                        1
                     ]
                 },
                 {
                     "name": "arrie",
                     "arduinos": [
-                        3
+                        1
                     ],
                     "raspberrys": [
-                        2
+                        0
                     ]
                 }
             ]

@@ -38,6 +38,10 @@
                     "description": "Retrieve humidity of the soil"
                 },
                 {
+                    "command": "links",
+                    "description": "Retrieve all the device links"
+                },
+                {
                     "command": "config",
                     "description": "Sets the sampling period of the sensors or the thresholds for watering"
                 },
