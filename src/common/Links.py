@@ -64,6 +64,14 @@ class Links:
                 e.addLink(raspberry, arduino)
                 return
 
+    def createLink(self, name: str):
+            
+            for i, e in enumerate(self._data):
+                if e.name == name:
+                    return
+    
+            self._data.append(LinkItem(name))
+
     def toDict(self):
         return [e.toDict() for e in self._data]
 

@@ -4,7 +4,7 @@ from copy import deepcopy
 
 class LinkItem:
 
-    def __init__(self, name: str, arduinos: list[int] = None, raspberrys: list[int] = None) -> None:
+    def __init__(self, name: str, arduinos: list[int] = [], raspberrys: list[int] = []) -> None:
         self._name = name
         self._arduinos = arduinos
         self._raspberrys = raspberrys

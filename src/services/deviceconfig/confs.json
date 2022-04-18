@@ -56,6 +56,15 @@
                     "raspberrys": [
                         0
                     ]
+                },
+                {
+                    "name": "Test24",
+                    "arduinos": [
+                        1
+                    ],
+                    "raspberrys": [
+                        1
+                    ]
                 }
             ]
         }

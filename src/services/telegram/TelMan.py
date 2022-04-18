@@ -22,6 +22,7 @@ class MyBot:
         self._settings = settings
         self._encr = Encryption()
         self._required_loc = False
+        self._setlinks_create_waitname = False
         #Catalog token
         #self.tokenBot=requests.get("http://catalogIP/telegram_token").json()["telegramToken"]
         self.bot = SuperTelepotBot(self.tokenBot)
@@ -64,6 +65,7 @@ class MyBot:
         msgid = telepot.message_identifier(query["message"])
 
         self.logger.debug(f"Telegram Bot: on_query data: {query['data']}")
+        self._setlinks_create_waitname = False
 
         # regex match for setlinks:{name}:back
         regx0 = re.compile(r"^setlinks:(?P<name>\w+):back$")
@@ -81,6 +83,8 @@ class MyBot:
         regx6 = re.compile(r"^setlinks:(?P<name>\w+):addlink:(?P<from>\w+):(?P<to>\w+)$")
         # regex match for setlinks:{name}:delete
         regx7 = re.compile(r"^setlinks:(?P<name>\w+):delete$")
+        # regex match for setlinks_create
+        regx8 = re.compile(r"^setlinks_create$")
 
         if regx1.match(query["data"]):
 
@@ -153,16 +157,7 @@ class MyBot:
                 self.logger.error(f"Error while removing link: {str(e)}")
                 return
 
-            msg = ""
-            msg += "<b>🔗 Link</b>:\n"
-
-            for l in links.data:
-                msg += f"   <i>{l.name}</i>\n"
-                msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
-                msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
-
-            kboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=f"{l.name}", callback_data=f"setlinks:{l.name}")] for l in links.data])
-            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
+            self._setlinks_msglist(msgid=msgid)
             self.bot.answerCallbackQuery(query["id"], f"Link removed from {name}: {from_} ➡️ {to_}")
 
         elif regx4.match(query["data"]):
@@ -210,16 +205,7 @@ class MyBot:
                 self.logger.error(f"Error while adding link: {str(e)}")
                 return
 
-            msg = ""
-            msg += "<b>🔗 Link</b>:\n"
-
-            for l in links.data:
-                msg += f"   <i>{l.name}</i>\n"
-                msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
-                msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
-
-            kboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=f"{l.name}", callback_data=f"setlinks:{l.name}")] for l in links.data])
-            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
+            self._setlinks_msglist(msgid=msgid)
             self.bot.answerCallbackQuery(query["id"], f"Link added from {name}: {from_} ➡️ {to_}")
 
         elif regx7.match(query["data"]):
@@ -244,37 +230,13 @@ class MyBot:
                 self.logger.error(f"Error while removing link: {str(e)}")
                 return
 
-            msg = ""
-            msg += "<b>🔗 Link</b>:\n"
-
-            for l in links.data:
-                msg += f"   <i>{l.name}</i>\n"
-                msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
-                msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
-            
-            kboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=f"{l.name}", callback_data=f"setlinks:{l.name}")] for l in links.data])
-            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
-            self.bot.answerCallbackQuery(query["id"], f"Link removed from {name}")
+            self._setlinks_msglist(msgid=msgid)
+            self.bot.answerCallbackQuery(query["id"], f"Link Group {name} removed")
 
         elif regx0.match(query["data"]):
-            r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
-            if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
-                return
 
-            links = Links(r.json_response["v"])
+            self._setlinks_msglist(msgid=msgid)
 
-            msg = ""
-            msg += "<b>🔗 Link</b>:\n"
-
-            for l in links.data:
-                msg += f"   <i>{l.name}</i>\n"
-                msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
-                msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
-
-            kboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=f"{l.name}", callback_data=f"setlinks:{l.name}")] for l in links.data])
-            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
-            
         # regex match for setlinks:{name}
         elif query["data"].startswith("setlinks:"):
 
@@ -305,8 +267,17 @@ class MyBot:
             self.bot.editMessageText(msgid, msg, reply_markup=kboard, parse_mode="HTML")
             # self.logger.debug(f"Telegram Bot: setlinks: {name}")
             # self.bot.answerCallbackQuery(query["id"], text="Подождите, идет поиск привязки...")
-            return
+        elif regx8.match(query["data"]):
+            
+            kboard = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Back", callback_data=f"setlinks:nd:back")
+                ]
+            ])
 
+            self.bot.editMessageText(msgid, "Please, send the name of the new link group...", parse_mode="HTML", reply_markup=kboard)
+            self._setlinks_create_waitname = True
+            self._setlinks_create_msgid = msgid
 
 
     def on_chat_message(self,msg):
@@ -535,48 +506,41 @@ class MyBot:
                 
                 elif message.split()[0] == "/links":
 
-                    r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
-                    if not r.status or r.code_response != 200:
-                        self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code}: {r.response}", reply_markup=ReplyKeyboardRemove())
-                        return
-
-                    links = Links(r.json_response["v"])
-
-                    msg = ""
-                    msg += "<b>🔗 Links</b>:\n"
-
-                    for l in links.data:
-                        msg += f"   <i>{l.name}</i>\n"
-                        msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
-                        msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
-
-                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
-
-                elif message.split()[0] == "/setlinks":
-
-                    r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
-                    if not r.status or r.code_response != 200:
-                        self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code}: {r.response}", reply_markup=ReplyKeyboardRemove())
-                        return
-
-                    links = Links(r.json_response["v"])
-
-                    msg = ""
-                    msg += "<b>🔗 Links</b>:\n"
-
-                    for l in links.data:
-                        msg += f"   <i>{l.name}</i>\n"
-                        msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
-                        msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
-
-                    kboard_inner = self._gen_kboard(None, [l.name for l in links.data], lambda x: f"setlinks:{x}", InlineKeyboardButton, 2)
-                    kboard_inner.append([InlineKeyboardButton("create", callback_data="setlinks_create")])
-                    kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
-                    self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
+                    self._setlinks_msglist(chat_ID=chat_ID)
 
                 else:
+
+                    if self._setlinks_create_waitname:
+                        self._setlinks_create_waitname = False
+                        
+                        r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
+                        if not r.status or r.code_response != 200:
+                            self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code}: {r.response}", reply_markup=ReplyKeyboardRemove())
+                            return
+
+                        links = Links(r.json_response["v"])
+                        links.createLink("".join(message.split())) # remove all spaces
+
+                        # PUT request on DeviceConfig
+                        r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list", reqt=RequestType.PUT, datarequest={"v": links.toDict()})
+                        if not r.status or r.code_response != 200:
+                            self.bot.sendMessage(chat_ID, f"Error while updating data on the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=ReplyKeyboardRemove())
+                            return
+
+                        # this messageid (the one with the name)
+                        thismsgid = telepot.message_identifier(msg)
+
+                        # deleting this message
+                        self.bot.deleteMessage(thismsgid)
+                        # updating the original message with the list of links
+                        self._setlinks_msglist(msgid=self._setlinks_create_msgid)
+
+                        return
+
                     self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
                     # self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove())
+
+                self._setlinks_create_waitname = False
 
         elif "location" in msg:
 
@@ -604,3 +568,29 @@ class MyBot:
                 row += 1
 
         return kboard
+
+    def _setlinks_msglist(self, chat_ID = None, msgid = None):
+
+        r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
+        if not r.status or r.code_response != 200:
+            self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code}: {r.response}", reply_markup=ReplyKeyboardRemove())
+            return
+
+        links = Links(r.json_response["v"])
+
+        msg = ""
+        msg += "<b>🔗 Links</b>:\n"
+
+        for l in links.data:
+            msg += f"   <i>{l.name}</i>\n"
+            msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
+            msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
+
+        kboard_inner = self._gen_kboard(None, [l.name for l in links.data], lambda x: f"setlinks:{x}", InlineKeyboardButton, 2)
+        kboard_inner.append([InlineKeyboardButton(text="create", callback_data="setlinks_create")])
+        kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
+
+        if chat_ID is not None:
+            self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
+        elif msgid is not None:
+            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)

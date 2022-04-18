@@ -1,6 +1,6 @@
 import enum
 import logging
-from queue import Queue
+from queue import Empty, Queue
 import cherrypy
 import requests
 import paho.mqtt.client as mqtt
@@ -54,9 +54,22 @@ class ThingSpeakAPI(RESTBase):
 
     def _publishThreadHandler(self):
         
+        redoit = False
+
         while not self._publishthread.is_stop_requested:
             try:
-                msg = self._publishqueue.get(block=True)
+
+                if not redoit:
+                    while not self._publishthread.is_stop_requested:
+                        try:
+                            msg = self._publishqueue.get_nowait()
+                            break
+                        except Empty:
+                            self._publishthread.wait(0.5)
+
+                    if self._publishthread.is_stop_requested:
+                        continue
+
                 payl = json.loads(msg.payload.decode("utf-8"))
                 self.logger.debug(payl)
 
@@ -74,6 +87,11 @@ class ThingSpeakAPI(RESTBase):
 
                 if r.status_code != 200:
                     self.logger.warning(f"Error writing air humidity to ThingSpeak ({r.status_code}): {r.json()}")
+                
+                if r.text == str(0):
+                    redoit = True
+                    self._publishthread.wait(15.5)
+                    continue
 
                 value = {
                     "v": payl["v"], 
@@ -81,7 +99,8 @@ class ThingSpeakAPI(RESTBase):
                 }
 
                 self._catreq.publishMQTT("ThingSpeakAdaptor", pub_topic, json.dumps(value))
-                self._publishthread.wait(15.5)
+                redoit = False
+                self._publishthread.wait(1)
             except Exception as e:
                 self.logger.critical(f"Error publishing to ThingSpeak: {e}", exc_info=True)
 
