@@ -66,6 +66,7 @@ class MyBot:
 
         self.logger.debug(f"Telegram Bot: on_query data: {query['data']}")
         self._setlinks_create_waitname = False
+        self._setdatabase_create_waitdata = False
 
         # regex match for setlinks:{name}:back
         regx0 = re.compile(r"^setlinks:(?P<name>\w+):back$")
@@ -85,13 +86,24 @@ class MyBot:
         regx7 = re.compile(r"^setlinks:(?P<name>\w+):delete$")
         # regex match for setlinks_create
         regx8 = re.compile(r"^setlinks_create$")
+        # regex match for setdatabase:{name}
+        regx9 = re.compile(r"^setdatabase:(?P<name>\w+)$")
+        # regex match for setdatabase:{name}:back
+        regx10 = re.compile(r"^setdatabase:(?P<name>\w+):back$")
+        # regex match for setdatabase:{name}:apply
+        regx11 = re.compile(r"^setdatabase:(?P<name>\w+):apply$")
+        # regex match for setdabase_create
+        regx12 = re.compile(r"^setdatabase_create$")
+        # regex match for setdatabase:{name}:delete
+        regx13 = re.compile(r"^setdatabase:(?P<name>\w+):delete$")
 
         if regx1.match(query["data"]):
 
             name = regx1.match(query["data"]).group("name")
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
             if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code}: {r.response}")
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                 return
 
             links = Links(r.json_response["v"])
@@ -114,7 +126,8 @@ class MyBot:
             from_ = regx2.match(query["data"]).group("from")
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
             if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                 return
 
             links = Links(r.json_response["v"])
@@ -139,7 +152,8 @@ class MyBot:
 
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
             if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                 return
 
             links = Links(r.json_response["v"])
@@ -148,8 +162,8 @@ class MyBot:
                 links.removeLink(name, from_, to_)
                 r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list", datarequest={"v": links.toDict()}, reqt = RequestType.PUT)
                 if not r.status or r.code_response != 200:
-                    self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
-                    self.logger.error(f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                    self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                    self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                     return
 
             except Exception as e:
@@ -189,7 +203,8 @@ class MyBot:
 
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
             if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                 return
             
             try:
@@ -197,8 +212,8 @@ class MyBot:
                 links.addLink(name, from_, to_)
                 r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list", datarequest={"v": links.toDict()}, reqt = RequestType.PUT)
                 if not r.status or r.code_response != 200:
-                    self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
-                    self.logger.error(f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                    self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                    self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                     return
             except Exception as e:
                 self.bot.answerCallbackQuery(query["id"], f"Error while adding link: {str(e)}")
@@ -214,7 +229,8 @@ class MyBot:
 
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
             if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                 return
 
             try:
@@ -222,8 +238,8 @@ class MyBot:
                 links.removeLink(name)
                 r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list", datarequest={"v": links.toDict()}, reqt = RequestType.PUT)
                 if not r.status or r.code_response != 200:
-                    self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
-                    self.logger.error(f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                    self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                    self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                     return
             except Exception as e:
                 self.bot.answerCallbackQuery(query["id"], f"Error while removing link: {str(e)}")
@@ -242,7 +258,8 @@ class MyBot:
 
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
             if not r.status or r.code_response != 200:
-                self.bot.answerCallbackQuery(query["id"], f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
                 return
 
             links = Links(r.json_response["v"])
@@ -278,7 +295,98 @@ class MyBot:
             self.bot.editMessageText(msgid, "Please, send the name of the new link group...", parse_mode="HTML", reply_markup=kboard)
             self._setlinks_create_waitname = True
             self._setlinks_create_msgid = msgid
+        elif regx9.match(query["data"]):
+            name = regx9.match(query["data"]).group("name")
 
+            r = self.catreq.reqREST("WateringDatabase", f"/getByName?name={name}")
+            if not r.status or r.code_response != 200:
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
+                return
+
+            item = r.json_response["item"]
+            msg = ""
+            msg += "<b>💾 Database</b>:\n"
+            msg += f"   <i>{item['name']}</i>\n"
+            msg += f"         <pre>Air humidity</pre>\n"                   
+            msg += f"         <pre>            max: {item['thresholds']['airhum']['max']:.2f}%</pre>\n"
+            msg += f"         <pre>            min: {item['thresholds']['airhum']['min']:.2f}%</pre>\n"
+            msg += f"         <pre>Air temperature:</pre>\n"
+            msg += f"         <pre>            max: {item['thresholds']['temp']['max']:.2f}°C</pre>\n"
+            msg += f"         <pre>            min: {item['thresholds']['temp']['min']:.2f}°C</pre>\n"
+            msg += f"         <pre>Soil humidity  :</pre>\n"
+            msg += f"         <pre>            max: {item['thresholds']['soilhum']['max']:.2f}%</pre>\n"
+            msg += f"         <pre>            min: {item['thresholds']['soilhum']['min']:.2f}%</pre>\n"
+
+            kboard = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Apply", callback_data=f"setdatabase:{name}:apply"),
+                    InlineKeyboardButton(text="Delete", callback_data=f"setdatabase:{name}:delete")
+                ],
+                [
+                    InlineKeyboardButton(text="Back", callback_data=f"setdatabase:{name}:back")
+                ]
+            ])
+
+            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
+
+        elif regx10.match(query["data"]):
+
+            self._setdatabase_msglist(msgid=msgid)
+
+        elif regx11.match(query["data"]):
+
+            name = regx11.match(query["data"]).group("name")
+
+            r = self.catreq.reqREST("WateringDatabase", f"/getByName?name={name}")
+            if not r.status or r.code_response != 200:
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
+                return
+            
+            item = r.json_response["item"]
+            self.logger.debug(f"item = {item}")
+            self.logger.debug(f"item['thresholds'] = {item['thresholds']}")
+            r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/thresholds", reqt=RequestType.PUT, datarequest=item["thresholds"])
+            if not r.status or r.code_response != 200:
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
+                return
+
+            self._setdatabase_msglist(msgid=msgid)
+            self.bot.answerCallbackQuery(query["id"], text="Thresholds updated")
+        elif regx12.match(query["data"]):
+
+            kboard = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Back", callback_data=f"setdatabase:nd:back")
+                ]
+            ])
+
+            msg = "Please, send the new database record\nFormat must be:\n<pre>"
+            msg += "name\n"
+            msg += "airhum_max\n"
+            msg += "airhum_min\n"
+            msg += "temp_max\n"
+            msg += "temp_min\n"
+            msg += "soilhum_max\n"
+            msg += "soilhum_min\n"
+            msg += "</pre>"
+            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
+            self._setdatabase_create_waitdata = True
+            self._setlinks_create_msgid = msgid
+        elif regx13.match(query["data"]):
+
+            name = regx13.match(query["data"]).group("name")
+
+            r = self.catreq.reqREST("WateringDatabase", f"/getByName?name={name}", reqt=RequestType.DELETE)
+            if not r.status or r.code_response != 200:
+                self.bot.answerCallbackQuery(query["id"], f"Error from the DeviceConfig {r.code_response}")
+                self.logger.error(f"Error from the DeviceConfig {r.code_response}: {r.json_response}")
+                return
+
+            self._setdatabase_msglist(msgid=msgid)
+            self.bot.answerCallbackQuery(query["id"], text=f"Database Item <b>{name}</b> deleted")
 
     def on_chat_message(self,msg):
 
@@ -508,6 +616,10 @@ class MyBot:
 
                     self._setlinks_msglist(chat_ID=chat_ID)
 
+                elif message.split()[0] == "/database":
+
+                    self._setdatabase_msglist(chat_ID=chat_ID)
+
                 else:
 
                     if self._setlinks_create_waitname:
@@ -536,11 +648,46 @@ class MyBot:
                         self._setlinks_msglist(msgid=self._setlinks_create_msgid)
 
                         return
+                    elif self._setdatabase_create_waitdata:
+                        self._setdatabase_create_waitdata = False
+                        
+                        r = self.catreq.reqREST("WateringDatabase", "/", reqt=RequestType.POST, datarequest={
+                            "name": "".join(message.split("\n")[0].split()),
+                            "thresholds": {
+                                "temp": {
+                                    "max": float(message.split()[3]),
+                                    "min": float(message.split()[4])
+                                },
+                                "airhum": {
+                                    "max": float(message.split()[1]),
+                                    "min": float(message.split()[2])
+                                },
+                                "soilhum": {
+                                    "max": float(message.split()[5]),
+                                    "min": float(message.split()[6])
+                                }
+                            }
+                        })
+
+                        if not r.status or r.code_response != 201:
+                            self.bot.sendMessage(chat_ID, f"Error while updating data on the WateringDatabase {r.code_response}: {r.json_response}", reply_markup=ReplyKeyboardRemove())
+                            return
+                        
+                        # this messageid (the one with the name)
+                        thismsgid = telepot.message_identifier(msg)
+
+                        # deleting this message
+                        self.bot.deleteMessage(thismsgid)
+                        # updating the original message with the list of links
+                        self._setdatabase_msglist(msgid=self._setlinks_create_msgid)
+
+                        return
 
                     self.bot.sendMessage(chat_ID, "Wrong command. Please type /help to know the list of available commands", reply_markup=ReplyKeyboardRemove())
                     # self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove())
 
                 self._setlinks_create_waitname = False
+                self._setdatabase_create_waitdata = False
 
         elif "location" in msg:
 
@@ -573,7 +720,7 @@ class MyBot:
 
         r = self.catreq.reqREST("DeviceConfig", "/configs?path=/watering/links/list")
         if not r.status or r.code_response != 200:
-            self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code}: {r.response}", reply_markup=ReplyKeyboardRemove())
+            self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=ReplyKeyboardRemove())
             return
 
         links = Links(r.json_response["v"])
@@ -588,6 +735,39 @@ class MyBot:
 
         kboard_inner = self._gen_kboard(None, [l.name for l in links.data], lambda x: f"setlinks:{x}", InlineKeyboardButton, 2)
         kboard_inner.append([InlineKeyboardButton(text="create", callback_data="setlinks_create")])
+        kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
+
+        if chat_ID is not None:
+            self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
+        elif msgid is not None:
+            self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
+
+    def _setdatabase_msglist(self, chat_ID = None, msgid = None):
+
+        r = self.catreq.reqREST("WateringDatabase", "/")
+        if not r.status or r.code_response != 200:
+            self.bot.sendMessage(chat_ID, f"Error while requesting data from the WateringDatabase {r.code_response}: {r.code_response}", reply_markup=ReplyKeyboardRemove())
+            return
+
+        items = list(r.json_response["items"])
+
+        msg = ""
+        msg += "<b>💾 Database</b>:\n"
+
+        for i in range(0, len(items)):
+            msg += f"   <i>{items[i]['name']}</i>\n"
+            msg += f"         <pre>Air humidity   :</pre>\n"                   
+            msg += f"         <pre>            max: {items[i]['thresholds']['airhum']['max']:.2f}%</pre>\n"
+            msg += f"         <pre>            min: {items[i]['thresholds']['airhum']['min']:.2f}%</pre>\n"
+            msg += f"         <pre>Air temperature:</pre>\n"
+            msg += f"         <pre>            max: {items[i]['thresholds']['temp']['max']:.2f}°C</pre>\n"
+            msg += f"         <pre>            min: {items[i]['thresholds']['temp']['min']:.2f}°C</pre>\n"
+            msg += f"         <pre>Soil humidity  :</pre>\n"
+            msg += f"         <pre>            max: {items[i]['thresholds']['soilhum']['max']:.2f}%</pre>\n"
+            msg += f"         <pre>            min: {items[i]['thresholds']['soilhum']['min']:.2f}%</pre>\n"
+
+        kboard_inner = self._gen_kboard(None, [i["name"] for i in items], lambda x: f"setdatabase:{x}", InlineKeyboardButton)
+        kboard_inner.append([InlineKeyboardButton(text="create", callback_data="setdatabase_create")])
         kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
 
         if chat_ID is not None:

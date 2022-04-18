@@ -127,9 +127,9 @@ class WateringControlAPI(RESTBase):
                 return self.asjson({
                     "asdrubale": {
                         "averages": {
-                            "air_humidity": mean(self._avgAirHum.values()),
-                            "air_temperature": mean(self._avgAirTemp.values()),
-                            "soil_humidity": mean(self._avgSoilHum.values())
+                            "air_humidity": mean(self._avgAirHum.values()) if len(self._avgAirHum) > 0 else -1,
+                            "air_temperature": mean(self._avgAirTemp.values()) if len(self._avgAirTemp) > 0 else -1,
+                            "soil_humidity": mean(self._avgSoilHum.values()) if len(self._avgSoilHum) > 0 else -1,
                         },
                         "thresholds": {
                             "air_temperature": {
@@ -327,7 +327,7 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Min temperature: {payl}")
-            self._minTemp = payl["v"]
+            self._airtemp_threshold_min = payl["v"]
             self._asdrubale()
         except Exception as e:
             sent = True
@@ -345,7 +345,7 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Max temperature: {payl}")
-            self._maxTemp = payl["v"]
+            self._airtemp_threshold_max = payl["v"]
             self._asdrubale()
         except Exception as e:
             sent = True
@@ -363,7 +363,7 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Min air humidity: {payl}")
-            self._minAirHum = payl["v"]
+            self._airhum_threshold_min = payl["v"]
             self._asdrubale()
         except Exception as e:
             sent = True
@@ -381,7 +381,7 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Max air humidity: {payl}")
-            self._maxAirHum = payl["v"]
+            self._airhum_threshold_max = payl["v"]
             self._asdrubale()
         except Exception as e:
             sent = True
@@ -399,7 +399,7 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Min soil humidity: {payl}")
-            self._minSoilHum = payl["v"]
+            self._soilhum_threshold_min = payl["v"]
             self._asdrubale()
         except Exception as e:
             sent = True
@@ -418,7 +418,7 @@ class WateringControlAPI(RESTBase):
         try:
             payl = json.loads(msg.payload.decode("utf-8"))
             self.logger.debug(f"Max soil humidity: {payl}")
-            self._maxSoilHum = payl["v"]
+            self._soilhum_threshold_max = payl["v"]
             self._asdrubale()
         except Exception as e:
             sent = True
@@ -540,11 +540,11 @@ class WateringControlAPI(RESTBase):
                                     self.logger.debug("It is too hot, watering is needed")
                                     self._toggle_switch(on=True, devid=devid)
                                 else:
-                                    if self._last_sent_msgcrit_timestamp_timestamp == -1 or time.time() - self._last_sent_msgcrit_timestamp_timestamp > self._min_time_between_messages_crit:
+                                    if self._last_sent_msgcrit_timestamp == -1 or time.time() - self._last_sent_msgcrit_timestamp > self._min_time_between_messages_crit:
                                         r = self._catreq.reqREST("TelegramAdaptor", "/sendMessage?text=Hey, the situation is critical. Do you want to /switch on the irrigation?")
                                         if r.status == True and r.code_response == 200:
                                             self.logger.debug("Sent the message to Telegram")
-                                            self._last_sent_msgcrit_timestamp_timestamp = time.time()
+                                            self._last_sent_msgcrit_timestamp = time.time()
                                         else:
                                             raise Exception(f"Error contacting the Telegram Adaptor to send a message ({r.code_response}): {r.json_response}")
                         else:

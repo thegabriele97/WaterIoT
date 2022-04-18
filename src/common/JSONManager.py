@@ -39,12 +39,39 @@ class JSONManager:
             path = str(path + "/")
         
         tomod = JSONManager._intget(path, self._d)
-        if (isinstance(tomod, dict) or isinstance(value, dict) or type(tomod) is not type(value)) and not self._structure_mod_allowed:
+
+        # checking if we are modifying to dict, they must be the same to allow so
+        signalit = False
+        if isinstance(tomod, dict) and isinstance(value, dict):
+            # checking same keys
+            if not all(k in tomod for k in value) or not all(k in value for k in tomod):
+                signalit = True
+
+            # checking same value type
+            if not JSONManager._rec_check_type(tomod, value) or not JSONManager._rec_check_type(value, tomod):
+                signalit = True
+
+            signalit = signalit and not self._structure_mod_allowed
+            if signalit:
+                raise ValueError("Modifiyng the structure of a JSON is not allowed!")
+
+        elif (signalit or isinstance(tomod, dict) or isinstance(value, dict) or type(tomod) is not type(value)) and not self._structure_mod_allowed:
             raise ValueError("Modifiyng the structure of a JSON is not allowed!")
 
         JSONManager._intset(path, self._d, value)
         with open(self._filename, "w") as fp:
             fp.write(json.dumps(self._d, indent=4))
+
+    @staticmethod
+    def _rec_check_type(tomod: dict, value: dict) -> bool:
+
+        if not all(isinstance(tomod[k], type(value[k])) for k in [k for k in tomod if k in value]):
+            return False
+
+        if not all(JSONManager._rec_check_type(tomod[k], value[k]) for k in [k for k in tomod if k in value] if isinstance(tomod[k], dict)):
+            return False
+
+        return True
 
     @staticmethod
     def _intget(path: str, d: dict) -> dict:

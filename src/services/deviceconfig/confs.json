@@ -25,15 +25,15 @@
         "thresholds": {
             "temp": {
                 "min": 10.0,
-                "max": 31.0
+                "max": 30.0
             },
             "airhum": {
-                "min": 20,
-                "max": 60
+                "min": 20.0,
+                "max": 60.0
             },
             "soilhum": {
-                "min": 20,
-                "max": 60
+                "min": 20.0,
+                "max": 60.0
             }
         },
         "links": {

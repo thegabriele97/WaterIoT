@@ -186,7 +186,7 @@ class CatalogRequest:
             self._logger.debug(f"Requesting service endpoint: {reqt.name} http://{host}:{str(port)}{path}")
 
             url = f"http://{host}:{str(port)}{path}"
-            r = self._do_req(reqt, url, datarequest, max=4)
+            r = self._do_req(reqt, url, datarequest, max=4, doraise=False)
             b4 = True
 
             jsonresp = r.json()
@@ -258,7 +258,7 @@ class CatalogRequest:
 
         return {"online": r1.json()["services"], "offline": r2.json()["services"]}
 
-    def _do_req(self, meth: RequestType, path: str, data = None, max : int = 10):
+    def _do_req(self, meth: RequestType, path: str, data = None, max : int = 10, doraise: bool = True):
         """
         Internal method to perform a request to a service
         """
@@ -277,8 +277,11 @@ class CatalogRequest:
 
             if r.status_code == 404:
                 continue
-            elif r.status_code not in [200, 201]:
-                r.raise_for_status()
+            elif r.status_code not in [200, 201, 202]:
+                if doraise:
+                    r.raise_for_status()
+                else:
+                    return r
             else:
                 return r
 

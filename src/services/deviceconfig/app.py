@@ -8,6 +8,22 @@ from common.RESTBase import RESTBase
 from common.CatalogRequest import *
 from common.JSONManager import JSONManager
 
+class IntUtils:
+
+    @staticmethod
+    def _rec_dict(d: dict, path: str = "") -> list[str]:
+
+        ret = []
+        for k, v in d.items():
+
+            p = f"{path}/{k}"
+            if isinstance(v, dict):
+                ret = [*ret, *IntUtils._rec_dict(v, p)]
+            else:
+                ret.append(p)
+            
+        return ret
+
 class DeviceConfigAPI(RESTBase):
 
     def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
@@ -47,7 +63,7 @@ class DeviceConfigAPI(RESTBase):
                 p = f"/{str(args['path'][1:])}"
                 body = json.loads(cherrypy.request.body.read())
                 try:
-                    self._confsmngr.set(p, body["v"])
+                    self._confsmngr.set(p, body["v"] if "v" in body else body)
 
                     d = self.asjson(self._confsmngr.get(p))
                     
@@ -56,7 +72,13 @@ class DeviceConfigAPI(RESTBase):
                     else:
                         r = {"v": d}
                     
-                    self._catreq.publishMQTT("DeviceConfig", f"/conf{p}", json.dumps(r))
+                    if "v" in body:
+                        self._catreq.publishMQTT("DeviceConfig", f"/conf{p}", json.dumps(r))
+                    else:
+                        keys = IntUtils._rec_dict(body)
+                        for k in keys:
+                            self._catreq.publishMQTT("DeviceConfig", f"/conf{args['path']}{k}", json.dumps({"v": self._confsmngr.get(f"{args['path']}{k}")}))
+                    
                     return self.asjson(r)
 
                 except KeyError:
@@ -79,7 +101,7 @@ class App(WIOTRestApp):
             self.addRESTEndpoint("/configs", [EndpointParam("path")])
 
             with open(SettingsManager.relfile2abs("confs.json")) as fp:
-                keys = self._rec_dict(json.load(fp))
+                keys = IntUtils._rec_dict(json.load(fp))
                 for k in keys:
                     self.addMQTTEndpoint(f"/conf{k}", f"Publish new value of {k} configuration when it changes")
 
@@ -89,18 +111,6 @@ class App(WIOTRestApp):
         except Exception as e:
             self.logger.exception(str(e))
 
-    def _rec_dict(self, d: dict, path: str = "") -> list[str]:
-
-        ret = []
-        for k, v in d.items():
-
-            p = f"{path}/{k}"
-            if isinstance(v, dict):
-                ret = [*ret, *self._rec_dict(v, p)]
-            else:
-                ret.append(p)
-            
-        return ret
 
 
 if __name__ == "__main__":

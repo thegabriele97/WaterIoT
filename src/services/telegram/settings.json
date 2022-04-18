@@ -46,6 +46,10 @@
                     "description": "Sets the sampling period of the sensors or the thresholds for watering"
                 },
                 {
+                    "command": "database",
+                    "description": "Get a database of default values for Watering"
+                },
+                {
                     "command": "pos",
                     "description": "Sets latitude and longitude where retrive weather forecasting"
                 },
