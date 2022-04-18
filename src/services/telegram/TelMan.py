@@ -96,6 +96,10 @@ class MyBot:
         regx12 = re.compile(r"^setdatabase_create$")
         # regex match for setdatabase:{name}:delete
         regx13 = re.compile(r"^setdatabase:(?P<name>\w+):delete$")
+        # regex match for setdevice:{devid}
+        regx14 = re.compile(r"^setdevice:(?P<devid>\w+)$")
+        # regex match for setdevice:{devid}:refresh
+        regx15 = re.compile(r"^setdevice:(?P<devid>\w+):refresh$")
 
         if regx1.match(query["data"]):
 
@@ -388,6 +392,17 @@ class MyBot:
             self._setdatabase_msglist(msgid=msgid)
             self.bot.answerCallbackQuery(query["id"], text=f"Database Item <b>{name}</b> deleted")
 
+        elif regx14.match(query["data"]):
+
+            devid = regx14.match(query["data"]).group("devid")
+            self._setreadings_msglist(msgid=msgid, devid=devid)
+
+        elif regx15.match(query["data"]):
+
+            devid = regx15.match(query["data"]).group("devid")
+            self._setreadings_msglist(msgid=msgid, devid=devid)
+
+
     def on_chat_message(self,msg):
 
         content_type, chat_type, chat_ID = telepot.glance(msg)
@@ -620,6 +635,10 @@ class MyBot:
 
                     self._setdatabase_msglist(chat_ID=chat_ID)
 
+                elif message.split()[0] == "/readings":
+
+                    self._setreadings_msglist(chat_ID=chat_ID)
+
                 else:
 
                     if self._setlinks_create_waitname:
@@ -774,3 +793,63 @@ class MyBot:
             self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
         elif msgid is not None:
             self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
+
+    def _setreadings_msglist(self, chat_ID = None, msgid = None, devid = None):
+
+        ids = self.catreq.reqDeviceIdsList("RaspberryDevConn")
+        devid = None if len(ids) == 0 else ids[0] if devid is None else int(devid)
+
+        kboard_inner = self._gen_kboard("Device ", ids, lambda x: f"setdevice:{x}", InlineKeyboardButton)
+        kboard_inner.append([InlineKeyboardButton(text="refresh", callback_data=f"setdevice:{devid}:refresh")])
+        kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
+
+        a = b = c = None
+
+        r0 = self.catreq.reqREST("RaspberryDevConn", "/airhumidity", devid=devid)
+        if not r0.status or r0.code_response != 200:
+            self.bot.sendMessage(chat_ID, f"Error while requesting data {r0.code_response}: {r0.json_response}", reply_markup=ReplyKeyboardRemove())
+        else:
+            a = r0.json_response
+
+        r1 = self.catreq.reqREST("RaspberryDevConn", "/airtemperature", devid=devid)
+        if not r1.status or r1.code_response != 200:
+            self.bot.sendMessage(chat_ID, f"Error while requesting data {r1.code_response}: {r1.json_response}", reply_markup=ReplyKeyboardRemove())
+        else:
+            b = r1.json_response
+
+        r2 = self.catreq.reqREST("RaspberryDevConn", "/terrainhumidity", devid=devid)
+        if not r2.status or r2.code_response != 200:
+            self.bot.sendMessage(chat_ID, f"Error while requesting data {r2.code_response}: {r2.json_response}", reply_markup=ReplyKeyboardRemove())
+        else:
+            c = r2.json_response
+        
+        msg = self._setreadings_prepmsg(a, b, c, devid=devid)
+        if chat_ID is not None:
+            self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
+        elif msgid is not None:
+            self.bot.editMessageText(msgid, msg, reply_markup=kboard, parse_mode="HTML")
+    
+
+    def _setreadings_prepmsg(self, airhum = None, airtemp = None, soilhum = None, devid = "ND"):
+
+        dt0 = datetime.fromtimestamp(airhum["t"]).strftime("%d-%m-%Y %H:%M:%S") if airhum is not None else "..."
+        dt1 = datetime.fromtimestamp(airtemp["t"]).strftime("%d-%m-%Y %H:%M:%S") if airtemp is not None else "..."
+        dt2 = datetime.fromtimestamp(soilhum["t"]).strftime("%d-%m-%Y %H:%M:%S") if soilhum is not None else "..."
+
+        msg = ""
+        msg += f"<b>📊 Readings <i>(dev #{devid})</i></b>:\n"
+        msg += f"   <i>Air humidity   :</i>\n"
+        msg += f'      🖥️ sensor: {airhum["n"] if airhum is not None else "..."}\n'
+        msg += f'      🕟 time  : {dt0}\n'
+        msg += f'      📟 value : {airhum["v"] if airhum is not None else ".."}{airhum["u"] if airhum is not None else "."}\n'
+        msg += f"   <i>Air temperature: </i>\n"
+        msg += f'      🖥️ sensor: {airtemp["n"] if airtemp is not None else "..."}\n'
+        msg += f'      🕟 time  : {dt1}\n'
+        msg += f'      📟 value : {airtemp["v"] if airtemp is not None else ".."}{airtemp["u"] if airtemp is not None else "."}\n'
+        msg += f"   <i>Soil humidity  : </i>\n"
+        msg += f'      🖥️ sensor: {soilhum["n"] if soilhum is not None else "..."}\n'
+        msg += f'      🕟 time  : {dt2}\n'
+        msg += f'      📟 value : {soilhum["v"] if soilhum is not None else ".."}{soilhum["u"] if soilhum is not None else "."}\n'
+
+        return msg    
+
