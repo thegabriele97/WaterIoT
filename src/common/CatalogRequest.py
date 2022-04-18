@@ -45,45 +45,49 @@ class CatalogRequest:
         self._mqttclient.loop_start()
 
 
-    def publishMQTT(self, service: str, path:str, payload):
+    def publishMQTT(self, service: str, path:str, payload, devid: int = None):
         if path[0] != '/':
             raise ValueError("Path must begin with a '/'")
 
-        if not self._check_mqtt_endpoint(service, path):
+        if not self._check_mqtt_endpoint(service, path, devid):
             raise ValueError(f"Trying to publish in a non published topic on the catalog for {service}")
 
-        self._mqttclient.publish(f"/{service}{path}", payload)
-        self._logger.debug(f"MQTT published to /{service}{path}: {payload}")
+        ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
+        self._mqttclient.publish(f"/{service}{ap}{path}", payload)
+        self._logger.debug(f"MQTT published to /{service}{ap}{path}: {payload}")
 
-    def subscribeMQTT(self, service: str, path: str):
+    def subscribeMQTT(self, service: str, path: str, devid: int = None):
 
         if path[0] != '/':
             raise ValueError("Path must begin with a '/'")
 
-        if not self._check_mqtt_endpoint(service, path):
+        if not self._check_mqtt_endpoint(service, path, devid):
             raise ValueError(f"Trying to subscribe in a non published topic on the catalog for {service}")
 
-        self._mqttclient.subscribe(f"/{service}{path}")
-        self._logger.debug(f"MQTT subscribed to /{service}{path}")
+        ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
+        self._mqttclient.subscribe(f"/{service}{ap}{path}")
+        self._logger.debug(f"MQTT subscribed to /{service}{ap}{path}")
 
-    def callbackOnTopic(self, service: str, path: str, callback):
+    def callbackOnTopic(self, service: str, path: str, callback, devid: int = None):
 
         if path[0] != '/':
             raise ValueError("Path must begin with a '/'")
 
-        if not self._check_mqtt_endpoint(service, path):
+        if not self._check_mqtt_endpoint(service, path, devid):
             raise ValueError(f"Trying to interact with a non published topic on the catalog for {service}")
 
-        self._mqttclient.message_callback_add(f"/{service}{path}", callback)
+        ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
+        self._mqttclient.message_callback_add(f"/{service}{ap}{path}", callback)
 
-    def _check_mqtt_endpoint(self, service: str, path: str):
+    def _check_mqtt_endpoint(self, service: str, path: str, devid: int = None):
 
         service = service.lower()
-        self._logger.debug(f"Requesting MQTT service info @ {self._catalogURL}/catalog/services/{service}")
+        rpath = f"{self._catalogURL}/catalog/services/{service}"
+        self._logger.debug(f"Requesting MQTT ({path}, dev #{devid}) service info @ {rpath}")
 
         r = None
         for _ in range(0, 10):
-            r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+            r = requests.get(url=rpath)
             if r.status_code == 404:
                 time.sleep(0.5)
             elif r.status_code != 200:
@@ -92,25 +96,30 @@ class CatalogRequest:
                 break
 
         if r.status_code == 404 or r == None:
-            raise Exception(f"{self._catalogURL}/catalog/services/{service} return status code 404")
+            raise Exception(f"{rpath} return status code 404")
 
-        if not r.json()["online"]:
-            raise Exception(f"Service {service} is not online")
+        # checking if we are dealing with a multiple device
+        if "services" in r.json():
+            epoints_raw = [list(s["service"]["endpoints"][EndpointType.MQTT.name]) for s in r.json()["services"]]
+            epoints_raw = [item for sublist in epoints_raw for item in sublist]
+        else:
+            epoints_raw = r.json()["service"]["endpoints"][EndpointType.MQTT.name]
+
+        # if not r.json()["online"]:
+        #     raise Exception(f"Service {service} is not online")
             
-        epoints_raw = r.json()["service"]["endpoints"][EndpointType.MQTT.name]        
-        epoint = [e for e in epoints_raw if mqtt.topic_matches_sub(f"/{service}{path}", e["uri"])]
+        ap = f"/{devid}" if devid is not None and not path.startswith("/+") else ""
+        epoint = [e for e in epoints_raw if mqtt.topic_matches_sub(f"/{service}{ap}{path}", e["uri"])]
 
-        return len(epoint) == 1
+        return len(epoint) > 0
 
-    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None):
+    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
         """
 
-        b1 = False
-        b2 = False
-        b3 = False
+        b1 = b2 = b3 = b4 = False
         jsonresp = None
         coderesp = None
 
@@ -119,10 +128,11 @@ class CatalogRequest:
         service = service.lower()
 
         try:
+            rpath = f"{self._catalogURL}/catalog/services/{service}" if devid is None else f"{self._catalogURL}/catalog/services/{service}?devid={devid}"
             self._logger.debug(f"Requesting REST service info @ {self._catalogURL}/catalog/services/{service}")
 
-            if service in self._reqcache.keys():
-                r = requests.head(url=f"{self._catalogURL}/catalog/services/{service}")
+            if rpath in self._reqcache.keys():
+                r = requests.head(url=rpath)
                 coderesp = r.status_code
 
                 if r.status_code != 200:
@@ -130,21 +140,31 @@ class CatalogRequest:
 
                 lastmodified = r.headers["Last-Modified"]
                 expires = r.headers["Expires"]
-                cache = (service, CacheType(self._reqcache[service][0], self._reqcache[service][1]))
+                cache = (service, CacheType(self._reqcache[rpath][0], self._reqcache[rpath][1]))
 
                 if expires != '0' and lastmodified == cache[1].header["Last-Modified"]:
                     self._logger.debug(f"Using cache for service {service}")
                     jsonresp = cache[1].response
 
             if jsonresp is None:
-                r = requests.get(url=f"{self._catalogURL}/catalog/services/{service}")
+
+                r = None
+                for _ in range(0, 10):
+                    r = requests.get(url=rpath)
+                    if r.status_code == 404:
+                        time.sleep(0.5)
+                    elif r.status_code != 200:
+                        r.raise_for_status()
+                    else:
+                        break
+
                 jsonresp = r.json()
                 coderesp = r.status_code
 
                 if r.status_code != 200:
                     r.raise_for_status()
 
-                self._reqcache[service] = CacheType(r.headers, r.json())
+                self._reqcache[rpath] = CacheType(r.headers, r.json())
 
             data: dict = jsonresp
             if not data["online"]:
@@ -189,6 +209,8 @@ class CatalogRequest:
             elif reqt == RequestType.DELETE:
                 r = requests.delete(url=url, json=datarequest)
 
+            b4 = True
+
             jsonresp = r.json()
             coderesp = r.status_code
             
@@ -196,8 +218,61 @@ class CatalogRequest:
             self._logger.error(f"Catalog request error: {str(e)}")
         
         finally:
-            self._logger.debug(f"Service {b1}. Endpoint {b2}. Params {b3}")
-            return RetType(b1 and b2 and b3, jsonresp, coderesp)
+            self._logger.debug(f"Service {b1}. Endpoint {b2}. Params {b3}. Reachable {b4}")
+            return RetType(b1 and b2 and b3 and b4, jsonresp, coderesp)
+
+    def reqDeviceIdsList(self, service: str) -> list[int]:
+        """
+        Returns a list of device ids for the given service
+        """
+        service = service.lower()
+        rpath = f"{self._catalogURL}/catalog/services/{service}/ids"
+
+        r = None
+        for _ in range(0, 10):
+            r = requests.get(url=rpath)
+            if r.status_code == 404:
+                time.sleep(0.5)
+            elif r.status_code != 200:
+                r.raise_for_status()
+            else:
+                break
+
+        return r.json()["ids"]
+
+    def reqDeviceServices(self, service: str):
+        """
+        Returns a list of services for the given device
+        """
+        service = service.lower()
+        rpath = f"{self._catalogURL}/catalog/services/{service}"
+
+        r = None
+        for _ in range(0, 10):
+            r = requests.get(url=rpath)
+            if r.status_code == 404:
+                time.sleep(0.5)
+            elif r.status_code != 200:
+                r.raise_for_status()
+            else:
+                break
+
+        return r.json()["services"]
+
+    def reqAllServices(self) -> dict[str, list]:
+        """
+        Returns a list of all services
+        """
+
+        r1 = requests.get(url=f"{self._catalogURL}/catalog/services")
+        if r1.status_code != 200:
+            r1.raise_for_status()
+
+        r2 = requests.get(url=f"{self._catalogURL}/catalog/services/expired")
+        if r2.status_code != 200:
+            r2.raise_for_status()
+
+        return {"online": r1.json()["services"], "offline": r2.json()["services"]}
 
     def _cb_on_connect(self, mqtt: mqtt.Client, userdata, flags, rc):
         self._logger.info(f"Connected to MQTT broker {mqtt._host}:{mqtt._port}")

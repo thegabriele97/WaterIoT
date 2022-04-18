@@ -5,7 +5,8 @@ COPY services/example/requirements.txt /app/services/example/requirements.txt
 RUN pip3 install -r /app/common/requirements.txt
 RUN pip3 install -r /app/services/example/requirements.txt
 
-COPY . /app
+COPY ./common /app/common
+COPY ./services/example /app/services/example
 WORKDIR /app/services/example
 
 # RUN pip install pipreqs

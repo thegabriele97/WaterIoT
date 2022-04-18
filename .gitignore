@@ -7,3 +7,4 @@ requirements.txt
 loadenv.sh
 src/uptime/data/**
 src/services/uptime/data/kuma.db-**
+requirements_rpi.txt

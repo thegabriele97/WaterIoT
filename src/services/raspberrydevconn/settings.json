@@ -1,7 +1,7 @@
 {
     "rest_server": {
         "host": "0.0.0.0",
-        "port": 8086
+        "port": 8088
     },
     "deviceid": 0,
     "indent_level": 4,
@@ -13,5 +13,14 @@
     "arduino": {
         "i2c_dev": 1,
         "i2c_addr": "0x08"
+    },
+    "sensor": {
+        "type": 11,
+        "pin": 4
+    },
+    "default": {
+        "temperature": 25,
+        "humidity": 50,
+        "soil": 20
     }
 }
