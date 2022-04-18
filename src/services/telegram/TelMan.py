@@ -500,11 +500,12 @@ class MyBot:
                             self.bot.sendMessage(chat_id=chat_ID, text="No device id selected. Please use the right one", reply_markup=ReplyKeyboardMarkup(keyboard=kboard, resize_keyboard=True))
                             return
 
-                    self.bot.sendMessage(chat_ID,"You will get the result ASAP...", reply_markup=ReplyKeyboardRemove())
+                    r = self.bot.sendMessage(chat_ID,"You will get the result ASAP...", reply_markup=ReplyKeyboardRemove())
 
                     epoint = "/airtemperature" if message.split()[0] == "/getairt" else "/airhumidity" if message.split()[0] == "/getairu" else "/terrainhumidity"
                     done, resp, code = self.catreq.reqREST("RaspberryDevConn", epoint, devid=devid)
                     if not done or code != 200:
+                        self.bot.deleteMessage(telepot.message_identifier(r))
                         self.bot.sendMessage(chat_ID, f"Error while requesting data {code}: {resp}", reply_markup=ReplyKeyboardRemove())
                         return
 
@@ -516,6 +517,8 @@ class MyBot:
                     msg += f'🕟 time  : {dt}\n'
                     msg += f'📟 value : {resp["v"]}{resp["u"]}'
                     msg += '</pre>'
+
+                    self.bot.deleteMessage(telepot.message_identifier(r))
                     self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 elif message.split()[0]=="/switch":
                     if len(message.split()) == 1:
@@ -550,12 +553,19 @@ class MyBot:
                                 except ValueError:
                                     devids = ids
 
+                        msg = "Result: <pre>"
                         for devid in devids:
+                            msg += f"   #{devid}: "
                             r = self.catreq.reqREST("ArduinoDevConn", f"/switch?state={message.split()[1].lower()}", devid=devid)
                             if not r.status or r.code_response != 200:
-                                self.bot.sendMessage(chat_ID, f"Error on dev #{devid}: code {r.code_response} - {r.json_response}", reply_markup=ReplyKeyboardRemove())
+                                msg += f"OFF"
                             else:
-                                self.bot.sendMessage(chat_ID, f"You {'started' if message.split()[1].lower() == 'on' else 'stopped'} irrigation on dev #{devid}", reply_markup=ReplyKeyboardRemove())
+                                msg += f" ON"
+
+                            msg += "\n"
+
+                        msg += "</pre>"
+                        self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
 
                     else:
                         self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())               
@@ -839,17 +849,23 @@ class MyBot:
         msg = ""
         msg += f"<b>📊 Readings <i>(dev #{devid})</i></b>:\n"
         msg += f"   <i>Air humidity   :</i>\n"
+        msg += f"<pre>"
         msg += f'      🖥️ sensor: {airhum["n"] if airhum is not None else "..."}\n'
         msg += f'      🕟 time  : {dt0}\n'
         msg += f'      📟 value : {airhum["v"] if airhum is not None else ".."}{airhum["u"] if airhum is not None else "."}\n'
+        msg += f"</pre>"
         msg += f"   <i>Air temperature: </i>\n"
+        msg += f"<pre>"
         msg += f'      🖥️ sensor: {airtemp["n"] if airtemp is not None else "..."}\n'
         msg += f'      🕟 time  : {dt1}\n'
         msg += f'      📟 value : {airtemp["v"] if airtemp is not None else ".."}{airtemp["u"] if airtemp is not None else "."}\n'
+        msg += f"</pre>"
         msg += f"   <i>Soil humidity  : </i>\n"
+        msg += f"<pre>"
         msg += f'      🖥️ sensor: {soilhum["n"] if soilhum is not None else "..."}\n'
         msg += f'      🕟 time  : {dt2}\n'
         msg += f'      📟 value : {soilhum["v"] if soilhum is not None else ".."}{soilhum["u"] if soilhum is not None else "."}\n'
+        msg += f"</pre>"
 
         return msg    
 
