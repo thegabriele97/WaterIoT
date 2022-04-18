@@ -31,11 +31,6 @@ class CatalogAPI(RESTBase):
         self._mqtt_connectbroker()
         self._serviceManager.run_watchdog()
 
-        x = Service("name", ServiceType.SERVICE, "127.0.0.1", 8080)
-        x.addEndpoint(Endpoint("/", EndpointType.REST))
-        x.addEndpoint(Endpoint("/getit", EndpointType.REST, params=[EndpointParam("what")]))
-        self._serviceManager.add_service(x)
-
     def _mqtt_connectbroker(self):
         self._mqtt_broker_idx = -1;
         for idx, broker in enumerate(self._settings.mqttbrokers):
