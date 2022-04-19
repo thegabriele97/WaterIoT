@@ -72,8 +72,8 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-#    devices:
-#      - "/dev/i2c-1:/dev/i2c-1"  
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -91,8 +91,8 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-#    devices:
-#      - "/dev/i2c-1:/dev/i2c-1"  
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -113,9 +113,9 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-#    devices:
-#      - "/dev/i2c-1:/dev/i2c-1"
-#      - "/dev/gpiomem:/dev/gpiomem"  
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"
+    #   - "/dev/gpiomem:/dev/gpiomem"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -136,9 +136,9 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-#    devices:
-#      - "/dev/i2c-1:/dev/i2c-1"
-#      - "/dev/gpiomem:/dev/gpiomem"  
+    # devices:
+    #   - "/dev/i2c-1:/dev/i2c-1"
+    #   - "/dev/gpiomem:/dev/gpiomem"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
   
@@ -214,6 +214,12 @@ services:
     depends_on:
       catalog:
           condition: service_started
+      raspberrydevconn:
+          condition: service_started
+      deviceconfig:
+          condition: service_started
+      telegramadaptor:
+          condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/wateringcontrol | grep online | grep -c true"]
       interval: 15s
@@ -228,6 +234,12 @@ services:
       - "8092:8092"
     depends_on:
       catalog:
+          condition: service_started
+      raspberrydevconn:
+          condition: service_started
+      deviceconfig:
+          condition: service_started
+      telegramadaptor:
           condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/wateringdatabase | grep online | grep -c true"]
