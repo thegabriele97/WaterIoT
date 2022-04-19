@@ -12,8 +12,12 @@
     },
     "system": {
         "location": {
-            "lat": 50.1145,
-            "lon": 8.681675
+            "lat": 43.721528,
+            "lon": 10.40372
+        },
+        "timezone": {
+            "default": "Europe/London",
+            "actual": "Europe/Rome"
         }
     },
     "watering": {

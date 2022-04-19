@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import re
 from xmlrpc.client import DateTime
 import telepot
@@ -9,6 +10,7 @@ from common.Links import Links
 from encryption import Encryption
 from common.CatalogRequest import *
 from common.WIOThread import WIOThread
+from common.Utils import Utils
 from SuperTelepotBot import SuperTelepotBot
 
 class MyBot:
@@ -28,8 +30,23 @@ class MyBot:
         self.bot = SuperTelepotBot(self.tokenBot)
         self.bot.setCommands(self._settings.telegram.commands.toDict())
 
+        r = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/timezone/actual")
+        if not r.status or r.code_response != 200:
+            raise Exception(f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}")
+
+        self._timezone = r.json_response["v"]
+        self.catreq.subscribeMQTT("DeviceConfig", "/conf/system/timezone/actual")
+        self.catreq.callbackOnTopic("DeviceConfig", "/conf/system/timezone/actual", self._timezone_cb)
+
         self._bot_th = WIOThread(target=self._handler_bot_th, name="Telegram Bot Handler")
         self._bot_th.run()
+
+    def _timezone_cb(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
+        try:
+            payl = json.loads(msg.payload.decode("utf-8"))
+            self._timezone = payl["v"]
+        except Exception as e:
+            self.logger.critical(f"Exception occurred while handling a timezone MQTT update: {str(e)}")
 
     def _handler_bot_th(self):
 
@@ -100,6 +117,12 @@ class MyBot:
         regx14 = re.compile(r"^setdevice:(?P<devid>\w+)$")
         # regex match for setdevice:{devid}:refresh
         regx15 = re.compile(r"^setdevice:(?P<devid>\w+):refresh$")
+        # regex match for status:refresh:{pagenum}
+        regx16 = re.compile(r"^status:refresh:(?P<pagenum>\d+)$")
+        # regex match for status:next:{pagenum}
+        regx17 = re.compile(r"^status:next:(?P<pagenum>\d+)$")
+        # regex match for status:prev:{pagenum}
+        regx18 = re.compile(r"^status:prev:(?P<pagenum>[+-]?\d+)$")
 
         if regx1.match(query["data"]):
 
@@ -119,8 +142,8 @@ class MyBot:
             msg += f"   <i>{l.name}</i>\n"
             msg += f"      <b><pre>FROM: {l.raspberrys}</pre></b>\n"
 
-            kboard_inner = self._gen_kboard(None, l.raspberrys, lambda x: f"setlinks:{name}:remlink:{x}", InlineKeyboardButton)
-            kboard_inner.append([InlineKeyboardButton(text="Back", callback_data=f"setlinks:{name}")])
+            kboard_inner = self._gen_kboard("🔗 ", l.raspberrys, lambda x: f"setlinks:{name}:remlink:{x}", InlineKeyboardButton)
+            kboard_inner.append([InlineKeyboardButton(text="⬅️Back", callback_data=f"setlinks:{name}")]) 
             kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
             self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
 
@@ -143,8 +166,8 @@ class MyBot:
             msg += f"   <i>{l.name}</i>\n"
             msg += f"      <b><pre>  TO: {l.arduinos}</pre></b>\n"
 
-            kboard_inner = self._gen_kboard(f"{from_} ➡️ ", l.arduinos, lambda x: f"setlinks:{name}:remlink:{from_}:{x}", InlineKeyboardButton)
-            kboard_inner.append([InlineKeyboardButton(text="Back", callback_data=f"setlinks:{name}")])
+            kboard_inner = self._gen_kboard(f"🔗 {from_} ➡️ ", l.arduinos, lambda x: f"setlinks:{name}:remlink:{from_}:{x}", InlineKeyboardButton)
+            kboard_inner.append([InlineKeyboardButton(text="⬅️ Back", callback_data=f"setlinks:{name}")])
             kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
             self.bot.editMessageText(msgid, msg, parse_mode="HTML", reply_markup=kboard)
 
@@ -183,8 +206,8 @@ class MyBot:
             name = regx4.match(query["data"]).group("name")
             ids = self.catreq.reqDeviceIdsList("RaspberryDevConn")
 
-            kboard_inner = self._gen_kboard(None, ids, lambda x: f"setlinks:{name}:addlink:{x}", InlineKeyboardButton)
-            kboard_inner.append([InlineKeyboardButton(text="Back", callback_data=f"setlinks:{name}")])
+            kboard_inner = self._gen_kboard("🔗 ", ids, lambda x: f"setlinks:{name}:addlink:{x}", InlineKeyboardButton)
+            kboard_inner.append([InlineKeyboardButton(text="⬅️ Back", callback_data=f"setlinks:{name}")])
             kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
             self.bot.editMessageText(msgid, query["message"]["text"], parse_mode="HTML", reply_markup=kboard)
         
@@ -194,8 +217,8 @@ class MyBot:
             from_ = regx5.match(query["data"]).group("from")
             ids = self.catreq.reqDeviceIdsList("ArduinoDevConn")
             
-            kboard_inner = self._gen_kboard(f"{from_} ➡️ ", ids, lambda x: f"setlinks:{name}:addlink:{from_}:{x}", InlineKeyboardButton)
-            kboard_inner.append([InlineKeyboardButton(text="Back", callback_data=f"setlinks:{name}")])
+            kboard_inner = self._gen_kboard(f"🔗 {from_} ➡️ ", ids, lambda x: f"setlinks:{name}:addlink:{from_}:{x}", InlineKeyboardButton)
+            kboard_inner.append([InlineKeyboardButton(text="⬅️ Back", callback_data=f"setlinks:{name}")])
             kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
             self.bot.editMessageText(msgid, query["message"]["text"], parse_mode="HTML", reply_markup=kboard)
 
@@ -277,12 +300,12 @@ class MyBot:
                 msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
             kboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="Delete", callback_data=f"setlinks:{name}:delete"),
-                    InlineKeyboardButton(text="Add Link", callback_data=f"setlinks:{name}:addlink"),
-                    InlineKeyboardButton(text="Remove Link", callback_data=f"setlinks:{name}:remlink")
+                    InlineKeyboardButton(text="❌ Delete", callback_data=f"setlinks:{name}:delete"),
+                    InlineKeyboardButton(text="➕ Add Link", callback_data=f"setlinks:{name}:addlink"),
+                    InlineKeyboardButton(text="❌ Remove Link", callback_data=f"setlinks:{name}:remlink")
                 ],
                 [
-                    InlineKeyboardButton(text="Back", callback_data=f"setlinks:{name}:back")
+                    InlineKeyboardButton(text="⬅️ Back", callback_data=f"setlinks:{name}:back")
                 ]
             ])
             self.bot.editMessageText(msgid, msg, reply_markup=kboard, parse_mode="HTML")
@@ -292,7 +315,7 @@ class MyBot:
             
             kboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="Back", callback_data=f"setlinks:nd:back")
+                    InlineKeyboardButton(text="⬅️ Back", callback_data=f"setlinks:nd:back")
                 ]
             ])
 
@@ -324,11 +347,11 @@ class MyBot:
 
             kboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="Apply", callback_data=f"setdatabase:{name}:apply"),
-                    InlineKeyboardButton(text="Delete", callback_data=f"setdatabase:{name}:delete")
+                    InlineKeyboardButton(text="☑️ Apply", callback_data=f"setdatabase:{name}:apply"),
+                    InlineKeyboardButton(text="❌ Delete", callback_data=f"setdatabase:{name}:delete")
                 ],
                 [
-                    InlineKeyboardButton(text="Back", callback_data=f"setdatabase:{name}:back")
+                    InlineKeyboardButton(text="⬅️ Back", callback_data=f"setdatabase:{name}:back")
                 ]
             ])
 
@@ -363,7 +386,7 @@ class MyBot:
 
             kboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="Back", callback_data=f"setdatabase:nd:back")
+                    InlineKeyboardButton(text="⬅️ Back", callback_data=f"setdatabase:nd:back")
                 ]
             ])
 
@@ -401,6 +424,12 @@ class MyBot:
 
             devid = regx15.match(query["data"]).group("devid")
             self._setreadings_msglist(msgid=msgid, devid=devid)
+
+        elif regx16.match(query["data"]) or regx17.match(query["data"]) or regx18.match(query["data"]):
+
+            matcher = regx16 if regx16.match(query["data"]) else regx17 if regx17.match(query["data"]) else regx18
+            pagenum = matcher.match(query["data"]).group("pagenum")
+            self._setstatus_msglist(msgid=msgid, pagenum=pagenum)
 
 
     def on_chat_message(self,msg):
@@ -452,9 +481,9 @@ class MyBot:
                         self.bot.sendMessage(chat_ID, "Please, send your location...", reply_markup=ReplyKeyboardRemove())
                         self._required_loc = True
                     else:
-                        try: # verify if the value is an integer
-                            self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(message.split()[1])})
-                            self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(message.split()[2])})
+                        try: # verify if the value is a float
+                            r = self._set_location_dc(message.split()[1],message.split()[2])
+                            self.bot.sendMessage(chat_ID, self._set_pos_msg(res=r), reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                         except ValueError:
                             self.bot.sendMessage(chat_ID,"Please insert numerical values", reply_markup=ReplyKeyboardRemove())
                 elif message == "/start" or message == "/help":
@@ -509,15 +538,8 @@ class MyBot:
                         self.bot.sendMessage(chat_ID, f"Error while requesting data {code}: {resp}", reply_markup=ReplyKeyboardRemove())
                         return
 
-                    dt = datetime.fromtimestamp(resp["t"]).strftime("%d-%m-%Y %H:%M:%S")
-
-                    msg  = '<pre>'
-                    msg += f'🖥️ sensor: {resp["n"]}\n'
-                    msg += f'🔢 dev # : {resp["i"]}\n'
-                    msg += f'🕟 time  : {dt}\n'
-                    msg += f'📟 value : {resp["v"]}{resp["u"]}'
-                    msg += '</pre>'
-
+                    (a, b, c, devid) = (resp if epoint == "/airhumidity" else None, resp if epoint == "/airtemperature" else None, resp if epoint == "/terrainhumidity" else None, devid)
+                    msg = self._setreadings_prepmsg(a, b, c, devid, exclusive=True)
                     self.bot.deleteMessage(telepot.message_identifier(r))
                     self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 elif message.split()[0]=="/switch":
@@ -553,7 +575,7 @@ class MyBot:
                                 except ValueError:
                                     devids = ids
 
-                        msg = "Result: <pre>"
+                        msg = "Result: \n<pre>"
                         for devid in devids:
                             msg += f"   #{devid}: "
                             r = self.catreq.reqREST("ArduinoDevConn", f"/switch?state={message.split()[1].lower()}", devid=devid)
@@ -571,72 +593,8 @@ class MyBot:
                         self.bot.sendMessage(chat_ID, "Wrong parameter. Please, use 'on' or 'off'.", reply_markup=ReplyKeyboardRemove())               
                 elif message.split()[0]=="/status":
                     
-                    msg = ""
-                    ss = self.catreq.reqAllServices()
-
-                    if len(ss["online"]) > 0:
-                        msg += "<b>✅ online</b>:\n"
-                        for s in sorted(ss["online"], key=lambda x: x["name"]):
-                            id_str = f" ({s['deviceid']}) " if s["deviceid"] is not None else ""
-                            msg += f"   🛸 <pre>{s['name']}{id_str}</pre>\n"
-
-                    if len(ss["offline"]) > 0:
-                        msg += "\n<b>❌ offline</b>:\n"
-                        for s in sorted(ss["offline"], key=lambda x: x["name"]):
-                            id_str = f" ({s['deviceid']}) " if s["deviceid"] is not None else ""
-                            msg += f"   🚑 <pre>{s['name']}{id_str}</pre>\n"
-
-                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
+                    self._setstatus_msglist(chat_ID=chat_ID)
                     
-                    msg = ""
-                    done, resp, code = self.catreq.reqREST("WateringControl", "/status")
-                    if not done or code != 200:
-                        self.bot.sendMessage(chat_ID, f"Error while requesting data from the WateringControl {code}: {resp}", reply_markup=ReplyKeyboardRemove())
-                        return
-
-                    dt_lastnorm = datetime.fromtimestamp(resp['telegram']['last_sent_msg_timestamp']).strftime("%d-%m-%Y %H:%M:%S") if resp['telegram']['last_sent_msg_timestamp'] != -1 else "never"
-                    dt_nextnorm = datetime.fromtimestamp(resp['telegram']['last_sent_msg_timestamp'] + resp["telegram"]["min_time_between_messages"]).strftime("%d-%m-%Y %H:%M:%S") if resp['telegram']['last_sent_msg_timestamp'] != -1 else "ASAP"
-                    dt_lastcrit = datetime.fromtimestamp(resp['telegram']['last_sent_msgcrit_timestamp']).strftime("%d-%m-%Y %H:%M:%S") if resp['telegram']['last_sent_msgcrit_timestamp'] != -1 else "never"
-                    dt_nextcrit = datetime.fromtimestamp(resp['telegram']['last_sent_msgcrit_timestamp'] + resp["telegram"]["min_time_between_messages_crit"]).strftime("%d-%m-%Y %H:%M:%S") if resp['telegram']['last_sent_msgcrit_timestamp'] != -1 else "ASAP"
-
-                    ah = resp["asdrubale"]["averages"]["air_humidity"]
-                    at = resp["asdrubale"]["averages"]["air_temperature"]
-                    sh = resp["asdrubale"]["averages"]["soil_humidity"]
-                    ah_max = resp["asdrubale"]["thresholds"]["air_humidity"]["max"]
-                    ah_min = resp["asdrubale"]["thresholds"]["air_humidity"]["min"]
-                    at_max = resp["asdrubale"]["thresholds"]["air_temperature"]["max"]
-                    at_min = resp["asdrubale"]["thresholds"]["air_temperature"]["min"]
-                    sh_max = resp["asdrubale"]["thresholds"]["soil_humidity"]["max"]
-                    sh_min = resp["asdrubale"]["thresholds"]["soil_humidity"]["min"]
-
-                    msg += "<b>💧 Watering Control</b>:\n"
-                    if not bool(resp["enabled"]):
-                        msg += f"   ❌ <b>Watering is disabled</b>\n"
-                    else:
-                        msg += f"   <b>🔔 Notification status:</b>\n"
-                        msg += f"      <pre>Last normal  : {dt_lastnorm}</pre>\n"
-                        msg += f"      <pre>Next normal  : {dt_nextnorm}</pre>\n"
-                        msg += f"      <pre>Last Critical: {dt_lastcrit}</pre>\n"
-                        msg += f"      <pre>Next Critical: {dt_nextcrit}</pre>\n"
-                        msg += "\n"
-                        msg += f"   <b>🧭 Location</b>:\n"
-                        msg += f"      <pre>Latitude : {resp['location']['lat']}</pre>\n"
-                        msg += f"      <pre>Longitude: {resp['location']['lon']}</pre>\n"
-                        msg += "\n"
-                        msg += f"   <b>🌱 Watering Algorithm status</b>:\n"
-                        msg += f"      <pre>Last readings: </pre>\n"
-                        msg += f"         <pre>Air humidity   : {str(f'{ah:.2f}%') if ah != -1 else 'NaN'}</pre>\n"                   
-                        msg += f"         <pre>            max: {ah_max:.2f}%</pre>\n"
-                        msg += f"         <pre>            min: {ah_min:.2f}%</pre>\n"
-                        msg += f"         <pre>Air temperature: {str(f'{at:.2f}°C') if at != -1 else 'NaN'}</pre>\n"
-                        msg += f"         <pre>            max: {at_max:.2f}°C</pre>\n"
-                        msg += f"         <pre>            min: {at_min:.2f}°C</pre>\n"
-                        msg += f"         <pre>Soil humidity  : {str(f'{sh:.2f}%') if sh != -1 else 'NaN'}</pre>\n"
-                        msg += f"         <pre>            max: {sh_max:.2f}%</pre>\n"
-                        msg += f"         <pre>            min: {sh_min:.2f}%</pre>\n"
-
-                    self.bot.sendMessage(chat_ID, msg, reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
-                
                 elif message.split()[0] == "/links":
 
                     self._setlinks_msglist(chat_ID=chat_ID)
@@ -721,13 +679,9 @@ class MyBot:
         elif "location" in msg:
 
             if self._required_loc:
-                status, json_response_0, code_response1 = self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lat",RequestType.PUT,{"v": float(msg["location"]["latitude"])})
-                status, json_response_1, code_response2 = self.catreq.reqREST("DeviceConfig","/configs?path=/system/location/lon",RequestType.PUT,{"v": float(msg["location"]["longitude"])})
-                if code_response1 == 200 and code_response2 == 200 :
-                    self.bot.sendMessage(chat_ID, "Location set properly!", reply_markup=ReplyKeyboardRemove())
-                else:
-                    self.bot.sendMessage(chat_ID, f"An error occourred:\nlat:\n{json_response_0}\n\nlon:\n{json_response_1}", reply_markup=ReplyKeyboardRemove())
 
+                r = self._set_location_dc(msg["location"]["latitude"], msg["location"]["longitude"])
+                self.bot.sendMessage(chat_ID, self._set_pos_msg(res=r), reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
                 self._required_loc = False
         
             else:
@@ -762,8 +716,8 @@ class MyBot:
             msg += f"      <pre>FROM: {l.raspberrys}</pre>\n"
             msg += f"      <pre>  TO: {l.arduinos}</pre>\n"
 
-        kboard_inner = self._gen_kboard(None, [l.name for l in links.data], lambda x: f"setlinks:{x}", InlineKeyboardButton, 2)
-        kboard_inner.append([InlineKeyboardButton(text="create", callback_data="setlinks_create")])
+        kboard_inner = self._gen_kboard("🔗 ", [l.name for l in links.data], lambda x: f"setlinks:{x}", InlineKeyboardButton, 3)
+        kboard_inner.append([InlineKeyboardButton(text="➕ Create", callback_data="setlinks_create")])
         kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
 
         if chat_ID is not None:
@@ -795,8 +749,8 @@ class MyBot:
             msg += f"         <pre>            max: {items[i]['thresholds']['soilhum']['max']:.2f}%</pre>\n"
             msg += f"         <pre>            min: {items[i]['thresholds']['soilhum']['min']:.2f}%</pre>\n"
 
-        kboard_inner = self._gen_kboard(None, [i["name"] for i in items], lambda x: f"setdatabase:{x}", InlineKeyboardButton)
-        kboard_inner.append([InlineKeyboardButton(text="create", callback_data="setdatabase_create")])
+        kboard_inner = self._gen_kboard("💾 ", [i["name"] for i in items], lambda x: f"setdatabase:{x}", InlineKeyboardButton)
+        kboard_inner.append([InlineKeyboardButton(text="➕ Create", callback_data="setdatabase_create")])
         kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
 
         if chat_ID is not None:
@@ -809,8 +763,8 @@ class MyBot:
         ids = self.catreq.reqDeviceIdsList("RaspberryDevConn")
         devid = None if len(ids) == 0 else ids[0] if devid is None else int(devid)
 
-        kboard_inner = self._gen_kboard("Device ", ids, lambda x: f"setdevice:{x}", InlineKeyboardButton)
-        kboard_inner.append([InlineKeyboardButton(text="refresh", callback_data=f"setdevice:{devid}:refresh")])
+        kboard_inner = self._gen_kboard("🖥️ Device ", ids, lambda x: f"setdevice:{x}", InlineKeyboardButton, 2)
+        kboard_inner.append([InlineKeyboardButton(text="🔄 Refresh", callback_data=f"setdevice:{devid}:refresh")])
         kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
 
         a = b = c = None
@@ -840,32 +794,182 @@ class MyBot:
             self.bot.editMessageText(msgid, msg, reply_markup=kboard, parse_mode="HTML")
     
 
-    def _setreadings_prepmsg(self, airhum = None, airtemp = None, soilhum = None, devid = "ND"):
+    def _setreadings_prepmsg(self, airhum = None, airtemp = None, soilhum = None, devid = "ND", exclusive = False):
 
-        dt0 = datetime.fromtimestamp(airhum["t"]).strftime("%d-%m-%Y %H:%M:%S") if airhum is not None else "..."
-        dt1 = datetime.fromtimestamp(airtemp["t"]).strftime("%d-%m-%Y %H:%M:%S") if airtemp is not None else "..."
-        dt2 = datetime.fromtimestamp(soilhum["t"]).strftime("%d-%m-%Y %H:%M:%S") if soilhum is not None else "..."
+        dt0 = Utils.get_user_dt_woffset(airhum["t"], self._timezone) if airhum is not None else "..."
+        dt1 = Utils.get_user_dt_woffset(airtemp["t"], self._timezone) if airtemp is not None else "..."
+        dt2 = Utils.get_user_dt_woffset(soilhum["t"], self._timezone) if soilhum is not None else "..."
 
         msg = ""
         msg += f"<b>📊 Readings <i>(dev #{devid})</i></b>:\n"
-        msg += f"   <i>Air humidity   :</i>\n"
-        msg += f"<pre>"
-        msg += f'      🖥️ sensor: {airhum["n"] if airhum is not None else "..."}\n'
-        msg += f'      🕟 time  : {dt0}\n'
-        msg += f'      📟 value : {airhum["v"] if airhum is not None else ".."}{airhum["u"] if airhum is not None else "."}\n'
-        msg += f"</pre>"
-        msg += f"   <i>Air temperature: </i>\n"
-        msg += f"<pre>"
-        msg += f'      🖥️ sensor: {airtemp["n"] if airtemp is not None else "..."}\n'
-        msg += f'      🕟 time  : {dt1}\n'
-        msg += f'      📟 value : {airtemp["v"] if airtemp is not None else ".."}{airtemp["u"] if airtemp is not None else "."}\n'
-        msg += f"</pre>"
-        msg += f"   <i>Soil humidity  : </i>\n"
-        msg += f"<pre>"
-        msg += f'      🖥️ sensor: {soilhum["n"] if soilhum is not None else "..."}\n'
-        msg += f'      🕟 time  : {dt2}\n'
-        msg += f'      📟 value : {soilhum["v"] if soilhum is not None else ".."}{soilhum["u"] if soilhum is not None else "."}\n'
-        msg += f"</pre>"
+
+        if not (airhum is None and exclusive):
+            msg += f"   <i>Air humidity   :</i>\n"
+            msg += f"<pre>"
+            msg += f'      🖥️ sensor: {airhum["n"] if airhum is not None else "..."}\n'
+            msg += f'      🕟 time  : {dt0}\n'
+            msg += f'      📟 value : {airhum["v"] if airhum is not None else ".."}{airhum["u"] if airhum is not None else "."}\n'
+            msg += f"</pre>"
+
+        if not (airtemp is None and exclusive):
+            msg += f"   <i>Air temperature: </i>\n"
+            msg += f"<pre>"
+            msg += f'      🖥️ sensor: {airtemp["n"] if airtemp is not None else "..."}\n'
+            msg += f'      🕟 time  : {dt1}\n'
+            msg += f'      📟 value : {airtemp["v"] if airtemp is not None else ".."}{airtemp["u"] if airtemp is not None else "."}\n'
+            msg += f"</pre>"
+
+        if not (soilhum is None and exclusive):
+            msg += f"   <i>Soil humidity  : </i>\n"
+            msg += f"<pre>"
+            msg += f'      🖥️ sensor: {soilhum["n"] if soilhum is not None else "..."}\n'
+            msg += f'      🕟 time  : {dt2}\n'
+            msg += f'      📟 value : {soilhum["v"] if soilhum is not None else ".."}{soilhum["u"] if soilhum is not None else "."}\n'
+            msg += f"</pre>"
 
         return msg    
 
+    def _setstatus_msglist(self, chat_ID = None, msgid = None, pagenum: int = 0):
+
+        pagenum_max = 2
+        pagenum = (pagenum_max-1 if int(pagenum) < 0 else int(pagenum)) % pagenum_max
+        msg = f"<b>📊 Status (page #{(pagenum+1)}/{pagenum_max})</b>:\n\n"
+
+        if pagenum == 0:
+            ss = self.catreq.reqAllServices()
+
+            if len(ss["online"]) > 0:
+                msg += "<b>✅ online</b>:\n"
+                for s in sorted(ss["online"], key=lambda x: x["name"]):
+                    id_str = f" ({s['deviceid']}) " if s["deviceid"] is not None else ""
+                    msg += f"   🛸 <pre>{s['name']}{id_str}</pre>\n"
+
+            if len(ss["offline"]) > 0:
+                msg += "\n<b>❌ offline</b>:\n"
+                for s in sorted(ss["offline"], key=lambda x: x["name"]):
+                    id_str = f" ({s['deviceid']}) " if s["deviceid"] is not None else ""
+                    msg += f"   🚑 <pre>{s['name']}{id_str}</pre>\n"
+
+        elif pagenum == 1:
+            done, resp, code = self.catreq.reqREST("WateringControl", "/status")
+            if not done or code != 200:
+                self.bot.sendMessage(chat_ID, f"Error while requesting data from the WateringControl {code}: {resp}", reply_markup=ReplyKeyboardRemove())
+                return
+
+            dt_lastnorm = Utils.get_user_dt_woffset(resp['telegram']['last_sent_msg_timestamp'], self._timezone) if resp['telegram']['last_sent_msg_timestamp'] != -1 else "never"
+            dt_nextnorm = Utils.get_user_dt_woffset(resp['telegram']['last_sent_msg_timestamp'] + resp["telegram"]["min_time_between_messages"], self._timezone) if resp['telegram']['last_sent_msg_timestamp'] != -1 else "ASAP"
+            dt_lastcrit = Utils.get_user_dt_woffset(resp['telegram']['last_sent_msgcrit_timestamp'], self._timezone) if resp['telegram']['last_sent_msgcrit_timestamp'] != -1 else "never"
+            dt_nextcrit = Utils.get_user_dt_woffset(resp['telegram']['last_sent_msgcrit_timestamp'] + resp["telegram"]["min_time_between_messages_crit"], self._timezone) if resp['telegram']['last_sent_msgcrit_timestamp'] != -1 else "ASAP"
+
+            ah = resp["asdrubale"]["averages"]["air_humidity"]
+            at = resp["asdrubale"]["averages"]["air_temperature"]
+            sh = resp["asdrubale"]["averages"]["soil_humidity"]
+            ah_max = resp["asdrubale"]["thresholds"]["air_humidity"]["max"]
+            ah_min = resp["asdrubale"]["thresholds"]["air_humidity"]["min"]
+            at_max = resp["asdrubale"]["thresholds"]["air_temperature"]["max"]
+            at_min = resp["asdrubale"]["thresholds"]["air_temperature"]["min"]
+            sh_max = resp["asdrubale"]["thresholds"]["soil_humidity"]["max"]
+            sh_min = resp["asdrubale"]["thresholds"]["soil_humidity"]["min"]
+
+            msg += "<b>💧 Watering Control</b>:\n"
+            if not bool(resp["enabled"]):
+                msg += f"   ❌ <b>Watering is disabled</b>\n"
+            else:
+                msg += f"   <b>🔔 Notification status:</b>\n"
+                msg += f"      <pre>Last normal  : {dt_lastnorm}</pre>\n"
+                msg += f"      <pre>Next normal  : {dt_nextnorm}</pre>\n"
+                msg += f"      <pre>Last Critical: {dt_lastcrit}</pre>\n"
+                msg += f"      <pre>Next Critical: {dt_nextcrit}</pre>\n"
+                msg += "\n"
+                msg += f"   <b>🧭 Location</b>:\n"
+                msg += f"      <pre>Latitude : {resp['location']['lat']}</pre>\n"
+                msg += f"      <pre>Longitude: {resp['location']['lon']}</pre>\n"
+                msg += "\n"
+                msg += f"   <b>🌱 Watering Algorithm status</b>:\n"
+                msg += f"      <pre>Last readings: </pre>\n"
+                msg += f"         <pre>Air humidity   : {str(f'{ah:.2f}%') if ah != -1 else 'NaN'}</pre>\n"                   
+                msg += f"         <pre>            max: {ah_max:.2f}%</pre>\n"
+                msg += f"         <pre>            min: {ah_min:.2f}%</pre>\n"
+                msg += f"         <pre>Air temperature: {str(f'{at:.2f}°C') if at != -1 else 'NaN'}</pre>\n"
+                msg += f"         <pre>            max: {at_max:.2f}°C</pre>\n"
+                msg += f"         <pre>            min: {at_min:.2f}°C</pre>\n"
+                msg += f"         <pre>Soil humidity  : {str(f'{sh:.2f}%') if sh != -1 else 'NaN'}</pre>\n"
+                msg += f"         <pre>            max: {sh_max:.2f}%</pre>\n"
+                msg += f"         <pre>            min: {sh_min:.2f}%</pre>\n"
+
+
+
+        msg += "\n"
+        msg += f"   Updated at: <pre>{Utils.get_user_dt_woffset(time.time(), self._timezone, '%d-%m-%Y %H:%M:%S.%f')}</pre>"
+
+        kboard_inner = [
+            [
+                InlineKeyboardButton(text="⬅️️ Prev", callback_data=f"status:prev:{pagenum-1}"),
+                InlineKeyboardButton(text="➡️️ Next", callback_data=f"status:next:{pagenum+1}")
+            ],
+            [
+                InlineKeyboardButton(text="🔄 Refresh", callback_data=f"status:refresh:{pagenum}"),
+            ]
+        ]
+
+        kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
+
+        if chat_ID is not None:
+            self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
+        elif msgid is not None:
+            self.bot.editMessageText(msgid, msg, reply_markup=kboard, parse_mode="HTML")
+
+    def _set_location_dc(self, lat, lon): 
+
+        lat = float(lat)
+        lon = float(lon)
+
+        # request timezone info
+        try:
+            url = f"http://api.geonames.org/timezoneJSON?lat={lat}&lng={lon}&username=gabriele97"
+            r = requests.get(url)
+        except:
+            self.logger.error(f"Error while requesting timezone info from geonames.org")
+
+        # parse response
+        set_tz = r is not None and r.status_code == 200
+        if set_tz:
+            resp = r.json()
+            set_tz = "timezoneId" in resp
+
+        # set timezone if possible
+        set_tz_final = None
+        r1 = None
+        if set_tz:
+            set_tz_final = resp["timezoneId"]
+            r = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/timezone/actual", reqt=RequestType.PUT, datarequest={"v": set_tz_final})
+            set_tz_final = None if not r.status or r.code_response != 200 else set_tz_final
+        else:
+            # set the default one
+            r1 = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/timezone/default")
+
+            if not r1.status or r1.code_response != 200:
+                self.logger.error(f"Error while retrieving the default timezone")
+            else:
+                r = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/timezone/actual", reqt=RequestType.PUT, datarequest=r1.json_response)
+
+        # set location
+        set_loc_final = {"lat": lat, "lon": lon}
+        r = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/location", reqt=RequestType.PUT, datarequest=set_loc_final)
+        if not r.status or r.code_response != 200:
+            set_loc_final = None
+
+        return (set_tz_final, set_loc_final, set_tz, r1)
+        
+
+    def _set_pos_msg(self, res):
+
+        self.logger.debug(f"_set_pos_msg: {res}")
+
+        msg = ""
+        msg += "<b> Location </b>:\n"
+        msg += f"   <pre>Latitude : {res[1]['lat']}</pre>\n"
+        msg += f"   <pre>Longitude: {res[1]['lon']}</pre>\n"
+        msg += f"   <pre>Timezone : {res[0] if res[0] is not None else 'Error setting up it' if res[2] else f'Default to ' + res[3].json_response['v']}</pre>\n"
+
+        return msg
