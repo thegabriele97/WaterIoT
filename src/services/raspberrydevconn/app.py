@@ -110,15 +110,18 @@ class RaspberryDevConnAPI(RESTBase):
         while not self._th.is_stop_requested:
 
             try:
-                self.humidity = self.settings.default.humidity
+                humidity = self.settings.default.humidity
                 
                 if self._onrpi:
                     import Adafruit_DHT
-                    self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+                    humidity, _ = Adafruit_DHT.read_retry(self.sensor, self.pin)
 
-                self._catreq.publishMQTT(
-                    "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", self.humidity, "%")), self._devid
-                )
+                if humidity is None:
+                    self.logger.warning("Failed to get humidity from sensor, skipping...")
+                else:
+                    self._catreq.publishMQTT(
+                        "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", float(humidity), "%")), self._devid
+                    )
 
                 self._th.wait(self.wait_air_hum)
             except Exception as e:
@@ -129,15 +132,18 @@ class RaspberryDevConnAPI(RESTBase):
         while not self._th1.is_stop_requested:
 
             try:
-                self.temperature = self.settings.default.temperature
+                temperature = self.settings.default.temperature
                 
                 if self._onrpi:
                     import Adafruit_DHT
-                    self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+                    _, temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
                 
-                self._catreq.publishMQTT(
-                    "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", self.temperature, "°C")), self._devid
-                )
+                if temperature is None:
+                    self.logger.warning("Failed to get temperature from sensor, skipping...")
+                else:
+                    self._catreq.publishMQTT(
+                        "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", float(temperature), "°C")), self._devid
+                    )
 
                 self._th1.wait(self.wait_air_temp)
             except Exception as e:
@@ -158,9 +164,12 @@ class RaspberryDevConnAPI(RESTBase):
                     data = data & mask
                     data = (data/1024)*100  # convert the value into a percentage
 
-                self._catreq.publishMQTT(
-                    "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", data, "%")), self._devid
-                )
+                if data is None:
+                    self.logger.warning("Failed to get soil humidity from sensor, skipping...")
+                else:
+                    self._catreq.publishMQTT(
+                        "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", float(data), "%")), self._devid
+                    )
 
                 self._th2.wait(self.wait_soil_hum)
             except Exception as e:

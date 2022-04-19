@@ -80,17 +80,8 @@ class CatalogRequest:
         rpath = f"{self._catalogURL}/catalog/services/{service}"
         self._logger.debug(f"Requesting MQTT ({path}, dev #{devid}) service info @ {rpath}")
 
-        r = None
-        for _ in range(0, 10):
-            r = requests.get(url=rpath)
-            if r.status_code == 404:
-                time.sleep(0.5)
-            elif r.status_code != 200:
-                r.raise_for_status()
-            else:
-                break
-
-        if r.status_code == 404 or r == None:
+        r = self._do_req(RequestType.GET, rpath)
+        if r is None or r.status_code == 404:
             raise Exception(f"{rpath} return status code 404")
 
         # checking if we are dealing with a multiple device

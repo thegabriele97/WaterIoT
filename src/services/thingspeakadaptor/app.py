@@ -62,7 +62,7 @@ class ThingSpeakAPI(RESTBase):
                 if not redoit:
                     while not self._publishthread.is_stop_requested:
                         try:
-                            msg = self._publishqueue.get_nowait()
+                            msg: mqtt.MQTTMessage = self._publishqueue.get_nowait()
                             break
                         except Empty:
                             self._publishthread.wait(0.5)
@@ -176,7 +176,6 @@ class ThingSpeakAPI(RESTBase):
         return self.asjson_error("Not found", 404)
 
     @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
     def POST(self, *path, **args):
 
         if len(path) > 0:
@@ -187,6 +186,10 @@ class ThingSpeakAPI(RESTBase):
                 if "v" not in body or "i" not in body or "t" not in body or "n" not in body:
                     return self.asjson_error("Invalid request body", 400)
 
+                # check if it's a valid sensor data
+                if not self._check_sensor_data(body):
+                    return self.asjson_error("Invalid sensor data", 400)
+
                 # send the air temperature to the queue
                 self._publishqueue.put(json.dumps(body))
                 return self.asjson_info("OK", 202) # 202 Accepted
@@ -194,7 +197,26 @@ class ThingSpeakAPI(RESTBase):
         return self.asjson_error("not found", 404)
 
     def _onMessageReceive(self, paho_mqtt, userdata, msg: mqtt.MQTTMessage):
-        self._publishqueue.put(msg, block=True)
+
+        try:
+            # check if it's not a valid sensor data
+            if not self._check_sensor_data(json.loads(msg.payload.decode("utf-8"))):
+                self.logger.warning(f"Invalid sensor data received: {msg.payload.decode('utf-8')}. Ignoring...")
+                return
+
+            self._publishqueue.put(msg, block=True)
+        except Exception as e:
+            self.logger.critical(f"Error processing MQTT message: {e}", exc_info=True)
+
+    @staticmethod
+    def _check_sensor_data(reading):
+        if "v" not in reading or "i" not in reading or "t" not in reading or "n" not in reading or "u" not in reading:
+            return False
+
+        if not isinstance(reading["v"], (float, int)) or not isinstance(reading["i"], int) or not isinstance(reading["t"], float) or not isinstance(reading["n"], str) or not isinstance(reading["u"], str):
+            return False
+
+        return True
 
 class App(WIOTRestApp):
     def __init__(self) -> None:

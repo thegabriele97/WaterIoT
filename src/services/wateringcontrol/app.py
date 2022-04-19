@@ -180,6 +180,7 @@ class WateringControlAPI(RESTBase):
                 if float(payl["t"]) > lastTimestamp:
                     elements = [*elements, {"field1": payl["v"], "field2": payl["i"], "field3": payl["t"]}]
 
+                self.logger.debug(f"Elements: {elements}")
                 self._avgAirHum[payl['i']] = mean([float(element["field1"]) for element in elements])
 
             else:
@@ -216,6 +217,7 @@ class WateringControlAPI(RESTBase):
                 if float(payl["t"]) > lastTimestamp:
                     elements = [*elements, {"field1": payl["v"], "field2": payl["i"], "field3": payl["t"]}]
 
+                self.logger.debug(f"Elements: {elements}")
                 self._avgAirTemp[payl['i']] = mean([float(element["field1"]) for element in elements])
             
             else:
@@ -251,6 +253,7 @@ class WateringControlAPI(RESTBase):
                 if float(payl["t"]) > lastTimestamp:
                     elements = [*elements, {"field1": payl["v"], "field2": payl["i"], "field3": payl["t"]}]
 
+                self.logger.debug(f"Elements: {elements}")
                 self._avgSoilHum[payl['i']] = mean([float(element["field1"]) for element in elements])
             
             else:
