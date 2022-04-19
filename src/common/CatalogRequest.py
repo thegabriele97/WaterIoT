@@ -258,6 +258,16 @@ class CatalogRequest:
 
         return {"online": r1.json()["services"], "offline": r2.json()["services"]}
 
+    def reqSysInfo(self) -> dict:
+        """
+        Returns the system information
+        """
+        r = requests.get(url=f"{self._catalogURL}/catalog/sysinfo")
+        if r.status_code != 200:
+            r.raise_for_status()
+
+        return r.json()
+
     def _do_req(self, meth: RequestType, path: str, data = None, max : int = 10, doraise: bool = True):
         """
         Internal method to perform a request to a service

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import re
 from xmlrpc.client import DateTime
@@ -769,25 +769,34 @@ class MyBot:
 
         a = b = c = None
 
+        if msgid is not None:
+            self.bot.editMessageText(msgid, self._setreadings_prepmsg(devid=devid), reply_markup=kboard, parse_mode="HTML")
+
         r0 = self.catreq.reqREST("RaspberryDevConn", "/airhumidity", devid=devid)
-        if not r0.status or r0.code_response != 200:
-            self.bot.sendMessage(chat_ID, f"Error while requesting data {r0.code_response}: {r0.json_response}", reply_markup=ReplyKeyboardRemove())
-        else:
+        time.sleep(1)
+        if r0.status and r0.code_response == 200:
             a = r0.json_response
 
+        if msgid is not None:
+            self.bot.editMessageText(msgid, self._setreadings_prepmsg(a, b, c, devid=devid), reply_markup=kboard, parse_mode="HTML")
+
         r1 = self.catreq.reqREST("RaspberryDevConn", "/airtemperature", devid=devid)
-        if not r1.status or r1.code_response != 200:
-            self.bot.sendMessage(chat_ID, f"Error while requesting data {r1.code_response}: {r1.json_response}", reply_markup=ReplyKeyboardRemove())
-        else:
+        time.sleep(0.5)
+        if r0.status and r0.code_response == 200:
             b = r1.json_response
 
+        if msgid is not None:
+            self.bot.editMessageText(msgid, self._setreadings_prepmsg(a, b, c, devid=devid), reply_markup=kboard, parse_mode="HTML")
+
         r2 = self.catreq.reqREST("RaspberryDevConn", "/terrainhumidity", devid=devid)
-        if not r2.status or r2.code_response != 200:
-            self.bot.sendMessage(chat_ID, f"Error while requesting data {r2.code_response}: {r2.json_response}", reply_markup=ReplyKeyboardRemove())
-        else:
+        time.sleep(0.4)
+        if r0.status and r0.code_response == 200:
             c = r2.json_response
         
         msg = self._setreadings_prepmsg(a, b, c, devid=devid)
+        if a is None or b is None or c is None:
+            msg += "\n\n<b>🔄 An error occurred while loading some data. Please, retry!</b>"
+
         if chat_ID is not None:
             self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
         elif msgid is not None:
@@ -831,9 +840,24 @@ class MyBot:
 
     def _setstatus_msglist(self, chat_ID = None, msgid = None, pagenum: int = 0):
 
-        pagenum_max = 2
+        pagenum_max = 4
         pagenum = (pagenum_max-1 if int(pagenum) < 0 else int(pagenum)) % pagenum_max
+
+        kboard_inner = [
+            [
+                InlineKeyboardButton(text="⬅️️ Prev", callback_data=f"status:prev:{pagenum-1}"),
+                InlineKeyboardButton(text="➡️️ Next", callback_data=f"status:next:{pagenum+1}")
+            ],
+            [
+                InlineKeyboardButton(text="🔄 Refresh", callback_data=f"status:refresh:{pagenum}"),
+            ]
+        ]
+
+        kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
         msg = f"<b>📊 Status (page #{(pagenum+1)}/{pagenum_max})</b>:\n\n"
+
+        if msgid is not None:
+            self.bot.editMessageText(msgid, f"{msg}Loading...", parse_mode="HTML")
 
         if pagenum == 0:
             ss = self.catreq.reqAllServices()
@@ -853,7 +877,10 @@ class MyBot:
         elif pagenum == 1:
             done, resp, code = self.catreq.reqREST("WateringControl", "/status")
             if not done or code != 200:
-                self.bot.sendMessage(chat_ID, f"Error while requesting data from the WateringControl {code}: {resp}", reply_markup=ReplyKeyboardRemove())
+                if chat_ID is not None:
+                    self.bot.sendMessage(chat_ID, f"Error while requesting data from the WateringControl {code}: {resp}", reply_markup=kboard)
+                elif msgid is not None:
+                    self.bot.editMessageText(msgid, f"Error while requesting data from the WateringControl {code}: {resp}", reply_markup=kboard)
                 return
 
             dt_lastnorm = Utils.get_user_dt_woffset(resp['telegram']['last_sent_msg_timestamp'], self._timezone) if resp['telegram']['last_sent_msg_timestamp'] != -1 else "never"
@@ -897,22 +924,76 @@ class MyBot:
                 msg += f"         <pre>            max: {sh_max:.2f}%</pre>\n"
                 msg += f"         <pre>            min: {sh_min:.2f}%</pre>\n"
 
+        elif pagenum == 2:
+            # sensors sample period page
+            r = self.catreq.reqREST("DeviceConfig", "/configs?path=/sensors")
+            if not r.status or r.code_response != 200:
+                if chat_ID is not None:
+                    self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=kboard)
+                elif msgid is not None:
+                    self.bot.editMessageText(msgid, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=kboard)
+                return
+            
+            msg += "<b>🌱 Sensors</b>:\n"
+            msg += f"   <pre>Sampling Period:</pre>\n"
+            max_len = 0
+            for k in r.json_response:
+                max_len = max(max_len, len(str(k)))
+
+            for n, p in r.json_response.items():
+                msg += f"      <pre>{str(n).ljust(max_len)}: {(p['sampleperiod']/1000):.2f} s</pre>\n"
+
+            # location and timezone page
+            msg += "\n"
+            msg += "<b>🧭 Location</b>:\n"
+            r = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/")
+            if not r.status or r.code_response != 200:
+                if chat_ID is not None:
+                    self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=kboard)
+                elif msgid is not None:
+                    self.bot.editMessageText(msgid, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=kboard)
+                return
+
+            msg += f"   <pre>Latitude : {r.json_response['location']['lat']}</pre>\n"
+            msg += f"   <pre>Longitude: {r.json_response['location']['lon']}</pre>\n"
+            msg += f"   <pre>Timezone : {r.json_response['timezone']['actual']}</pre>\n"
+
+        elif pagenum == 3:
+            # system resource page
+            try:
+                sysinfo = self.catreq.reqSysInfo()
+            except Exception as e:
+                if chat_ID is not None:
+                    self.bot.sendMessage(chat_ID, f"Error while requesting data from the DeviceConfig: {e}", reply_markup=kboard)
+                elif msgid is not None:
+                    self.bot.editMessageText(msgid, f"Error while requesting data from the DeviceConfig: {e}", reply_markup=kboard)
+                return
+
+            msg += "<b>🖥️ System</b>:\n"
+            msg += f"   <pre>CPU:</pre>\n"
+            msg += f"      <pre>Freq : {int(sysinfo['cpu']['freq'][0])} MHz</pre>\n"
+            msg += f"      <pre>Cores: {sysinfo['cpu']['count']}</pre>\n"
+            msg += f"      <pre>Usage: {sysinfo['cpu']['percent']}%</pre>\n"
+
+            msg += f"   <pre>RAM:</pre>\n"
+            msg += f"      <pre>Total: {Utils.convert_size(sysinfo['ram']['total'])}</pre>\n"
+            msg += f"      <pre>Used : {Utils.convert_size(sysinfo['ram']['used'])}</pre>\n"
+            msg += f"      <pre>Free : {Utils.convert_size(sysinfo['ram']['free'])}</pre>\n"
+            msg += f"      <pre>Usage: {sysinfo['ram']['percent']}%</pre>\n"
+            msg += f"   <pre>Disk:</pre>\n"
+            msg += f"      <pre>Total: {Utils.convert_size(sysinfo['disk']['total'])}</pre>\n"
+            msg += f"      <pre>Used : {Utils.convert_size(sysinfo['disk']['used'])}</pre>\n"
+            msg += f"      <pre>Free : {Utils.convert_size(sysinfo['disk']['free'])}</pre>\n"
+            msg += f"      <pre>Usage: {sysinfo['disk']['percent']}%</pre>\n"
+            msg += f"   <pre>Network:</pre>\n"
+            msg += f"      <pre>Received: {Utils.convert_size(sysinfo['network']['bytes_recv'])}</pre>\n"
+            msg += f"      <pre>Sent    : {Utils.convert_size(sysinfo['network']['bytes_sent'])}</pre>\n"
+            msg += f"   <pre>Uptime:</pre>\n"
+            msg += f"      <pre>Elapsed: {timedelta(seconds=sysinfo['uptime'])}</pre>\n"
 
 
         msg += "\n"
-        msg += f"   Updated at: <pre>{Utils.get_user_dt_woffset(time.time(), self._timezone, '%d-%m-%Y %H:%M:%S.%f')}</pre>"
-
-        kboard_inner = [
-            [
-                InlineKeyboardButton(text="⬅️️ Prev", callback_data=f"status:prev:{pagenum-1}"),
-                InlineKeyboardButton(text="➡️️ Next", callback_data=f"status:next:{pagenum+1}")
-            ],
-            [
-                InlineKeyboardButton(text="🔄 Refresh", callback_data=f"status:refresh:{pagenum}"),
-            ]
-        ]
-
-        kboard = InlineKeyboardMarkup(inline_keyboard=kboard_inner)
+        msg += f"Updated at: <pre>{Utils.get_user_dt_woffset(time.time(), self._timezone, '%d-%m-%Y %H:%M:%S.%f')}</pre>"
 
         if chat_ID is not None:
             self.bot.sendMessage(chat_ID, msg, reply_markup=kboard, parse_mode="HTML")
@@ -967,9 +1048,16 @@ class MyBot:
         self.logger.debug(f"_set_pos_msg: {res}")
 
         msg = ""
-        msg += "<b> Location </b>:\n"
+        msg += "<b>🧭 Location </b>:\n"
         msg += f"   <pre>Latitude : {res[1]['lat']}</pre>\n"
         msg += f"   <pre>Longitude: {res[1]['lon']}</pre>\n"
         msg += f"   <pre>Timezone : {res[0] if res[0] is not None else 'Error setting up it' if res[2] else f'Default to ' + res[3].json_response['v']}</pre>\n"
 
         return msg
+
+    def _doreq_orerror(self, text, chat_ID = None, msgid = None, kboard = None):
+
+        if chat_ID is not None:
+            self.bot.sendMessage(chat_ID, text, parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
+        elif msgid is not None:
+            self.bot.editMessageText(msgid, text, parse_mode="HTML", reply_markup=kboard)

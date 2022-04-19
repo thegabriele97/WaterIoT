@@ -1,6 +1,6 @@
 
 from datetime import datetime, timezone, timedelta
-from xmlrpc.client import DateTime
+import math
 from zoneinfo import ZoneInfo
 
 class Utils:
@@ -29,3 +29,13 @@ class Utils:
         last = int(dt_str[dt_str.rfind('+'):])
         dt += timedelta(hours=int(last/100), minutes=int(last%100))
         return dt.strftime(format)
+
+    def convert_size(size_bytes):
+        if size_bytes == 0:
+            return "0B"
+
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return "%s %s" % (s, size_name[i])
