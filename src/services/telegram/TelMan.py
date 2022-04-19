@@ -454,9 +454,9 @@ class MyBot:
             else:
                 if message.split()[0] == "/config":
                     if not(len(message.split()) == 4 or len(message.split()) == 3):
-                        self.bot.sendMessage(chat_ID, "No parameter. Please select one sensor (<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, "No parameter. Please select one sensor (<temp>,<airhum>,<soilhum>) as first parameter and a value (expressed in millisecond) as second", reply_markup=ReplyKeyboardRemove())
                     elif message.split()[1] not in ["temp", "airhum","soilhum"]:
-                        self.bot.sendMessage(chat_ID, "Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value as second", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, "Wrong parameter. Please select one sensor(<temp>,<airhum>,<soilhum>) as first parameter and a value (expressed in millisecond) as second", reply_markup=ReplyKeyboardRemove())
                     else:
                         try: # verify if the value is an integer
                             status,json_response,code_response = self.catreq.reqREST("DeviceConfig",f"/configs?path=/sensors/{message.split()[1]}/sampleperiod",RequestType.PUT,{"v": int(message.split()[2])})
@@ -487,19 +487,17 @@ class MyBot:
                         except ValueError:
                             self.bot.sendMessage(chat_ID,"Please insert numerical values", reply_markup=ReplyKeyboardRemove())
                 elif message == "/start" or message == "/help":
-                    self.bot.sendMessage(chat_id=chat_ID, parse_mode="MarkdownV2", reply_markup=ReplyKeyboardRemove(), text=(
-                "Hello\\!\n"
-                "Here the commands:\n"
-                "*/psw <password\\>* \\- Subscribe the user\n"
-                "*/status* \\- Get the actual system status\n"
-                "*/switch <on/off\\>* \\- Turn on or off the irrigator\n"
-                "*/getairt* \\- Retrive temperature of the air\n"
-                "*/getairu*  \\- Retrive umidity of the air\n"
-                "*/getsoilu* \\- Retrive umidity of the soil\n"
-                "*/pos* \\- Sets latitude and longitude where retrive weather forecasting\n"
-                "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) <value\\> \\- Config the sensors: sets the period of sampling of the sensors\n"
-                "*/config* \\(<temp\\>\\|<airhum\\>\\|<soilhum\\>\\) \\(<min\\>\\|<max\\>\\) <value\\> \\- Config the watering: sets the temperature and moisture bounds in which turn on or off the watering system\n"))
-
+                    msg = "Hello!\n"
+                    msg += "Here are the commands\n"
+                    msg += "/psw &#60;password&#62; - Subscribe the user:\n"
+                    msg += "airhum_max\n"
+                    msg += "airhum_min\n"
+                    msg += "temp_max\n"
+                    msg += "temp_min\n"
+                    msg += "soilhum_max\n"
+                    msg += "soilhum_min\n"
+                
+                    self.bot.sendMessage(chat_ID, msg, parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
                 elif message.split()[0] == "/getairt" or message.split()[0] == "/getairu" or message.split()[0] == "/getsoilu":
 
                     devid = None

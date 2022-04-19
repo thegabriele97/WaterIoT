@@ -67,13 +67,6 @@ class WateringControlAPI(RESTBase):
             else:
                 raise Exception(f"Error getting the links from the DeviceConfig ({r.code_response}): {r.json_response}")
 
-            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
-            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
-            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
-            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
-            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
-            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
-
             self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lat")
             self._catreq.callbackOnTopic("DeviceConfig", "/conf/system/location/lat", self.onLatitude)
             self._catreq.subscribeMQTT("DeviceConfig", "/conf/system/location/lon")
@@ -102,6 +95,13 @@ class WateringControlAPI(RESTBase):
 
             self._catreq.subscribeMQTT("DeviceConfig", "/conf/watering/links/list")
             self._catreq.callbackOnTopic("DeviceConfig", "/conf/watering/links/list", self.onLinks)
+
+            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airhumidity")
+            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airhumidity", self.onAirHumidity)
+            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/airtemperature")
+            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/airtemperature", self.onAirTemperature)
+            self._catreq.subscribeMQTT("RaspberryDevConn", "/+/terrainhumidity")
+            self._catreq.callbackOnTopic("RaspberryDevConn", "/+/terrainhumidity", self.onTerrainHumidity)
 
         except Exception as e:
 

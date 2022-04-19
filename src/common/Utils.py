@@ -26,7 +26,7 @@ class Utils:
         user_tz = ZoneInfo(zone)
         dt = dt.replace(tzinfo=user_tz)
         dt_str = dt.strftime("%Y-%m-%d %H:%M:%S+%z")
-        last = int(dt_str[dt_str.rfind('+'):])
+        last = int(dt_str[dt_str.rfind('+') + 1:])
         dt += timedelta(hours=int(last/100), minutes=int(last%100))
         return dt.strftime(format)
 
