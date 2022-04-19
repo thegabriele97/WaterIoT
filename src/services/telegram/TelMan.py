@@ -858,6 +858,7 @@ class MyBot:
 
         if msgid is not None:
             self.bot.editMessageText(msgid, f"{msg}Loading...", parse_mode="HTML")
+            time.sleep(0.5)
 
         if pagenum == 0:
             ss = self.catreq.reqAllServices()
@@ -934,18 +935,19 @@ class MyBot:
                     self.bot.editMessageText(msgid, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=kboard)
                 return
             
-            msg += "<b>🌱 Sensors</b>:\n"
-            msg += f"   <pre>Sampling Period:</pre>\n"
+            msg += "<b>🔧 Settings</b>:\n"
+            msg += "   <b>🌱 Sensors</b>:\n"
+            msg += f"      <pre>Sampling Period:</pre>\n"
             max_len = 0
             for k in r.json_response:
                 max_len = max(max_len, len(str(k)))
 
             for n, p in r.json_response.items():
-                msg += f"      <pre>{str(n).ljust(max_len)}: {(p['sampleperiod']/1000):.2f} s</pre>\n"
+                msg += f"         <pre>{str(n).ljust(max_len)}: {(p['sampleperiod']/1000):.2f} s</pre>\n"
 
             # location and timezone page
             msg += "\n"
-            msg += "<b>🧭 Location</b>:\n"
+            msg += "   <b>🧭 Location</b>:\n"
             r = self.catreq.reqREST("DeviceConfig", "/configs?path=/system/")
             if not r.status or r.code_response != 200:
                 if chat_ID is not None:
@@ -954,9 +956,9 @@ class MyBot:
                     self.bot.editMessageText(msgid, f"Error while requesting data from the DeviceConfig {r.code_response}: {r.json_response}", reply_markup=kboard)
                 return
 
-            msg += f"   <pre>Latitude : {r.json_response['location']['lat']}</pre>\n"
-            msg += f"   <pre>Longitude: {r.json_response['location']['lon']}</pre>\n"
-            msg += f"   <pre>Timezone : {r.json_response['timezone']['actual']}</pre>\n"
+            msg += f"      <pre>Latitude : {r.json_response['location']['lat']}</pre>\n"
+            msg += f"      <pre>Longitude: {r.json_response['location']['lon']}</pre>\n"
+            msg += f"      <pre>Timezone : {r.json_response['timezone']['actual']}</pre>\n"
 
         elif pagenum == 3:
             # system resource page
