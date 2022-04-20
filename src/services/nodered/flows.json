@@ -169,7 +169,7 @@
         "method": "GET",
         "ret": "obj",
         "paytoqs": "query",
-        "url": "http://openweatheradaptor:8082/currentweather?lat={{latitude}}&lon={{longitude}}",
+        "url": "http://localhost:8082/currentweather?lat={{latitude}}&lon={{longitude}}",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -275,7 +275,7 @@
         "method": "GET",
         "ret": "obj",
         "paytoqs": "ignore",
-        "url": "http://deviceconfig:8087/configs?path=/system/location",
+        "url": "http://localhost:8087/configs?path=/system/location",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -329,12 +329,12 @@
         "topic": "choiceID",
         "topicType": "str",
         "className": "",
-        "x": 680,
+        "x": 660,
         "y": 580,
         "wires": [
             [
                 "43722b6d55f913b3",
-                "170e612f51084123"
+                "4037621b5055a803"
             ]
         ]
     },
@@ -395,14 +395,14 @@
         "type": "python3-function",
         "z": "6644ea9bf3513060",
         "name": "",
-        "func": "msg[\"topic\"]=\"AirTemp\"\nreturn msg",
+        "func": "msg[\"topic\"]=\"airTemp\"\nreturn msg",
         "outputs": 1,
         "x": 600,
         "y": 680,
         "wires": [
             [
                 "e275e663d784c501",
-                "170e612f51084123"
+                "4037621b5055a803"
             ]
         ]
     },
@@ -453,7 +453,7 @@
         "wires": [
             [
                 "bfb55e34366ca957",
-                "a006a4c312428109"
+                "7ad8590e7b26e7ab"
             ]
         ]
     },
@@ -556,7 +556,7 @@
         "wires": [
             [
                 "085a1ed7ca46f984",
-                "a006a4c312428109"
+                "7ad8590e7b26e7ab"
             ]
         ]
     },
@@ -1125,7 +1125,7 @@
         ]
     },
     {
-        "id": "a006a4c312428109",
+        "id": "7ad8590e7b26e7ab",
         "type": "function",
         "z": "6644ea9bf3513060",
         "name": "",
@@ -1136,7 +1136,7 @@
         "finalize": "",
         "libs": [],
         "x": 880,
-        "y": 1160,
+        "y": 1120,
         "wires": [
             [
                 "e752121341039b92"
@@ -1144,18 +1144,18 @@
         ]
     },
     {
-        "id": "170e612f51084123",
+        "id": "4037621b5055a803",
         "type": "function",
         "z": "6644ea9bf3513060",
         "name": "",
-        "func": "switch(msg.topic){\n    case \"AirTemp\":\n        deviceId=global.get(\"deviceID\");\n        devicelength=deviceId.length;\n        //when the element is only one\n        if(devicelength==1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirTemp1\";\n        }\n        else if(devicelength!=1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirTemp1\";\n        }\n        else if(devicelength!=1 && msg.payload.i==deviceId[1]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirTemp2\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        msg.check=deviceId;\n        break;\n        \n    case \"choiceID\":\n        devicesId=global.get(\"deviceID\");\n        //consider all the options\n        //when there is no device in the global \n        if(devicesId.length==0){\n            global.set(\"deviceID\",msg.payload);\n            //make a reset\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"both\";\n        }\n        //only one choice and only one device different from the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload!= devicesId){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"AirTemp1\";\n        }\n        //only one choice and only one device equal to the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload==devicesId){\n            msg.topic=\"none\";\n        }\n        //only one choice in two devices\n        else if(msg.payload.length==1&&devicesId.length!=1)\n        {\n                //first chart reset(ready for values), second one disabled\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirTemp1\";\n        }\n        //two choice and one element in devices\n        else if(msg.payload.length!=1&&devicesId.length==1){\n            //if the element is present in one of the two choice\n            //important the way the two element is saved into the global variable\n            if(msg.payload[0]==deviceId){\n                global.set(\"deviceID\",msg.payload);\n                //reset the second graph the first remain invariato\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirTemp2\";\n            }\n            else if(msg.payload[1]==deviceId){\n                tmp=[msg.payload[1],msg.payload[0]];\n                global.set(\"deviceID\",tmp);\n                //reset the second graph\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            //it is not present nether in one or two\n            else{\n                //reset the graphs\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"both\";\n            }\n        }\n        //two choice and two elements in devices\n        else if(msg.payload.length!=1&&devicesId.length!=1){\n            //when the two element are equal\n            if(msg.payload[0]==devicesId[0]&&msg.payload[1]==devicesId[1]){\n                msg.topic=\"none\";\n                //nothing change\n            }\n            //when the first element change\n            else if(msg.payload[0]!=devicesId[0]&&msg.payload[1]==devicesId[1]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum1\";\n            }\n            //when the second element change\n            else if(msg.payload[1]!=deviceId[1]&&msg.payload[0]==deviceId[0]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            //when both change\n            else{\n                msg.topic=\"both\"\n                msg[\"payload\"]=[];\n            }\n        }\n        break;\n}\nreturn msg;",
+        "func": "switch(msg.topic){\n    case \"airTemp\":\n        deviceId=global.get(\"deviceID\");\n        devicelength=deviceId.length;\n        //when the element is only one\n        if(devicelength==1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airTemp1\";\n        }\n        else if(devicelength!=1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airTemp1\";\n        }\n        else if(devicelength!=1 && msg.payload.i==deviceId[1]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airTemp2\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        msg.check=deviceId;\n        break;\n        \n    case \"choiceID\":\n        devicesId=global.get(\"deviceID\");\n        //consider all the options\n        //when there is no device in the global \n        if(devicesId.length==0){\n            global.set(\"deviceID\",msg.payload);\n            //make a reset\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"both\";\n        }\n        //only one choice and only one device different from the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload!= devicesId){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"airTemp1\";\n        }\n        //only one choice and only one device equal to the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload==devicesId){\n            msg.topic=\"none\";\n        }\n        //only one choice in two devices\n        else if(msg.payload.length==1&&devicesId.length!=1)\n        {\n                //first chart reset(ready for values), second one disabled\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"airTemp1\";\n        }\n        //two choice and one element in devices\n        else if(msg.payload.length!=1&&devicesId.length==1){\n            //if the element is present in one of the two choice\n            //important the way the two element is saved into the global variable\n            if(msg.payload[0]==deviceId){\n                global.set(\"deviceID\",msg.payload);\n                //reset the second graph the first remain invariato\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"airTemp2\";\n            }\n            else if(msg.payload[1]==deviceId){\n                tmp=[msg.payload[1],msg.payload[0]];\n                global.set(\"deviceID\",tmp);\n                //reset the second graph\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"airTemp2\";\n            }\n            //it is not present nether in one or two\n            else{\n                //reset the graphs\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"both\";\n            }\n        }\n        //two choice and two elements in devices\n        else if(msg.payload.length!=1&&devicesId.length!=1){\n            //when the two element are equal\n            if(msg.payload[0]==devicesId[0]&&msg.payload[1]==devicesId[1]){\n                msg.topic=\"none\";\n                //nothing change\n            }\n            //when the first element change\n            else if(msg.payload[0]!=devicesId[0]&&msg.payload[1]==devicesId[1]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"airTemp1\";\n            }\n            //when the second element change\n            else if(msg.payload[1]!=deviceId[1]&&msg.payload[0]==deviceId[0]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"airTemp2\";\n            }\n            //when both change\n            else{\n                msg.topic=\"both\"\n                msg[\"payload\"]=[];\n            }\n        }\n        break;\n}\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",[]);\n",
         "finalize": "",
         "libs": [],
         "x": 880,
-        "y": 660,
+        "y": 620,
         "wires": [
             [
                 "08dd8aa0a220c086"
