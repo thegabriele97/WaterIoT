@@ -12,6 +12,6 @@
     },
     "arduino": {
         "i2c_dev": 1,
-        "i2c_addr": "0x09"
+        "i2c_addr": "0x08"
     }
 }

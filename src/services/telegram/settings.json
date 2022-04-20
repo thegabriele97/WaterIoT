@@ -22,6 +22,22 @@
                     "description": "Get the actual system status"
                 },
                 {
+                    "command": "readings",
+                    "description": "Get the latest readings"
+                },
+                {
+                    "command": "links",
+                    "description": "Retrieve all the device links"
+                },
+                {
+                    "command": "database",
+                    "description": "Get a database of default values for Watering"
+                },
+                {
+                    "command": "config",
+                    "description": "Sets the sampling period of the sensors or the thresholds for watering"
+                },
+                {
                     "command": "switch",
                     "description": "Turn on or off the irrigator"
                 },
@@ -36,10 +52,6 @@
                 {
                     "command": "getsoilu",
                     "description": "Retrieve humidity of the soil"
-                },
-                {
-                    "command": "config",
-                    "description": "Sets the sampling period of the sensors"
                 },
                 {
                     "command": "pos",

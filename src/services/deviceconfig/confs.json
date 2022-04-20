@@ -1,19 +1,76 @@
 {
     "sensors": {
         "temp": {
-            "sampleperiod": 20000
+            "sampleperiod": 120000
         },
         "airhum": {
-            "sampleperiod": 20000
+            "sampleperiod": 120000
         },
         "soilhum": {
-            "sampleperiod": 20000
+            "sampleperiod": 120000
         }
     },
     "system": {
         "location": {
-            "lat": 45.070312,
-            "lon": 7.6868565
+            "lat": 43.717884,
+            "lon": 10.397725
+        },
+        "timezone": {
+            "default": "Europe/London",
+            "actual": "Europe/Rome"
+        }
+    },
+    "watering": {
+        "enable": true,
+        "min_time_between_messages_sec": {
+            "crit": 43200,
+            "norm": 43200
+        },
+        "thresholds": {
+            "temp": {
+                "min": 10.0,
+                "max": 30.0
+            },
+            "airhum": {
+                "min": 20.0,
+                "max": 60.0
+            },
+            "soilhum": {
+                "min": 20.0,
+                "max": 60.0
+            }
+        },
+        "links": {
+            "list": [
+                {
+                    "name": "default",
+                    "arduinos": [
+                        0
+                    ],
+                    "raspberrys": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "name": "arrie",
+                    "arduinos": [
+                        1
+                    ],
+                    "raspberrys": [
+                        0
+                    ]
+                },
+                {
+                    "name": "Test24",
+                    "arduinos": [
+                        1
+                    ],
+                    "raspberrys": [
+                        1
+                    ]
+                }
+            ]
         }
     }
 }

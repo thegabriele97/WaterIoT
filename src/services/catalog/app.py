@@ -31,11 +31,6 @@ class CatalogAPI(RESTBase):
         self._mqtt_connectbroker()
         self._serviceManager.run_watchdog()
 
-        x = Service("name", ServiceType.SERVICE, "127.0.0.1", 8080)
-        x.addEndpoint(Endpoint("/", EndpointType.REST))
-        x.addEndpoint(Endpoint("/getit", EndpointType.REST, params=[EndpointParam("what")]))
-        self._serviceManager.add_service(x)
-
     def _mqtt_connectbroker(self):
         self._mqtt_broker_idx = -1;
         for idx, broker in enumerate(self._settings.mqttbrokers):
@@ -59,8 +54,28 @@ class CatalogAPI(RESTBase):
             return self.asjson_info("Catalog API endpoint!")
         elif path[0] == "SysInfo".lower():
             return self.asjson({
-                "cpu_perc": psutil.cpu_percent(),
-                "ram_perc": psutil.virtual_memory()[2]
+                "cpu": {
+                    "count": psutil.cpu_count(),
+                    "freq": psutil.cpu_freq(),
+                    "percent": psutil.cpu_percent(interval=1)
+                },
+                "ram": {
+                    "total": psutil.virtual_memory().total,
+                    "percent": psutil.virtual_memory().percent,
+                    "used": psutil.virtual_memory().used,
+                    "free": psutil.virtual_memory().available
+                },
+                "disk": {
+                    "total": psutil.disk_usage('/').total,
+                    "percent": psutil.disk_usage('/').percent,
+                    "used": psutil.disk_usage('/').used,
+                    "free": psutil.disk_usage('/').free
+                },
+                "uptime": time.time() - psutil.boot_time(),
+                "network": {
+                    "bytes_sent": psutil.net_io_counters().bytes_sent,
+                    "bytes_recv": psutil.net_io_counters().bytes_recv
+                }
             })
         elif path[0] == "MQTTBroker".lower():
 
