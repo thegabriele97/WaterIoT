@@ -204,3 +204,24 @@ services:
       retries: 5
     volumes:
       - ${PWD}/services/deviceconfig/confs.json:/app/services/deviceconfig/confs.json:rw
+
+  nodered:
+    build:
+      context: ./services/nodered
+      dockerfile: Dockerfile
+    ports:
+      - "1881:1880"
+    depends_on:
+      arduinodevconn:
+        condition: service_started
+      raspberrydevconn:
+        condition: service_started
+      openweatheradaptor:
+        condition: service_started
+      thingspeakadaptor:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:1880 || exit 1"]
+      interval: 15s
+      timeout: 30s
+      retries: 5

@@ -3,9 +3,11 @@
 all: up
 
 down:
+	docker-compose stop nodered -t 1
 	docker-compose down
 
 up: genreq 
+	docker-compose stop nodered -t 1
 	docker-compose up -d --build
 	docker image prune -f
 
