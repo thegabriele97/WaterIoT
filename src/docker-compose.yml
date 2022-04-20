@@ -204,3 +204,47 @@ services:
       retries: 5
     volumes:
       - ${PWD}/services/deviceconfig/confs.json:/app/services/deviceconfig/confs.json:rw
+
+  wateringcontrol:
+    build: 
+      context: ./
+      dockerfile: ./services/wateringcontrol/Dockerfile
+    ports:
+      - "8091:8091"
+    depends_on:
+      catalog:
+          condition: service_started
+      raspberrydevconn:
+          condition: service_started
+      deviceconfig:
+          condition: service_started
+      telegramadaptor:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/wateringcontrol | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+
+  wateringdatabase:
+    build: 
+      context: ./
+      dockerfile: ./services/wateringdatabase/Dockerfile
+    ports:
+      - "8092:8092"
+    depends_on:
+      catalog:
+          condition: service_started
+      raspberrydevconn:
+          condition: service_started
+      deviceconfig:
+          condition: service_started
+      telegramadaptor:
+          condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/wateringdatabase | grep online | grep -c true"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    volumes:
+      - ${PWD}/services/wateringdatabase/database.json:/app/services/wateringdatabase/database.json:rw
