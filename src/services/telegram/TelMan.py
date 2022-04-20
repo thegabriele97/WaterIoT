@@ -489,13 +489,23 @@ class MyBot:
                 elif message == "/start" or message == "/help":
                     msg = "Hello!\n"
                     msg += "Here are the commands\n"
-                    msg += "/psw &#60;password&#62; - Subscribe the user:\n"
-                    msg += "airhum_max\n"
-                    msg += "airhum_min\n"
-                    msg += "temp_max\n"
-                    msg += "temp_min\n"
-                    msg += "soilhum_max\n"
-                    msg += "soilhum_min\n"
+                    msg += "<b>/psw (&#60;password&#62;)</b> - Subscribe the user\n"
+                    msg += "<pre>  <b>Example:</b> /psw your_password</pre>\n"
+                    msg += "<b>/status</b> - Get the actual system status\n"
+                    msg += "<b>/switch (&#60;on/off&#62;) (&#60;id/all&#62;)</b> - Turn on or off the irrigator\n"
+                    msg += "<pre>  <b>Example:</b> /switch on 1 </pre>\n"
+                    msg += "<b>/getairt (&#60;id&#62;)</b> - Retrive temperature of the air\n"
+                    msg += "<pre>  <b>Example:</b> /getairt 1 </pre>\n"
+                    msg += "<b>/getairu (&#60;id&#62;)</b> - Retrive umidity of the air\n"
+                    msg += "<pre>  <b>Example:</b> /getairu 1 </pre>\n"
+                    msg += "<b>/getsoilu (&#60;id&#62;)</b> - Retrive umidity of the soil\n"
+                    msg += "<pre>  <b>Example:</b> /getsoilu 0 </pre>\n"
+                    msg += "<b>/pos (&#60;lat&#62;) (&#60;lon&#62;)</b> - Sets latitude and longitude where retriving weather forecasting\n"
+                    msg += "<pre>  <b>Example:</b> /pos 41.9027835 12.4963655 </pre>\n"
+                    msg += "<b>/config (&#60;temp&#62;/&#60;airhum&#62;/&#60;soilhum&#62;) (&#60;value&#62;)</b> -  Config the sensors: sets the period of sampling of the sensors. The value must be expressed in milliseconds\n"
+                    msg += "<pre>  <b>Example:</b> /config airhum 150000 </pre>\n"
+                    msg += "<b>/config (&#60;temp&#62;/&#60;airhum&#62;/&#60;soilhum&#62;) (&#60;min&#62;/&#60;max&#62;) (&#60;value&#62;)</b> - Config the watering: sets the temperature and moisture bounds in which turn on or off the watering system. The value must be within 1 and 100\n"
+                    msg += "<pre>  <b>Example:</b> /config soilhum max 85 </pre>\n"
                 
                     self.bot.sendMessage(chat_ID, msg, parse_mode="HTML", reply_markup=ReplyKeyboardRemove())
                 elif message.split()[0] == "/getairt" or message.split()[0] == "/getairu" or message.split()[0] == "/getsoilu":
@@ -578,9 +588,9 @@ class MyBot:
                             msg += f"   #{devid}: "
                             r = self.catreq.reqREST("ArduinoDevConn", f"/switch?state={message.split()[1].lower()}", devid=devid)
                             if not r.status or r.code_response != 200:
-                                msg += f"OFF"
+                                msg += f"ERROR"
                             else:
-                                msg += f" ON"
+                                msg += f" DONE"
 
                             msg += "\n"
 
