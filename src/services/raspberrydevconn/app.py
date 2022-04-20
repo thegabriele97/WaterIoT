@@ -106,51 +106,74 @@ class RaspberryDevConnAPI(RESTBase):
 
     # function of the threads
     def _airhumidity(self):
-        while not self._th.is_stop_requested:
-            self.humidity = self.settings.default.humidity
-            
-            if self._onrpi:
-                import Adafruit_DHT
-                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
 
-            self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", self.humidity, "%")), self._devid
-            )
-            self._th.wait(self.wait_air_hum)
+        while not self._th.is_stop_requested:
+
+            try:
+                humidity = self.settings.default.humidity
+                
+                if self._onrpi:
+                    import Adafruit_DHT
+                    humidity, _ = Adafruit_DHT.read_retry(self.sensor, self.pin)
+
+                if humidity is None:
+                    self.logger.warning("Failed to get humidity from sensor, skipping...")
+                else:
+                    self._catreq.publishMQTT(
+                        "RaspberryDevConn", "/airhumidity", json.dumps(self._to_json_sensor("airhumidity", float(humidity), "%")), self._devid
+                    )
+
+                self._th.wait(self.wait_air_hum)
+            except Exception as e:
+                self.logger.error(e, exc_info=True)
 
     # function of the threads
     def _airtemperature(self):
         while not self._th1.is_stop_requested:
-            #self.temperature=random.random()
-            self.temperature = self.settings.default.temperature
-            
-            if self._onrpi:
-                import Adafruit_DHT
-                self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
-            
-            self._catreq.publishMQTT(
-                "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", self.temperature, "°C")), self._devid
-            )
-            self._th1.wait(self.wait_air_temp)
+
+            try:
+                temperature = self.settings.default.temperature
+                
+                if self._onrpi:
+                    import Adafruit_DHT
+                    _, temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+                
+                if temperature is None:
+                    self.logger.warning("Failed to get temperature from sensor, skipping...")
+                else:
+                    self._catreq.publishMQTT(
+                        "RaspberryDevConn", "/airtemperature", json.dumps(self._to_json_sensor("airtemperature", float(temperature), "°C")), self._devid
+                    )
+
+                self._th1.wait(self.wait_air_temp)
+            except Exception as e:
+                self.logger.error(e, exc_info=True)
 
     # function of the threads
     def _terrainhumidity(self):
         while not self._th2.is_stop_requested:
 
-            # set a default value of 20 in case you are not connected to the board
-            data = self.settings.default.soil
+            try: 
+                # set a default value of 20 in case you are not connected to the board
+                data = self.settings.default.soil
 
-            # if you are on the rpi, ask arduino for the value of the soil humidity
-            if self._onrpi:
-                data = self._bus.read_word_data(self._ard_i2c_addr, 5)
-                mask = 0x3FF
-                data = data & mask
+                # if you are on the rpi, ask arduino for the value of the soil humidity
+                if self._onrpi:
+                    data = self._bus.read_word_data(self._ard_i2c_addr, 5)
+                    mask = 0x3FF
+                    data = data & mask
+                    data = (data/1024)*100  # convert the value into a percentage
 
-            self._catreq.publishMQTT(
-                "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", data, "%")), self._devid
-            )
+                if data is None:
+                    self.logger.warning("Failed to get soil humidity from sensor, skipping...")
+                else:
+                    self._catreq.publishMQTT(
+                        "RaspberryDevConn", "/terrainhumidity", json.dumps(self._to_json_sensor(f"soilhum", float(data), "%")), self._devid
+                    )
 
-            self._th2.wait(self.wait_soil_hum)
+                self._th2.wait(self.wait_soil_hum)
+            except Exception as e:
+                self.logger.error(e, exc_info=True)
 
     @cherrypy.tools.json_out()
     def GET(self, *path, **args):
@@ -178,6 +201,7 @@ class RaspberryDevConnAPI(RESTBase):
                 data = self._bus.read_word_data(self._ard_i2c_addr, 5)
                 mask = 0x3FF
                 data = data & mask
+                data = (data/1024)*100 # convert the value into a percentage
 
             return self.asjson(self._to_json_sensor(f"soilhum", data, "%"))
 

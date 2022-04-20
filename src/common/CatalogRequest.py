@@ -15,6 +15,7 @@ class RequestType(Enum):
     POST   = 2
     PUT    = 3
     DELETE = 4
+    HEAD   = 5
 
 class CatalogRequest:
 
@@ -29,20 +30,11 @@ class CatalogRequest:
         self._mqttclient = mqtt.Client()
         self._mqttclient.enable_logger(self._logger)
 
-        s = requests.Session()
+        self._s = requests.Session()
         retries = Retry(total=5, backoff_factor=0.5, status_forcelist=[ 500, 502, 503, 504 ])
-        s.mount('http://', HTTPAdapter(max_retries=retries))
+        self._s.mount('http://', HTTPAdapter(max_retries=retries))
 
-        r = s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
-        if not r.json()["connected"]:
-            raise Exception("Catalog's MQTT Broker is not connected!")
-
-        broker = r.json()["broker"]
-        self._mqttclient.on_connect = self._cb_on_connect
-        self._mqttclient.on_message = self._cb_on_msg_recv
-
-        self._mqttclient.connect(broker["host"], broker["port"])
-        self._mqttclient.loop_start()
+        self._mqttclient_connected = False
 
 
     def publishMQTT(self, service: str, path:str, payload, devid: int = None):
@@ -81,21 +73,15 @@ class CatalogRequest:
 
     def _check_mqtt_endpoint(self, service: str, path: str, devid: int = None):
 
+        if not self._mqttclient_connected:
+            self._mqttclient_connect()
+
         service = service.lower()
         rpath = f"{self._catalogURL}/catalog/services/{service}"
         self._logger.debug(f"Requesting MQTT ({path}, dev #{devid}) service info @ {rpath}")
 
-        r = None
-        for _ in range(0, 10):
-            r = requests.get(url=rpath)
-            if r.status_code == 404:
-                time.sleep(0.5)
-            elif r.status_code != 200:
-                r.raise_for_status()
-            else:
-                break
-
-        if r.status_code == 404 or r == None:
+        r = self._do_req(RequestType.GET, rpath)
+        if r is None or r.status_code == 404:
             raise Exception(f"{rpath} return status code 404")
 
         # checking if we are dealing with a multiple device
@@ -113,7 +99,7 @@ class CatalogRequest:
 
         return len(epoint) > 0
 
-    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None):
+    def reqREST(self, service: str, path: str, reqt: RequestType = RequestType.GET, datarequest = None, devid: int = None, retry_on_fail_count: int = 3):
         """
         path must include absolute path with params
         ie. /calculator/sum?a=2&b=3
@@ -132,7 +118,7 @@ class CatalogRequest:
             self._logger.debug(f"Requesting REST service info @ {self._catalogURL}/catalog/services/{service}")
 
             if rpath in self._reqcache.keys():
-                r = requests.head(url=rpath)
+                r = self._do_req(RequestType.HEAD, rpath)
                 coderesp = r.status_code
 
                 if r.status_code != 200:
@@ -148,16 +134,7 @@ class CatalogRequest:
 
             if jsonresp is None:
 
-                r = None
-                for _ in range(0, 10):
-                    r = requests.get(url=rpath)
-                    if r.status_code == 404:
-                        time.sleep(0.5)
-                    elif r.status_code != 200:
-                        r.raise_for_status()
-                    else:
-                        break
-
+                r = self._do_req(RequestType.GET, rpath)
                 jsonresp = r.json()
                 coderesp = r.status_code
 
@@ -200,15 +177,7 @@ class CatalogRequest:
             self._logger.debug(f"Requesting service endpoint: {reqt.name} http://{host}:{str(port)}{path}")
 
             url = f"http://{host}:{str(port)}{path}"
-            if reqt == RequestType.GET:
-                r = requests.get(url=url, json=datarequest)
-            elif reqt == RequestType.POST:
-                r = requests.post(url=url, json=datarequest)
-            elif reqt == RequestType.PUT:
-                r = requests.put(url=url, json=datarequest)
-            elif reqt == RequestType.DELETE:
-                r = requests.delete(url=url, json=datarequest)
-
+            r = self._do_req(reqt, url, datarequest, max=4, doraise=False)
             b4 = True
 
             jsonresp = r.json()
@@ -219,6 +188,12 @@ class CatalogRequest:
         
         finally:
             self._logger.debug(f"Service {b1}. Endpoint {b2}. Params {b3}. Reachable {b4}")
+
+            if (not b1 or not b2 or not b3 or not b4) and retry_on_fail_count > 0:
+                self._logger.warning(f"Retrying request to service {service}:{path} ...")
+                time.sleep(1)
+                return self.reqREST(service, path, reqt, datarequest, devid, retry_on_fail_count - 1)
+
             return RetType(b1 and b2 and b3 and b4, jsonresp, coderesp)
 
     def reqDeviceIdsList(self, service: str) -> list[int]:
@@ -274,6 +249,50 @@ class CatalogRequest:
 
         return {"online": r1.json()["services"], "offline": r2.json()["services"]}
 
+    def reqSysInfo(self) -> dict:
+        """
+        Returns the system information
+        """
+        r = requests.get(url=f"{self._catalogURL}/catalog/sysinfo")
+        if r.status_code != 200:
+            r.raise_for_status()
+
+        return r.json()
+
+    def _do_req(self, meth: RequestType, path: str, data = None, max : int = 10, doraise: bool = True):
+        """
+        Internal method to perform a request to a service
+        """
+
+        r = None
+        for i in range(0, max):
+
+            if i > 0:
+                time.sleep(0.5)
+                self._logger.warning(f"Retrying request to {path}, #{i+1}...")
+
+            try:
+                r = self._s.request(meth.name, path, json=data)
+            except:
+                continue
+
+            if r.status_code == 404:
+                continue
+            elif r.status_code not in [200, 201, 202]:
+                if doraise:
+                    r.raise_for_status()
+                else:
+                    return r
+            else:
+                return r
+
+        if r is not None:
+            r.raise_for_status()
+        else:
+            raise Exception(f"Request to {path} failed. Maybe timeout?")
+
+        return r
+
     def _cb_on_connect(self, mqtt: mqtt.Client, userdata, flags, rc):
         self._logger.info(f"Connected to MQTT broker {mqtt._host}:{mqtt._port}")
         if self._on_connect is not None:
@@ -283,3 +302,25 @@ class CatalogRequest:
         self._logger.debug(f"Received MQTT message on {msg.topic}: {msg.payload}")
         if self._on_msg_recv is not None:
             self._on_msg_recv(mqtt, udata, msg)
+
+    def _mqttclient_connect(self):
+        r = self._s.get(f"{self._catalogURL}/catalog/mqttbroker", timeout=15)
+        if not r.json()["connected"]:
+            raise Exception("Catalog's MQTT Broker is not connected!")
+
+        broker = r.json()["broker"]
+        self._mqttclient.on_connect = self._cb_on_connect
+        self._mqttclient.on_message = self._cb_on_msg_recv
+
+        while 1:
+            try:
+                self._mqttclient.connect(broker["host"], broker["port"])
+                break
+            except Exception as e:
+                self._logger.warning(f"MQTT connection failed to {broker['host']}:{broker['port']}: {e}. Trying again...")
+                time.sleep(0.5)
+                continue
+
+        self._mqttclient.loop_start()
+        self._mqttclient_connected = True
+
