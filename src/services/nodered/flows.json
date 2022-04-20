@@ -20,8 +20,8 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 230,
-        "y": 780,
+        "x": 210,
+        "y": 680,
         "wires": [
             [
                 "23831f35c978ce7c",
@@ -67,8 +67,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 1200,
-        "y": 780,
+        "x": 1320,
+        "y": 580,
         "wires": [
             []
         ]
@@ -87,7 +87,7 @@
         "rh": 0,
         "inputs": 0,
         "x": 230,
-        "y": 1220,
+        "y": 1180,
         "wires": [
             [
                 "bc177b446e667e02",
@@ -133,8 +133,8 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "",
-        "x": 1210,
-        "y": 1220,
+        "x": 1370,
+        "y": 1040,
         "wires": [
             []
         ]
@@ -159,50 +159,6 @@
                 "1be8d10c5b46345f",
                 "413d9fef1d873adc"
             ]
-        ]
-    },
-    {
-        "id": "75b473799f49a9d8",
-        "type": "ui_chart",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "group": "39d17713b68b1b67",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "label": "Air Humidity chart",
-        "chartType": "line",
-        "legend": "true",
-        "xformat": "HH:mm:ss",
-        "interpolate": "linear",
-        "nodata": "",
-        "dot": false,
-        "ymin": "",
-        "ymax": "",
-        "removeOlder": "20",
-        "removeOlderPoints": "1000",
-        "removeOlderUnit": "1",
-        "cutout": 0,
-        "useOneColor": false,
-        "useUTC": false,
-        "colors": [
-            "#1f77b4",
-            "#aec7e8",
-            "#ff7f0e",
-            "#2ca02c",
-            "#98df8a",
-            "#d62728",
-            "#ff9896",
-            "#9467bd",
-            "#c5b0d5"
-        ],
-        "outputs": 1,
-        "useDifferentColor": false,
-        "className": "",
-        "x": 1250,
-        "y": 1540,
-        "wires": [
-            []
         ]
     },
     {
@@ -240,8 +196,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 830,
-        "y": 860,
+        "x": 810,
+        "y": 760,
         "wires": []
     },
     {
@@ -277,7 +233,8 @@
         "wires": [
             [
                 "72e7b7e596d04321",
-                "71355c581bd6e6c2"
+                "71355c581bd6e6c2",
+                "91876605b9f16bbb"
             ]
         ]
     },
@@ -328,27 +285,9 @@
         "y": 300,
         "wires": [
             [
-                "79d0aabe19f2e075",
-                "e572287c6b405919"
+                "79d0aabe19f2e075"
             ]
         ]
-    },
-    {
-        "id": "e08b4b1d404b534a",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 870,
-        "y": 400,
-        "wires": []
     },
     {
         "id": "79d0aabe19f2e075",
@@ -361,8 +300,7 @@
         "y": 300,
         "wires": [
             [
-                "5a01521c0c95157b",
-                "e08b4b1d404b534a"
+                "5a01521c0c95157b"
             ]
         ]
     },
@@ -392,11 +330,11 @@
         "topicType": "str",
         "className": "",
         "x": 680,
-        "y": 680,
+        "y": 580,
         "wires": [
             [
                 "43722b6d55f913b3",
-                "f98bb02ccf3e2dfa"
+                "170e612f51084123"
             ]
         ]
     },
@@ -413,24 +351,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 910,
-        "y": 640,
-        "wires": []
-    },
-    {
-        "id": "e572287c6b405919",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 590,
-        "y": 400,
+        "x": 890,
+        "y": 540,
         "wires": []
     },
     {
@@ -445,8 +367,8 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1350,
-        "y": 340,
+        "x": 1390,
+        "y": 320,
         "wires": []
     },
     {
@@ -454,50 +376,17 @@
         "type": "function",
         "z": "6644ea9bf3513060",
         "name": "Global Variable",
-        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
+        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    \n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"GlobalDevice\",[]);\nglobal.set(\"Globalength\",0);",
         "finalize": "",
         "libs": [],
-        "x": 440,
-        "y": 680,
+        "x": 420,
+        "y": 580,
         "wires": [
             [
                 "835751f5847b8367"
-            ]
-        ]
-    },
-    {
-        "id": "d9d8af5865c37f34",
-        "type": "switch",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "property": "topic",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "none",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "airTemp",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 1010,
-        "y": 740,
-        "wires": [
-            [
-                "f8f491d3c3e366c8"
-            ],
-            [
-                "e8290b67a4197e91"
             ]
         ]
     },
@@ -506,99 +395,16 @@
         "type": "python3-function",
         "z": "6644ea9bf3513060",
         "name": "",
-        "func": "msg[\"topic\"]=\"airTemp\"\nreturn msg",
+        "func": "msg[\"topic\"]=\"AirTemp\"\nreturn msg",
         "outputs": 1,
-        "x": 620,
-        "y": 780,
+        "x": 600,
+        "y": 680,
         "wires": [
             [
                 "e275e663d784c501",
-                "f98bb02ccf3e2dfa"
+                "170e612f51084123"
             ]
         ]
-    },
-    {
-        "id": "05ca7652c28e68b6",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1130,
-        "y": 860,
-        "wires": []
-    },
-    {
-        "id": "f98bb02ccf3e2dfa",
-        "type": "function",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "func": "switch(msg.topic){\n    case \"airTemp\":\n        if(msg.payload.i==global.get(\"deviceID\")){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airTemp\";\n            return msg;\n        }\n        else{\n            msg.topic=\"none\";\n            return msg;\n        }\n        break;\n    case \"choiceID\":\n        if(msg.payload!= global.get(\"deviceID\")){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"airTemp\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        break;\n}\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",0);",
-        "finalize": "",
-        "libs": [],
-        "x": 860,
-        "y": 760,
-        "wires": [
-            [
-                "d9d8af5865c37f34",
-                "05ca7652c28e68b6"
-            ]
-        ]
-    },
-    {
-        "id": "f8f491d3c3e366c8",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1190,
-        "y": 720,
-        "wires": []
-    },
-    {
-        "id": "c17db91e1de015ab",
-        "type": "comment",
-        "z": "6644ea9bf3513060",
-        "name": "choose the id",
-        "info": "",
-        "x": 690,
-        "y": 620,
-        "wires": []
-    },
-    {
-        "id": "a0d70e9a55f7abda",
-        "type": "comment",
-        "z": "6644ea9bf3513060",
-        "name": "ritorna id e valore",
-        "info": "",
-        "x": 620,
-        "y": 840,
-        "wires": []
-    },
-    {
-        "id": "8732a86fc19479d2",
-        "type": "comment",
-        "z": "6644ea9bf3513060",
-        "name": "join di id e decide se mandare il valore",
-        "info": "",
-        "x": 890,
-        "y": 800,
-        "wires": []
     },
     {
         "id": "085a1ed7ca46f984",
@@ -614,7 +420,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 830,
-        "y": 1300,
+        "y": 1260,
         "wires": []
     },
     {
@@ -630,7 +436,7 @@
         "width": 0,
         "height": 0,
         "passthru": true,
-        "multiple": false,
+        "multiple": true,
         "options": [
             {
                 "label": "",
@@ -643,11 +449,11 @@
         "topicType": "str",
         "className": "",
         "x": 680,
-        "y": 1120,
+        "y": 1080,
         "wires": [
             [
                 "bfb55e34366ca957",
-                "f017c1af1c71c0a6"
+                "a006a4c312428109"
             ]
         ]
     },
@@ -664,8 +470,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 910,
-        "y": 1080,
+        "x": 890,
+        "y": 1040,
         "wires": []
     },
     {
@@ -680,7 +486,7 @@
         "finalize": "",
         "libs": [],
         "x": 440,
-        "y": 1120,
+        "y": 1080,
         "wires": [
             [
                 "4cb3cec8feb73f5e"
@@ -702,21 +508,39 @@
             },
             {
                 "t": "eq",
-                "v": "SoilHum",
+                "v": "SoilHum1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SoilHum2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "both",
                 "vt": "str"
             }
         ],
         "checkall": "true",
         "repair": false,
-        "outputs": 2,
-        "x": 1010,
-        "y": 1180,
+        "outputs": 4,
+        "x": 1110,
+        "y": 1120,
         "wires": [
             [
                 "7c0c7188f037a025"
             ],
             [
-                "61125d8d1a4ec9b6"
+                "61125d8d1a4ec9b6",
+                "d8a9481d2e8d1a9f"
+            ],
+            [
+                "bd496ba043763349"
+            ],
+            [
+                "61125d8d1a4ec9b6",
+                "bd496ba043763349"
             ]
         ]
     },
@@ -728,48 +552,11 @@
         "func": "msg[\"topic\"]=\"SoilHum\"\nreturn msg",
         "outputs": 1,
         "x": 560,
-        "y": 1220,
+        "y": 1180,
         "wires": [
             [
                 "085a1ed7ca46f984",
-                "f017c1af1c71c0a6"
-            ]
-        ]
-    },
-    {
-        "id": "72557f1490fdf7b4",
-        "type": "debug",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1130,
-        "y": 1300,
-        "wires": []
-    },
-    {
-        "id": "f017c1af1c71c0a6",
-        "type": "function",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "func": "switch(msg.topic){\n    case \"SoilHum\":\n        if(msg.payload.i==global.get(\"deviceID\")){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"SoilHum\";\n            return msg;\n        }\n        else{\n            msg.topic=\"none\";\n            return msg;\n        }\n        break;\n    case \"choiceID\":\n        if(msg.payload!= global.get(\"deviceID\")){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"SoilHum\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        break;\n}\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",0);",
-        "finalize": "",
-        "libs": [],
-        "x": 860,
-        "y": 1200,
-        "wires": [
-            [
-                "e752121341039b92",
-                "72557f1490fdf7b4"
+                "a006a4c312428109"
             ]
         ]
     },
@@ -785,38 +572,8 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1190,
-        "y": 1160,
-        "wires": []
-    },
-    {
-        "id": "25101216f0a452a1",
-        "type": "comment",
-        "z": "6644ea9bf3513060",
-        "name": "choose the id",
-        "info": "",
-        "x": 690,
-        "y": 1060,
-        "wires": []
-    },
-    {
-        "id": "e535951ae9a0095e",
-        "type": "comment",
-        "z": "6644ea9bf3513060",
-        "name": "ritorna id e valore",
-        "info": "",
-        "x": 560,
-        "y": 1280,
-        "wires": []
-    },
-    {
-        "id": "b58a0f24813f6b9b",
-        "type": "comment",
-        "z": "6644ea9bf3513060",
-        "name": "join di id e decide se mandare il valore",
-        "info": "",
-        "x": 890,
-        "y": 1240,
+        "x": 1330,
+        "y": 960,
         "wires": []
     },
     {
@@ -835,40 +592,6 @@
         "x": 870,
         "y": 1620,
         "wires": []
-    },
-    {
-        "id": "ca18f0420972fb90",
-        "type": "ui_dropdown",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "label": "",
-        "tooltip": "",
-        "place": "Select option",
-        "group": "39d17713b68b1b67",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "passthru": true,
-        "multiple": false,
-        "options": [
-            {
-                "label": "",
-                "value": "",
-                "type": "str"
-            }
-        ],
-        "payload": "",
-        "topic": "choiceID",
-        "topicType": "str",
-        "className": "",
-        "x": 720,
-        "y": 1440,
-        "wires": [
-            [
-                "cc120e5b98b41127",
-                "527730717e1a2c16"
-            ]
-        ]
     },
     {
         "id": "cc120e5b98b41127",
@@ -892,7 +615,7 @@
         "type": "function",
         "z": "6644ea9bf3513060",
         "name": "Global Variable",
-        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
+        "func": "\nvar deviceID=msg[\"payload\"][\"i\"];\nmsg={};\nmsg[\"deviceid\"]=deviceID;\nvar devices=global.get(\"GlobalDevice\");\nvar i=0;\nvar len=global.get(\"Globalength\");\nwhile(i<len&&deviceID!=devices[i]){\n    i++;\n}\nif(i==len){\n    //i must add the other device into the array of element\n    \n    devices.push(deviceID);\n    global.set(\"GlobalDevice\",devices);\n    global.set(\"Globalength\",len+1);\n}\nmsg[\"options\"]=devices;\nreturn msg\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"GlobalDevice\",[]);\nglobal.set(\"Globalength\",0);",
@@ -902,40 +625,7 @@
         "y": 1440,
         "wires": [
             [
-                "ca18f0420972fb90"
-            ]
-        ]
-    },
-    {
-        "id": "75cca8d8f7628188",
-        "type": "switch",
-        "z": "6644ea9bf3513060",
-        "name": "",
-        "property": "topic",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "none",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "airHum",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 1050,
-        "y": 1500,
-        "wires": [
-            [
-                "1737948493f697b0"
-            ],
-            [
-                "75b473799f49a9d8"
+                "f73f3d08767f4de8"
             ]
         ]
     },
@@ -951,7 +641,7 @@
         "wires": [
             [
                 "8ab56fef0e5eed30",
-                "527730717e1a2c16"
+                "5bbde1e6afeba9b8"
             ]
         ]
     },
@@ -973,27 +663,220 @@
         "wires": []
     },
     {
-        "id": "527730717e1a2c16",
+        "id": "d8a9481d2e8d1a9f",
+        "type": "ui_gauge",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "6d55652b11d1503d",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "wave",
+        "title": "",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "className": "",
+        "x": 1390,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "0a8855713317b8cf",
+        "type": "ui_gauge",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "9c715f7262b589f7",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "compass",
+        "title": "",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "className": "",
+        "x": 1300,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "bd496ba043763349",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "6d55652b11d1503d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": " ",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "20",
+        "removeOlderPoints": "1000",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1330,
+        "y": 1180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fe6c22a1f36b5b3f",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "39d17713b68b1b67",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Air Humidity Chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "200",
+        "removeOlderPoints": "1000",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1490,
+        "y": 1400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "58da16ca5d2521a7",
+        "type": "switch",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "none",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "AirHum1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "AirHum2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "both",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 1170,
+        "y": 1500,
+        "wires": [
+            [
+                "dbe63b60dcc689dd"
+            ],
+            [
+                "fe6c22a1f36b5b3f",
+                "3b5cbea8235573b5"
+            ],
+            [
+                "6127362644a4c308"
+            ],
+            [
+                "fe6c22a1f36b5b3f",
+                "6127362644a4c308"
+            ]
+        ]
+    },
+    {
+        "id": "5bbde1e6afeba9b8",
         "type": "function",
         "z": "6644ea9bf3513060",
         "name": "",
-        "func": "switch(msg.topic){\n    case \"airHum\":\n        if(msg.payload.i==global.get(\"deviceID\")){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"airHum\";\n            return msg;\n        }\n        else{\n            msg.topic=\"none\";\n            return msg;\n        }\n        break;\n    case \"choiceID\":\n        if(msg.payload!= global.get(\"deviceID\")){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"airHum\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        break;\n}\nreturn msg;",
+        "func": "switch(msg.topic){\n    case \"airHum\":\n        deviceId=global.get(\"deviceID\");\n        devicelength=deviceId.length;\n        //when the element is only one\n        if(devicelength==1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirHum1\";\n        }\n        else if(devicelength!=1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirHum1\";\n        }\n        else if(devicelength!=1 && msg.payload.i==deviceId[1]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirHum2\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        msg.check=deviceId;\n        break;\n        \n    case \"choiceID\":\n        devicesId=global.get(\"deviceID\");\n        //consider all the options\n        //when there is no device in the global \n        if(devicesId.length==0){\n            global.set(\"deviceID\",msg.payload);\n            //make a reset\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"both\";\n        }\n        //only one choice and only one device different from the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload!= devicesId){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"AirHum1\";\n        }\n        //only one choice and only one device equal to the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload==devicesId){\n            msg.topic=\"none\";\n        }\n        //only one choice in two devices\n        else if(msg.payload.length==1&&devicesId.length!=1)\n        {\n                //first chart reset(ready for values), second one disabled\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum1\";\n        }\n        //two choice and one element in devices\n        else if(msg.payload.length!=1&&devicesId.length==1){\n            //if the element is present in one of the two choice\n            //important the way the two element is saved into the global variable\n            if(msg.payload[0]==deviceId){\n                global.set(\"deviceID\",msg.payload);\n                //reset the second graph the first remain invariato\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            else if(msg.payload[1]==deviceId){\n                tmp=[msg.payload[1],msg.payload[0]];\n                global.set(\"deviceID\",tmp);\n                //reset the second graph\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            //it is not present nether in one or two\n            else{\n                //reset the graphs\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"both\";\n            }\n        }\n        //two choice and two elements in devices\n        else if(msg.payload.length!=1&&devicesId.length!=1){\n            //when the two element are equal\n            if(msg.payload[0]==devicesId[0]&&msg.payload[1]==devicesId[1]){\n                msg.topic=\"none\";\n                //nothing change\n            }\n            //when the first element change\n            else if(msg.payload[0]!=devicesId[0]&&msg.payload[1]==devicesId[1]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum1\";\n            }\n            //when the second element change\n            else if(msg.payload[1]!=deviceId[1]&&msg.payload[0]==deviceId[0]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            //when both change\n            else{\n                msg.topic=\"both\"\n                msg[\"payload\"]=[];\n            }\n        }\n        break;\n}\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",0);",
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",[]);\n",
         "finalize": "",
         "libs": [],
-        "x": 900,
-        "y": 1520,
+        "x": 960,
+        "y": 1500,
         "wires": [
             [
-                "75cca8d8f7628188",
+                "58da16ca5d2521a7",
                 "0f3ace8b8e40cbc0"
             ]
         ]
     },
     {
-        "id": "1737948493f697b0",
+        "id": "dbe63b60dcc689dd",
         "type": "debug",
         "z": "6644ea9bf3513060",
         "name": "",
@@ -1004,39 +887,280 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1230,
-        "y": 1480,
+        "x": 1470,
+        "y": 1340,
         "wires": []
     },
     {
-        "id": "ac3167a114df60e2",
-        "type": "comment",
+        "id": "08dd8aa0a220c086",
+        "type": "switch",
         "z": "6644ea9bf3513060",
-        "name": "choose the id",
-        "info": "",
-        "x": 730,
-        "y": 1380,
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "none",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "AirTemp1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "AirTemp2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "both",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 1070,
+        "y": 620,
+        "wires": [
+            [
+                "ddde06c928cd83d3"
+            ],
+            [
+                "e8290b67a4197e91",
+                "0a8855713317b8cf"
+            ],
+            [
+                "eefa202e72788e28"
+            ],
+            [
+                "eefa202e72788e28",
+                "e8290b67a4197e91"
+            ]
+        ]
+    },
+    {
+        "id": "ddde06c928cd83d3",
+        "type": "debug",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1310,
+        "y": 520,
         "wires": []
     },
     {
-        "id": "a914d71f9e16e391",
-        "type": "comment",
+        "id": "eefa202e72788e28",
+        "type": "ui_chart",
         "z": "6644ea9bf3513060",
-        "name": "ritorna id e valore",
-        "info": "",
-        "x": 660,
-        "y": 1600,
+        "name": "",
+        "group": "9c715f7262b589f7",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": " ",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "20",
+        "removeOlderPoints": "1000",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1310,
+        "y": 700,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f73f3d08767f4de8",
+        "type": "ui_dropdown",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "39d17713b68b1b67",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": true,
+        "options": [
+            {
+                "label": "",
+                "value": "",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "choiceID",
+        "topicType": "str",
+        "className": "",
+        "x": 720,
+        "y": 1440,
+        "wires": [
+            [
+                "cc120e5b98b41127",
+                "5bbde1e6afeba9b8"
+            ]
+        ]
+    },
+    {
+        "id": "3b5cbea8235573b5",
+        "type": "ui_gauge",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "39d17713b68b1b67",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "wave",
+        "title": "",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "className": "",
+        "x": 1470,
+        "y": 1500,
         "wires": []
     },
     {
-        "id": "7b7a24354f1776df",
-        "type": "comment",
+        "id": "91876605b9f16bbb",
+        "type": "ui_text",
         "z": "6644ea9bf3513060",
-        "name": "join di id e decide se mandare il valore",
-        "info": "",
-        "x": 930,
+        "group": "6d55652b11d1503d",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "{{msg.name}}",
+        "layout": "row-spread",
+        "className": "",
+        "x": 1370,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "6127362644a4c308",
+        "type": "ui_chart",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "group": "39d17713b68b1b67",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Air Humidity Chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "200",
+        "removeOlderPoints": "1000",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1470,
         "y": 1560,
-        "wires": []
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a006a4c312428109",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "switch(msg.topic){\n    case \"SoilHum\":\n        deviceId=global.get(\"deviceID\");\n        devicelength=deviceId.length;\n        //when the element is only one\n        if(devicelength==1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"SoilHum1\";\n        }\n        else if(devicelength!=1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"SoilHum1\";\n        }\n        else if(devicelength!=1 && msg.payload.i==deviceId[1]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"SoilHum2\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        msg.check=deviceId;\n        break;\n        \n    case \"choiceID\":\n        devicesId=global.get(\"deviceID\");\n        //consider all the options\n        //when there is no device in the global \n        if(devicesId.length==0){\n            global.set(\"deviceID\",msg.payload);\n            //make a reset\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"both\";\n        }\n        //only one choice and only one device different from the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload!= devicesId){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"SoilHum1\";\n        }\n        //only one choice and only one device equal to the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload==devicesId){\n            msg.topic=\"none\";\n        }\n        //only one choice in two devices\n        else if(msg.payload.length==1&&devicesId.length!=1)\n        {\n                //first chart reset(ready for values), second one disabled\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"SoilHum1\";\n        }\n        //two choice and one element in devices\n        else if(msg.payload.length!=1&&devicesId.length==1){\n            //if the element is present in one of the two choice\n            //important the way the two element is saved into the global variable\n            if(msg.payload[0]==deviceId){\n                global.set(\"deviceID\",msg.payload);\n                //reset the second graph the first remain invariato\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"SoilHum2\";\n            }\n            else if(msg.payload[1]==deviceId){\n                tmp=[msg.payload[1],msg.payload[0]];\n                global.set(\"deviceID\",tmp);\n                //reset the second graph\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"SoilHum2\";\n            }\n            //it is not present nether in one or two\n            else{\n                //reset the graphs\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"both\";\n            }\n        }\n        //two choice and two elements in devices\n        else if(msg.payload.length!=1&&devicesId.length!=1){\n            //when the two element are equal\n            if(msg.payload[0]==devicesId[0]&&msg.payload[1]==devicesId[1]){\n                msg.topic=\"none\";\n                //nothing change\n            }\n            //when the first element change\n            else if(msg.payload[0]!=devicesId[0]&&msg.payload[1]==devicesId[1]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"SoilHum1\";\n            }\n            //when the second element change\n            else if(msg.payload[1]!=deviceId[1]&&msg.payload[0]==deviceId[0]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"SoilHum2\";\n            }\n            //when both change\n            else{\n                msg.topic=\"both\"\n                msg[\"payload\"]=[];\n            }\n        }\n        break;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",[]);\n",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 1160,
+        "wires": [
+            [
+                "e752121341039b92"
+            ]
+        ]
+    },
+    {
+        "id": "170e612f51084123",
+        "type": "function",
+        "z": "6644ea9bf3513060",
+        "name": "",
+        "func": "switch(msg.topic){\n    case \"AirTemp\":\n        deviceId=global.get(\"deviceID\");\n        devicelength=deviceId.length;\n        //when the element is only one\n        if(devicelength==1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirTemp1\";\n        }\n        else if(devicelength!=1&&msg.payload.i==deviceId[0]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirTemp1\";\n        }\n        else if(devicelength!=1 && msg.payload.i==deviceId[1]){\n            value=msg.payload.v;\n            msg.payload=value;\n            msg.topic=\"AirTemp2\";\n        }\n        else{\n            msg.topic=\"none\";\n        }\n        msg.check=deviceId;\n        break;\n        \n    case \"choiceID\":\n        devicesId=global.get(\"deviceID\");\n        //consider all the options\n        //when there is no device in the global \n        if(devicesId.length==0){\n            global.set(\"deviceID\",msg.payload);\n            //make a reset\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"both\";\n        }\n        //only one choice and only one device different from the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload!= devicesId){\n            global.set(\"deviceID\",msg.payload);\n            msg[\"payload\"]=[];\n            msg[\"topic\"]=\"AirTemp1\";\n        }\n        //only one choice and only one device equal to the previous one\n        else if(msg.payload.length==1&&devicesId.length==1&&msg.payload==devicesId){\n            msg.topic=\"none\";\n        }\n        //only one choice in two devices\n        else if(msg.payload.length==1&&devicesId.length!=1)\n        {\n                //first chart reset(ready for values), second one disabled\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirTemp1\";\n        }\n        //two choice and one element in devices\n        else if(msg.payload.length!=1&&devicesId.length==1){\n            //if the element is present in one of the two choice\n            //important the way the two element is saved into the global variable\n            if(msg.payload[0]==deviceId){\n                global.set(\"deviceID\",msg.payload);\n                //reset the second graph the first remain invariato\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirTemp2\";\n            }\n            else if(msg.payload[1]==deviceId){\n                tmp=[msg.payload[1],msg.payload[0]];\n                global.set(\"deviceID\",tmp);\n                //reset the second graph\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            //it is not present nether in one or two\n            else{\n                //reset the graphs\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"both\";\n            }\n        }\n        //two choice and two elements in devices\n        else if(msg.payload.length!=1&&devicesId.length!=1){\n            //when the two element are equal\n            if(msg.payload[0]==devicesId[0]&&msg.payload[1]==devicesId[1]){\n                msg.topic=\"none\";\n                //nothing change\n            }\n            //when the first element change\n            else if(msg.payload[0]!=devicesId[0]&&msg.payload[1]==devicesId[1]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum1\";\n            }\n            //when the second element change\n            else if(msg.payload[1]!=deviceId[1]&&msg.payload[0]==deviceId[0]){\n                global.set(\"deviceID\",msg.payload);\n                msg[\"payload\"]=[];\n                msg[\"topic\"]=\"AirHum2\";\n            }\n            //when both change\n            else{\n                msg.topic=\"both\"\n                msg[\"payload\"]=[];\n            }\n        }\n        break;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nglobal.set(\"deviceID\",[]);\n",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 660,
+        "wires": [
+            [
+                "08dd8aa0a220c086"
+            ]
+        ]
     },
     {
         "id": "73dd0102c2465c32",
@@ -1067,34 +1191,23 @@
     {
         "id": "9c715f7262b589f7",
         "type": "ui_group",
-        "name": "AirTempTab",
+        "name": "Air Temperature",
         "tab": "aa8b95e31965cabf",
         "order": 2,
         "disp": true,
         "width": "6",
-        "collapse": false,
+        "collapse": true,
         "className": ""
     },
     {
         "id": "6d55652b11d1503d",
         "type": "ui_group",
-        "name": "SoilHumTab",
+        "name": "Soil Humidity",
         "tab": "aa8b95e31965cabf",
         "order": 1,
         "disp": true,
         "width": "6",
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "39d17713b68b1b67",
-        "type": "ui_group",
-        "name": "AirHumidityTab",
-        "tab": "aa8b95e31965cabf",
-        "order": 3,
-        "disp": true,
-        "width": "6",
-        "collapse": false,
+        "collapse": true,
         "className": ""
     },
     {
@@ -1109,9 +1222,20 @@
         "className": ""
     },
     {
+        "id": "39d17713b68b1b67",
+        "type": "ui_group",
+        "name": "Air Humidity",
+        "tab": "aa8b95e31965cabf",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": true,
+        "className": ""
+    },
+    {
         "id": "aa8b95e31965cabf",
         "type": "ui_tab",
-        "name": "UiTab",
+        "name": "WaterIot",
         "icon": "dashboard",
         "disabled": false,
         "hidden": false
