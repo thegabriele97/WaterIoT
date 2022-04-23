@@ -1,6 +1,8 @@
 # WaterIoT
 Project developed for the Programming for IoT course - IoT system for field watering 
 
+# Services
+
 ## Requirements
 First is necessary to install docker and docker-compose. Clone the repository with ```git clone https://github.com/thegabriele97/WaterIoT```.
 
