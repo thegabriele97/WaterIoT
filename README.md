@@ -1,6 +1,9 @@
 # WaterIoT
 Project developed for the Programming for IoT course - IoT system for field watering 
 
+Promo video: insert the link to the youtube video 
+
+Demo video: insert the link to the youtube video
 ## Brief Description
 The platform provides an end-users with the detail of the measurement of soil humidity and air temperature in order to check the plants and provide a remote control of the irrigator (or drip irrigation). All the interface communicates via MQTT and REST. 
 Summarising, the main features it offers are:
@@ -14,8 +17,12 @@ Summarising, the main features it offers are:
 
 ## Complete Description
 
-The proposed IoT platform for Smart Watering follows the microservices designing pattern. It also exploits two communication paradigms: i) publish/subscribe with MQTT protocol and ii) request/response based on HTTP REST Web Services.
-In this context, 13 actors have been identified and introduced in the following:
+The proposed IoT platform for Smart Watering follows the microservices designing pattern. It also exploits two communication paradigms: 
+
+- publish/subscribe with MQTT protocol.
+- request/response based on HTTP REST Web Services.
+
+In this context, 14 actors have been identified and introduced in the following:
 
 1) The Message Broker provides an asynchronous communication based on MQTT protocol.
 2) The S&D Catalog acts both as a service and as a device registry system for all the actors in the system. It provides information about end-point (like REST Web Services and MQTT topics), how to access them and info about their availability (online or offline). Each actor, during its operation, should retrieve such information before using an end-point in order to be sure that the service is online and the actor is using the most updated info on how to use it.
@@ -28,16 +35,16 @@ In this context, 13 actors have been identified and introduced in the following:
 9) Open Weather Adaptor provides an HTTP REST interface in order to retrieve information from Open Weather.
 10) Open Weather is a third-party software (https://openweathermap.org) that provides REST Web Services. It is an open-data platform for retrieving pieces of information about the current weather. 
 11) Node-Red is a dashboard (https://nodered.org/) to retrieve data from IoT devices and visualize them exploiting the REST Web Services provided by Raspberry Pi and Arduino Connectors. It also exploits the Thinkspeak and the Open Weather Web Services to import plots about weather and environmental measurements.
-12) Uptime-kuma is a self-hosted monitoring tool used to monitor docker-container.
-12) Telegram is a third-party software to integrate the proposed infrastructure into Telegram platform, which is a cloud-based instant messaging infrastructure. 
-13) Telegram Manager provides an HTTP REST API in order to interface from the system and with the system with elegram. It retrieves measurements from IoT devices exploiting the REST Web Services provided by Raspberry Pi and Arduino Connectors. It also allows users to send actuation commands to IoT devices or to configure the system, again exploiting REST.
+12) Uptime-kuma (https://github.com/louislam/uptime-kuma) is a self-hosted monitoring tool used to monitor docker-container.
+13) Telegram is a third-party software to integrate the proposed infrastructure into Telegram platform, which is a cloud-based instant messaging infrastructure. 
+14) Telegram Manager provides an HTTP REST API in order to interface from the system and with the system with elegram. It retrieves measurements from IoT devices exploiting the REST Web Services provided by Raspberry Pi and Arduino Connectors. It also allows users to send actuation commands to IoT devices or to configure the system, again exploiting REST.
 
-# Modify the Code
+## Modify the Code
 
-## Docker and Docker Compose
+### Docker and Docker Compose
 First is necessary to install [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/). 
 
-## Clone the repository
+### Clone the repository
 
 Now you can clone the repository with 
 
@@ -45,7 +52,7 @@ Now you can clone the repository with
 git clone https://github.com/thegabriele97WaterIoT
 ```
 
-## Nodered install
+### Nodered install
 We can install nodered and its library only with version > 12. This is done with the command:
 
 ```sh
@@ -99,7 +106,7 @@ npm install node-red-dashboard
 npm install node-red-contrib-python3-function
 ```
 
-## Creating a new service
+### Creating a new service
 To create a new service go into the ```src``` folder. Here you will find a Makefile, in which there are all useful commands needed to add a service and build the project. 
 ### Add a new service
 
@@ -121,7 +128,7 @@ Then you need to add you service to the docker-compose file. Open the file ```do
 
 If you are adding a device, remember to pass through the necessary devices. 
 
-## Adding a environment file
+### Adding a environment file
 
 This is a very important step, since inside this file you will store you API keys for the service to work. This file must be called ```loadenv.sh``` and must be inside the ```src``` folder. Copy this line inside the file
 
