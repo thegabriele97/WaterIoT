@@ -41,43 +41,63 @@ First is necessary to install [docker](https://docs.docker.com/get-docker/) and 
 
 Now you can clone the repository with 
 
-```git clone https://github.com/thegabriele97WaterIoT```.
+```sh
+git clone https://github.com/thegabriele97WaterIoT
+```
 
 ## Nodered install
 We can install nodered and its library only with version > 12. This is done with the command:
 
-```sudo apt install build-essential libssl-dev```
+```sh
+sudo apt install build-essential libssl-dev
+```
 
 We take the NVM installation script from git:
 
-```curl -sL https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh -o install_nvm.sh```
+```sh
+curl -sL https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh -o install_nvm.sh
+```
 
 Start the script:
 
-```bash install_nvm.sh```
+```sh
+bash install_nvm.sh
+```
 
 Restart the terminal
 
-```source .bashrc```
+```sh
+source .bashrc
+```
 
 Install the version 12.22.10:
 
-```nvm install v12.22.10```
+```sh
+nvm install v12.22.10
+```
 
 With the following command you can verify the installed node version:
 
-```node -v```
+```sh
+node -v
+```
 
 Now you can start node-red:
 
-```node-red```
+```sh
+node-red
+```
 
 Remember to install the lib node-red-contrib-python3-function
 and node-red-dashboard using the following command:
 
-```npm install node-red-dashboard```
+```sh
+npm install node-red-dashboard
+```
 
-```npm install node-red-contrib-python3-function```
+```sh
+npm install node-red-contrib-python3-function
+```
 
 ## Creating a new service
 To create a new service go into the ```src``` folder. Here you will find a Makefile, in which there are all useful commands needed to add a service and build the project. 
@@ -126,29 +146,29 @@ export TELEGRAMAPAPIKEY=your_api_key
 
 To build the project, from the ```src``` directory run these commands:
 
-```
+```sh
 source loadenv.sh
 ```
 
-```
+```sh
 make
 ```
 
 After that the services will be up and running. You can check the status by giving the command:
 
-```
+```sh
 docker-compose ps
 ```
 
 To check the logs of all containers use the command:
 
-```
+```sh
 docker-compose logs
 ```
 
 To check the logs of a specific container use the command:
 
-```
+```sh
 docker-compose logs container_name
 ```
 
