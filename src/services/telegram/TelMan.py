@@ -448,7 +448,7 @@ class MyBot:
                         self._encr.addID(chat_ID) # for some reason it return the id twice from getupdate
                         self.bot.sendMessage(chat_ID, "Correct password. The user is now subscribed and can access the functionality.", reply_markup=ReplyKeyboardRemove())
                     else :
-                        self.bot.sendMessage(chat_ID, "Wrond password", reply_markup=ReplyKeyboardRemove())
+                        self.bot.sendMessage(chat_ID, "Wrong password", reply_markup=ReplyKeyboardRemove())
             elif not self._encr.checkID(chat_ID) :
                 self.bot.sendMessage(chat_ID, "Unsubscribed user. Please insert the password using /psw <password> command", reply_markup=ReplyKeyboardRemove())
             else:

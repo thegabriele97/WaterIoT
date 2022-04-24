@@ -4,7 +4,8 @@ node-red -u .&
 PID=$!
 
 sleep 5
-curl -X POST http://localhost:1880/flows -H "Content-Type: application/json" --data "@flows.json"
+ipaddress= $(ifconfig eth0 | grep 'inet ' | cut -d" " -f10)
+curl -X POST $ipaddress:1880/flows -H "Content-Type: application/json" --data "@flows.json"
 
 # reattach to background process's stdout
 cd /proc/$PID/fd
