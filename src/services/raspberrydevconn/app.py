@@ -9,6 +9,7 @@ from common.SettingsNode import *
 from common.RESTBase import RESTBase
 from common.CatalogRequest import *
 from common.WIOThread import WIOThread
+from common.Sensor import Sensor
 
 
 class RaspberryDevConnAPI(RESTBase):
@@ -232,13 +233,7 @@ class RaspberryDevConnAPI(RESTBase):
         self._th2.restart()
 
     def _to_json_sensor(self, name, value, unit):
-        return {
-            "n": name,
-            "u": unit,
-            "v": value,
-            "t": time.time(),
-            "i": self._devid
-        }
+        return Sensor(name, value, unit, self._devid).JSON
 
 
 class App(WIOTRestApp):
