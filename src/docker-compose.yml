@@ -28,6 +28,7 @@ services:
       dockerfile: ./services/calculator/Dockerfile
     ports:
       - "8081:8081"
+    hostname: "calculator"
     depends_on:
       catalog:
           condition: service_started
@@ -64,6 +65,7 @@ services:
       dockerfile: ./services/arduinodevconn/Dockerfile
     ports:
       - "8086:8086"
+    hostname: "arduinodevconn0"
     depends_on:
       catalog:
           condition: service_started
@@ -166,6 +168,7 @@ services:
       dockerfile: ./services/thingspeakadaptor/Dockerfile
     ports:
       - "8083:8083"
+    hostname: "thingspeakadaptor"
     depends_on:
       catalog:
         condition: service_started
@@ -228,12 +231,26 @@ services:
       timeout: 30s
       retries: 5
 
+  uptime:
+    build:
+      context: ./
+      dockerfile: ./services/uptime/Dockerfile
+    ports:
+      - "9000:3001" 
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -Li localhost:3001 | grep -c '200 OK'"]
+      interval: 15s
+      timeout: 2s
+      retries: 5
+    # volumes:
+    #   - ${PWD}/services/uptime/data:/app/data
   wateringcontrol:
     build: 
       context: ./
       dockerfile: ./services/wateringcontrol/Dockerfile
     ports:
       - "8091:8091"
+    hostname: "wateringcontrol"
     depends_on:
       catalog:
           condition: service_started
@@ -255,6 +272,7 @@ services:
       dockerfile: ./services/wateringdatabase/Dockerfile
     ports:
       - "8092:8092"
+    hostname: "wateringdatabase"
     depends_on:
       catalog:
           condition: service_started
