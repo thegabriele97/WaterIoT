@@ -8,6 +8,7 @@ from common.SettingsManager import *
 from common.SettingsNode import *
 from common.RESTBase import RESTBase
 from common.CatalogRequest import *
+from common.Sensor import Sensor
 
 class ArduinoDevConnAPI(RESTBase):
 
@@ -51,7 +52,8 @@ class ArduinoDevConnAPI(RESTBase):
                     self._bus.write_byte_data(self._ard_i2c_addr, 0, 1 if st == "on" else 0)
 
                 is_on = st == "on" # to change w raspberry
-                r = {"is_on": is_on}
+
+                r = Sensor("ardsw", is_on, None, self._devid).JSON
                 self._catreq.publishMQTT("ArduinoDevConn", "/switch", json.dumps(r), devid=self._devid)
 
                 return self.asjson(r)
@@ -61,7 +63,7 @@ class ArduinoDevConnAPI(RESTBase):
 class App(WIOTRestApp):
     def __init__(self) -> None:
 
-        super().__init__(log_stdout_level=logging.INFO)
+        super().__init__(log_stdout_level=logging.DEBUG)
 
         try:
 
