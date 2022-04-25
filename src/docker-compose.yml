@@ -74,8 +74,8 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-    # devices:
-    #   - "/dev/i2c-1:/dev/i2c-1"  
+    devices:
+      - "/dev/i2c-1:/dev/i2c-1"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -93,8 +93,8 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-    # devices:
-    #   - "/dev/i2c-1:/dev/i2c-1"  
+    devices:
+      - "/dev/i2c-1:/dev/i2c-1"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -115,9 +115,9 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-    # devices:
-    #   - "/dev/i2c-1:/dev/i2c-1"
-    #   - "/dev/gpiomem:/dev/gpiomem"  
+    devices:
+      - "/dev/i2c-1:/dev/i2c-1"
+      - "/dev/gpiomem:/dev/gpiomem"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
 
@@ -138,9 +138,9 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-    # devices:
-    #   - "/dev/i2c-1:/dev/i2c-1"
-    #   - "/dev/gpiomem:/dev/gpiomem"  
+    devices:
+      - "/dev/i2c-1:/dev/i2c-1"
+      - "/dev/gpiomem:/dev/gpiomem"  
     environment:
       - ONRASPBERRY=${ONRASPBERRY}
   
