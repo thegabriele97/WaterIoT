@@ -8,10 +8,196 @@
         "env": []
     },
     {
+        "id": "73dd0102c2465c32",
+        "type": "mqtt-broker",
+        "name": "mosquitto",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "9c715f7262b589f7",
+        "type": "ui_group",
+        "name": "Air Temperature",
+        "tab": "aa8b95e31965cabf",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "6d55652b11d1503d",
+        "type": "ui_group",
+        "name": "Soil Humidity",
+        "tab": "aa8b95e31965cabf",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "797b907f8cd74d9f",
+        "type": "ui_group",
+        "name": "Meteo",
+        "tab": "aa8b95e31965cabf",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "39d17713b68b1b67",
+        "type": "ui_group",
+        "name": "Air Humidity",
+        "tab": "aa8b95e31965cabf",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "eee8c18939073107",
+        "type": "ui_group",
+        "name": "Switches",
+        "tab": "aa8b95e31965cabf",
+        "order": 5,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "aa8b95e31965cabf",
+        "type": "ui_tab",
+        "name": "WaterIot",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "bd2ac558bde94a43",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-dark",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097747",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#097479",
+                    "value": "#097747",
+                    "edited": true
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#097747",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#0ebe71",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#555555",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#eeeeee",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#097747",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "WaterIoT Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
         "id": "d345a28cf5a1a276",
         "type": "mqtt in",
         "z": "6644ea9bf3513060",
-        "d": true,
         "name": "subscriberAirTemp",
         "topic": "/ThingSpeakAdaptor/airtemp",
         "qos": "2",
@@ -78,7 +264,6 @@
         "id": "9d13a3d53ab81e05",
         "type": "mqtt in",
         "z": "6644ea9bf3513060",
-        "d": true,
         "name": "subscriberSoilHum",
         "topic": "/ThingSpeakAdaptor/soilhum",
         "qos": "2",
@@ -145,7 +330,6 @@
         "id": "b2bff48ab9e027d7",
         "type": "mqtt in",
         "z": "6644ea9bf3513060",
-        "d": true,
         "name": "subscriberAirHum",
         "topic": "/ThingSpeakAdaptor/airhum",
         "qos": "2",
@@ -168,7 +352,6 @@
         "id": "5a01521c0c95157b",
         "type": "http request",
         "z": "6644ea9bf3513060",
-        "d": true,
         "name": "Request wether",
         "method": "GET",
         "ret": "obj",
@@ -273,7 +456,6 @@
         "id": "b63c5b867f4ae8cb",
         "type": "http request",
         "z": "6644ea9bf3513060",
-        "d": true,
         "name": "Request position",
         "method": "GET",
         "ret": "obj",
@@ -1238,94 +1420,5 @@
         "wires": [
             []
         ]
-    },
-    {
-        "id": "73dd0102c2465c32",
-        "type": "mqtt-broker",
-        "name": "mosquitto",
-        "broker": "test.mosquitto.org",
-        "port": "1883",
-        "clientid": "",
-        "autoConnect": true,
-        "usetls": false,
-        "protocolVersion": "4",
-        "keepalive": "60",
-        "cleansession": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "birthMsg": {},
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "closeMsg": {},
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": "",
-        "willMsg": {},
-        "sessionExpiry": ""
-    },
-    {
-        "id": "9c715f7262b589f7",
-        "type": "ui_group",
-        "name": "Air Temperature",
-        "tab": "aa8b95e31965cabf",
-        "order": 2,
-        "disp": true,
-        "width": "6",
-        "collapse": true,
-        "className": ""
-    },
-    {
-        "id": "6d55652b11d1503d",
-        "type": "ui_group",
-        "name": "Soil Humidity",
-        "tab": "aa8b95e31965cabf",
-        "order": 1,
-        "disp": true,
-        "width": "6",
-        "collapse": true,
-        "className": ""
-    },
-    {
-        "id": "797b907f8cd74d9f",
-        "type": "ui_group",
-        "name": "Meteo",
-        "tab": "aa8b95e31965cabf",
-        "order": 4,
-        "disp": true,
-        "width": "6",
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "39d17713b68b1b67",
-        "type": "ui_group",
-        "name": "Air Humidity",
-        "tab": "aa8b95e31965cabf",
-        "order": 3,
-        "disp": true,
-        "width": "6",
-        "collapse": true,
-        "className": ""
-    },
-    {
-        "id": "eee8c18939073107",
-        "type": "ui_group",
-        "name": "Switches",
-        "tab": "aa8b95e31965cabf",
-        "order": 5,
-        "disp": true,
-        "width": "6",
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "aa8b95e31965cabf",
-        "type": "ui_tab",
-        "name": "WaterIot",
-        "icon": "dashboard",
-        "disabled": false,
-        "hidden": false
     }
 ]
