@@ -52,7 +52,7 @@ Now you can clone the repository with
 git clone https://github.com/thegabriele97WaterIoT
 ```
 
-### Nodered install
+<!-- ### Nodered install
 We can install nodered and its library only with version > 12. This is done with the command:
 
 ```sh
@@ -104,7 +104,7 @@ npm install node-red-dashboard
 
 ```sh
 npm install node-red-contrib-python3-function
-```
+``` -->
 
 ### Creating a new service
 To create a new service go into the ```src``` folder. Here you will find a Makefile, in which there are all useful commands needed to add a service and build the project. 
@@ -123,6 +123,70 @@ make genreq
 ```
 
 To modify your new service go into ```src/services/name_of_your_service``` and open the file ```app.py```.
+
+The suggested starting code for your `app.py` is:
+
+```python
+import logging
+import cherrypy
+
+from common.WIOTRestApp import *
+from common.SettingsManager import *
+from common.SettingsNode import *
+from common.RESTBase import RESTBase
+from common.CatalogRequest import *
+
+class CalculatorAPI(RESTBase):
+
+    def __init__(self, upperRESTSrvcApp, settings: SettingsNode) -> None:
+        super().__init__(upperRESTSrvcApp, 0)
+        self._catreq = CatalogRequest(self.logger, settings)
+
+    @cherrypy.tools.json_out()
+    def GET(self, *path, **args):
+
+        if len(path) == 1 and path[0] == "sum":
+            return self.asjson({"r": int(args["a"]) + int(args["b"]) + int(args.get("c", 0))})
+
+        # requiring REST endpoint from another service
+        self._catreq.reqREST("arduinodevconn", "/switch?state=on", devid=0)
+        r = self._catreq.reqREST("calculator", "/sum?a=2&b=3")
+        self._catreq.reqREST("calculator", "/sum?a=2&b=3", RequestType.POST)
+
+        # publishing on a MQTT topic of a service
+        self._catreq.publishMQTT("calculator", "/calcs", json.dumps({"d": r}))
+
+        return self.asjson({"d": r})
+
+class App(WIOTRestApp):
+    def __init__(self) -> None:
+
+        super().__init__(log_stdout_level=logging.INFO)
+
+        try:
+
+            self._settings = SettingsManager.json2obj(SettingsManager.relfile2abs("settings.json"), self.logger)
+            self.create(self._settings, "Calculator", ServiceType.SERVICE)
+
+            # declaring REST (with parameters) and MQTT endpoints 
+            self.addRESTEndpoint("/")
+            self.addRESTEndpoint("/sum", (EndpointParam("a"), EndpointParam("b"), EndpointParam("c", False)))
+            self.addMQTTEndpoint("/calcs", "publishing dummy data")
+
+
+            self.mount(CalculatorAPI(self, self._settings), self.conf)
+
+            # Starts the cherrypy REST server and starts the communication with the Catalog!
+            self.loop()
+
+        except Exception as e:
+            self.logger.exception(str(e))
+
+
+if __name__ == "__main__":
+    App()
+
+```
 
 Then you need to add you service to the docker-compose file. Open the file ```docker-compose.yml``` inside the ```src``` folder and add your service, following the syntax of the others. Remember to change the port and assign a new one. The same port must be written in the ```setting.json``` file inside the directory of your new service. 
 
