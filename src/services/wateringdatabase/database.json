@@ -1,0 +1,55 @@
+{
+    "items": [
+        {
+            "name": "test1",
+            "thresholds": {
+                "temp": {
+                    "min": 20.1,
+                    "max": 41.0
+                },
+                "airhum": {
+                    "min": 35.0,
+                    "max": 80.0
+                },
+                "soilhum": {
+                    "min": 30.0,
+                    "max": 85.0
+                }
+            }
+        },
+        {
+            "name": "base",
+            "thresholds": {
+                "temp": {
+                    "min": 10.0,
+                    "max": 30.0
+                },
+                "airhum": {
+                    "min": 20.0,
+                    "max": 60.0
+                },
+                "soilhum": {
+                    "min": 20.0,
+                    "max": 60.0
+                }
+            }
+        },
+        {
+            "name": "Test2",
+            "thresholds": {
+                "temp": {
+                    "max": 1.0,
+                    "min": 3.0
+                },
+                "airhum": {
+                    "max": 2.0,
+                    "min": 2.0
+                },
+                "soilhum": {
+                    "max": 2.0,
+                    "min": 4.0
+                }
+            }
+        }
+    ]
+}

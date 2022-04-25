@@ -5,6 +5,4 @@ requirements.txt
 .DS_Store
 *.http
 loadenv.sh
-src/uptime/data/**
-src/services/uptime/data/kuma.db-**
 requirements_rpi.txt
