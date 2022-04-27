@@ -1,14 +1,4 @@
 services:
-  example:
-    build: 
-      context: ./
-      dockerfile: ./services/example/Dockerfile
-    healthcheck:
-      test: ["CMD-SHELL", "cat out.log | grep -c Init!"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
-
   catalog:
     build: 
       context: ./
@@ -21,23 +11,6 @@ services:
       interval: 15s
       timeout: 2s
       retries: 5
-
-  calculator:
-    build: 
-      context: ./
-      dockerfile: ./services/calculator/Dockerfile
-    ports:
-      - "8081:8081"
-    hostname: "calculator"
-    depends_on:
-      catalog:
-          condition: service_started
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f -Li catalog:8080/catalog/services/calculator | grep online | grep -c true"]
-      interval: 15s
-      timeout: 2s
-      retries: 5
-
 
   telegramadaptor:
     build: 
@@ -244,6 +217,7 @@ services:
       retries: 5
     # volumes:
     #   - ${PWD}/services/uptime/data:/app/data
+
   wateringcontrol:
     build: 
       context: ./
