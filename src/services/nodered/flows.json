@@ -58,7 +58,7 @@
     {
         "id": "797b907f8cd74d9f",
         "type": "ui_group",
-        "name": "Meteo",
+        "name": "Weather",
         "tab": "aa8b95e31965cabf",
         "order": 4,
         "disp": true,
