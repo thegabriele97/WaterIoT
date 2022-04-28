@@ -1,9 +1,10 @@
 # WaterIoT
 Project developed for the Programming for IoT course - IoT system for field watering 
 
-Promo video: insert the link to the youtube video 
+Promo video: https://www.youtube.com/watch?v=OV2qO4yoWGM
 
-Demo video: insert the link to the youtube video
+Demo video: https://www.youtube.com/watch?v=aExB7GwxDY4
+
 ## Brief Description
 The platform provides an end-users with the detail of the measurement of soil humidity and air temperature in order to check the plants and provide a remote control of the irrigator (or drip irrigation). All the interface communicates via MQTT and REST. 
 Summarising, the main features it offers are:
